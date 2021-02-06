@@ -1,27 +1,37 @@
 package resolution
 
 import (
-	"github.com/DeRain/resolution-go/proxyreader"
+	"github.com/DeRain/resolution-go/cns/contracts/proxyreader"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	kns "github.com/jgimeno/go-namehash"
 )
 
+const DefaultProvider = "https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711"
 const ProxyReaderMainnetAddress = "0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5"
 
-// Registry is the structure for the registry contract
 type Cns struct {
-	backend      bind.ContractBackend
-	Contract     *proxyreader.Contract
-	ContractAddr common.Address
+	ProxyReader *proxyreader.Contract
 }
 
-func NewCns(backend bind.ContractBackend) *Cns {
-	// todo
-	return &Cns{backend: backend}
+func NewCnsWithDefaultProvider() (*Cns, error) {
+	address := common.HexToAddress(ProxyReaderMainnetAddress)
+	backend, err := ethclient.Dial(DefaultProvider)
+	if err != nil {
+		return nil, err
+	}
+	contract, err := proxyreader.NewContract(address, backend)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Cns{ProxyReader: contract}, nil
 }
 
 func (c *Cns) Record(domain string, key string) (record string, err error) {
-	// todo
-
+	name := NormalizeName(domain)
+	namehash := kns.NameHash(name)
+	record, err = c.ProxyReader.Get(&bind.CallOpts{Pending: false}, key, namehash.Big())
 	return
 }
