@@ -27,7 +27,7 @@ var (
 )
 
 // ContractABI is the input ABI used to generate the binding from.
-const ContractABI = "[{\"inputs\":[{\"internalType\":\"contractRegistry\",\"name\":\"registry\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"constant\":true,\"inputs\":[],\"name\":\"NAME\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"VERSION\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"isApprovedOrOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"resolverOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"label\",\"type\":\"string\"}],\"name\":\"childIdOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isController\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"root\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"nonceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"registry\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"get\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string[]\",\"name\":\"keys\",\"type\":\"string[]\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getMany\",\"outputs\":[{\"internalType\":\"string[]\",\"name\":\"\",\"type\":\"string[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"keyHash\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getByHash\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"keyHashes\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getManyByHash\",\"outputs\":[{\"internalType\":\"string[]\",\"name\":\"keys\",\"type\":\"string[]\"},{\"internalType\":\"string[]\",\"name\":\"values\",\"type\":\"string[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string[]\",\"name\":\"keys\",\"type\":\"string[]\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getData\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"resolver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"string[]\",\"name\":\"values\",\"type\":\"string[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string[]\",\"name\":\"keys\",\"type\":\"string[]\"},{\"internalType\":\"uint256[]\",\"name\":\"tokenIds\",\"type\":\"uint256[]\"}],\"name\":\"getDataForMany\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"resolvers\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"owners\",\"type\":\"address[]\"},{\"internalType\":\"string[][]\",\"name\":\"values\",\"type\":\"string[][]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"keyHashes\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getDataByHash\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"resolver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"string[]\",\"name\":\"keys\",\"type\":\"string[]\"},{\"internalType\":\"string[]\",\"name\":\"values\",\"type\":\"string[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"keyHashes\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"tokenIds\",\"type\":\"uint256[]\"}],\"name\":\"getDataByHashForMany\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"resolvers\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"owners\",\"type\":\"address[]\"},{\"internalType\":\"string[][]\",\"name\":\"keys\",\"type\":\"string[][]\"},{\"internalType\":\"string[][]\",\"name\":\"values\",\"type\":\"string[][]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"tokenIds\",\"type\":\"uint256[]\"}],\"name\":\"ownerOfForMany\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"owners\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const ContractABI = "[{\"inputs\":[{\"internalType\":\"contractRegistry\",\"name\":\"registry\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"constant\":true,\"inputs\":[],\"name\":\"NAME\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"VERSION\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"isApprovedOrOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"resolverOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"label\",\"type\":\"string\"}],\"name\":\"childIdOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isController\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"root\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"nonceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"registry\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"get\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string[]\",\"name\":\"keys\",\"type\":\"string[]\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getMany\",\"outputs\":[{\"internalType\":\"string[]\",\"name\":\"\",\"type\":\"string[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"keyHash\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getByHash\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"keyHashes\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getManyByHash\",\"outputs\":[{\"internalType\":\"string[]\",\"name\":\"keys\",\"type\":\"string[]\"},{\"internalType\":\"string[]\",\"name\":\"values\",\"type\":\"string[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string[]\",\"name\":\"keys\",\"type\":\"string[]\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getData\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"resolver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"string[]\",\"name\":\"values\",\"type\":\"string[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"keyHashes\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getDataByHash\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"resolver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"string[]\",\"name\":\"keys\",\"type\":\"string[]\"},{\"internalType\":\"string[]\",\"name\":\"values\",\"type\":\"string[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // Contract is an auto generated Go binding around an Ethereum contract.
 type Contract struct {
@@ -397,6 +397,105 @@ func (_Contract *ContractCallerSession) GetByHash(keyHash *big.Int, tokenId *big
 	Value string
 }, error) {
 	return _Contract.Contract.GetByHash(&_Contract.CallOpts, keyHash, tokenId)
+}
+
+// GetData is a free data retrieval call binding the contract method 0x91015f6b.
+//
+// Solidity: function getData(string[] keys, uint256 tokenId) view returns(address resolver, address owner, string[] values)
+func (_Contract *ContractCaller) GetData(opts *bind.CallOpts, keys []string, tokenId *big.Int) (struct {
+	Resolver common.Address
+	Owner    common.Address
+	Values   []string
+}, error) {
+	var out []interface{}
+	err := _Contract.contract.Call(opts, &out, "getData", keys, tokenId)
+
+	outstruct := new(struct {
+		Resolver common.Address
+		Owner    common.Address
+		Values   []string
+	})
+
+	outstruct.Resolver = out[0].(common.Address)
+	outstruct.Owner = out[1].(common.Address)
+	outstruct.Values = out[2].([]string)
+
+	return *outstruct, err
+
+}
+
+// GetData is a free data retrieval call binding the contract method 0x91015f6b.
+//
+// Solidity: function getData(string[] keys, uint256 tokenId) view returns(address resolver, address owner, string[] values)
+func (_Contract *ContractSession) GetData(keys []string, tokenId *big.Int) (struct {
+	Resolver common.Address
+	Owner    common.Address
+	Values   []string
+}, error) {
+	return _Contract.Contract.GetData(&_Contract.CallOpts, keys, tokenId)
+}
+
+// GetData is a free data retrieval call binding the contract method 0x91015f6b.
+//
+// Solidity: function getData(string[] keys, uint256 tokenId) view returns(address resolver, address owner, string[] values)
+func (_Contract *ContractCallerSession) GetData(keys []string, tokenId *big.Int) (struct {
+	Resolver common.Address
+	Owner    common.Address
+	Values   []string
+}, error) {
+	return _Contract.Contract.GetData(&_Contract.CallOpts, keys, tokenId)
+}
+
+// GetDataByHash is a free data retrieval call binding the contract method 0x03280755.
+//
+// Solidity: function getDataByHash(uint256[] keyHashes, uint256 tokenId) view returns(address resolver, address owner, string[] keys, string[] values)
+func (_Contract *ContractCaller) GetDataByHash(opts *bind.CallOpts, keyHashes []*big.Int, tokenId *big.Int) (struct {
+	Resolver common.Address
+	Owner    common.Address
+	Keys     []string
+	Values   []string
+}, error) {
+	var out []interface{}
+	err := _Contract.contract.Call(opts, &out, "getDataByHash", keyHashes, tokenId)
+
+	outstruct := new(struct {
+		Resolver common.Address
+		Owner    common.Address
+		Keys     []string
+		Values   []string
+	})
+
+	outstruct.Resolver = out[0].(common.Address)
+	outstruct.Owner = out[1].(common.Address)
+	outstruct.Keys = out[2].([]string)
+	outstruct.Values = out[3].([]string)
+
+	return *outstruct, err
+
+}
+
+// GetDataByHash is a free data retrieval call binding the contract method 0x03280755.
+//
+// Solidity: function getDataByHash(uint256[] keyHashes, uint256 tokenId) view returns(address resolver, address owner, string[] keys, string[] values)
+func (_Contract *ContractSession) GetDataByHash(keyHashes []*big.Int, tokenId *big.Int) (struct {
+	Resolver common.Address
+	Owner    common.Address
+	Keys     []string
+	Values   []string
+}, error) {
+	return _Contract.Contract.GetDataByHash(&_Contract.CallOpts, keyHashes, tokenId)
+}
+
+// GetDataByHash is a free data retrieval call binding the contract method 0x03280755.
+//
+// Solidity: function getDataByHash(uint256[] keyHashes, uint256 tokenId) view returns(address resolver, address owner, string[] keys, string[] values)
+func (_Contract *ContractCallerSession) GetDataByHash(keyHashes []*big.Int, tokenId *big.Int) (struct {
+	Resolver common.Address
+	Owner    common.Address
+	Keys     []string
+	Values   []string
+}, error) {
+	return _Contract.Contract.GetDataByHash(&_Contract.CallOpts, keyHashes, tokenId)
 }
 
 // GetMany is a free data retrieval call binding the contract method 0x1bd8cc1a.
@@ -842,109 +941,4 @@ func (_Contract *ContractSession) TokenURI(tokenId *big.Int) (string, error) {
 // Solidity: function tokenURI(uint256 tokenId) view returns(string)
 func (_Contract *ContractCallerSession) TokenURI(tokenId *big.Int) (string, error) {
 	return _Contract.Contract.TokenURI(&_Contract.CallOpts, tokenId)
-}
-
-// GetData is a paid mutator transaction binding the contract method 0x91015f6b.
-//
-// Solidity: function getData(string[] keys, uint256 tokenId) returns(address resolver, address owner, string[] values)
-func (_Contract *ContractTransactor) GetData(opts *bind.TransactOpts, keys []string, tokenId *big.Int) (*types.Transaction, error) {
-	return _Contract.contract.Transact(opts, "getData", keys, tokenId)
-}
-
-// GetData is a paid mutator transaction binding the contract method 0x91015f6b.
-//
-// Solidity: function getData(string[] keys, uint256 tokenId) returns(address resolver, address owner, string[] values)
-func (_Contract *ContractSession) GetData(keys []string, tokenId *big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.GetData(&_Contract.TransactOpts, keys, tokenId)
-}
-
-// GetData is a paid mutator transaction binding the contract method 0x91015f6b.
-//
-// Solidity: function getData(string[] keys, uint256 tokenId) returns(address resolver, address owner, string[] values)
-func (_Contract *ContractTransactorSession) GetData(keys []string, tokenId *big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.GetData(&_Contract.TransactOpts, keys, tokenId)
-}
-
-// GetDataByHash is a paid mutator transaction binding the contract method 0x03280755.
-//
-// Solidity: function getDataByHash(uint256[] keyHashes, uint256 tokenId) returns(address resolver, address owner, string[] keys, string[] values)
-func (_Contract *ContractTransactor) GetDataByHash(opts *bind.TransactOpts, keyHashes []*big.Int, tokenId *big.Int) (*types.Transaction, error) {
-	return _Contract.contract.Transact(opts, "getDataByHash", keyHashes, tokenId)
-}
-
-// GetDataByHash is a paid mutator transaction binding the contract method 0x03280755.
-//
-// Solidity: function getDataByHash(uint256[] keyHashes, uint256 tokenId) returns(address resolver, address owner, string[] keys, string[] values)
-func (_Contract *ContractSession) GetDataByHash(keyHashes []*big.Int, tokenId *big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.GetDataByHash(&_Contract.TransactOpts, keyHashes, tokenId)
-}
-
-// GetDataByHash is a paid mutator transaction binding the contract method 0x03280755.
-//
-// Solidity: function getDataByHash(uint256[] keyHashes, uint256 tokenId) returns(address resolver, address owner, string[] keys, string[] values)
-func (_Contract *ContractTransactorSession) GetDataByHash(keyHashes []*big.Int, tokenId *big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.GetDataByHash(&_Contract.TransactOpts, keyHashes, tokenId)
-}
-
-// GetDataByHashForMany is a paid mutator transaction binding the contract method 0x869b8884.
-//
-// Solidity: function getDataByHashForMany(uint256[] keyHashes, uint256[] tokenIds) returns(address[] resolvers, address[] owners, string[][] keys, string[][] values)
-func (_Contract *ContractTransactor) GetDataByHashForMany(opts *bind.TransactOpts, keyHashes []*big.Int, tokenIds []*big.Int) (*types.Transaction, error) {
-	return _Contract.contract.Transact(opts, "getDataByHashForMany", keyHashes, tokenIds)
-}
-
-// GetDataByHashForMany is a paid mutator transaction binding the contract method 0x869b8884.
-//
-// Solidity: function getDataByHashForMany(uint256[] keyHashes, uint256[] tokenIds) returns(address[] resolvers, address[] owners, string[][] keys, string[][] values)
-func (_Contract *ContractSession) GetDataByHashForMany(keyHashes []*big.Int, tokenIds []*big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.GetDataByHashForMany(&_Contract.TransactOpts, keyHashes, tokenIds)
-}
-
-// GetDataByHashForMany is a paid mutator transaction binding the contract method 0x869b8884.
-//
-// Solidity: function getDataByHashForMany(uint256[] keyHashes, uint256[] tokenIds) returns(address[] resolvers, address[] owners, string[][] keys, string[][] values)
-func (_Contract *ContractTransactorSession) GetDataByHashForMany(keyHashes []*big.Int, tokenIds []*big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.GetDataByHashForMany(&_Contract.TransactOpts, keyHashes, tokenIds)
-}
-
-// GetDataForMany is a paid mutator transaction binding the contract method 0x933c051d.
-//
-// Solidity: function getDataForMany(string[] keys, uint256[] tokenIds) returns(address[] resolvers, address[] owners, string[][] values)
-func (_Contract *ContractTransactor) GetDataForMany(opts *bind.TransactOpts, keys []string, tokenIds []*big.Int) (*types.Transaction, error) {
-	return _Contract.contract.Transact(opts, "getDataForMany", keys, tokenIds)
-}
-
-// GetDataForMany is a paid mutator transaction binding the contract method 0x933c051d.
-//
-// Solidity: function getDataForMany(string[] keys, uint256[] tokenIds) returns(address[] resolvers, address[] owners, string[][] values)
-func (_Contract *ContractSession) GetDataForMany(keys []string, tokenIds []*big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.GetDataForMany(&_Contract.TransactOpts, keys, tokenIds)
-}
-
-// GetDataForMany is a paid mutator transaction binding the contract method 0x933c051d.
-//
-// Solidity: function getDataForMany(string[] keys, uint256[] tokenIds) returns(address[] resolvers, address[] owners, string[][] values)
-func (_Contract *ContractTransactorSession) GetDataForMany(keys []string, tokenIds []*big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.GetDataForMany(&_Contract.TransactOpts, keys, tokenIds)
-}
-
-// OwnerOfForMany is a paid mutator transaction binding the contract method 0xc15ae7cf.
-//
-// Solidity: function ownerOfForMany(uint256[] tokenIds) returns(address[] owners)
-func (_Contract *ContractTransactor) OwnerOfForMany(opts *bind.TransactOpts, tokenIds []*big.Int) (*types.Transaction, error) {
-	return _Contract.contract.Transact(opts, "ownerOfForMany", tokenIds)
-}
-
-// OwnerOfForMany is a paid mutator transaction binding the contract method 0xc15ae7cf.
-//
-// Solidity: function ownerOfForMany(uint256[] tokenIds) returns(address[] owners)
-func (_Contract *ContractSession) OwnerOfForMany(tokenIds []*big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.OwnerOfForMany(&_Contract.TransactOpts, tokenIds)
-}
-
-// OwnerOfForMany is a paid mutator transaction binding the contract method 0xc15ae7cf.
-//
-// Solidity: function ownerOfForMany(uint256[] tokenIds) returns(address[] owners)
-func (_Contract *ContractTransactorSession) OwnerOfForMany(tokenIds []*big.Int) (*types.Transaction, error) {
-	return _Contract.Contract.OwnerOfForMany(&_Contract.TransactOpts, tokenIds)
 }
