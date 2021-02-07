@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	kns "github.com/jgimeno/go-namehash"
+	s "strings"
 )
 
 const DefaultProvider = "https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711"
@@ -81,3 +82,45 @@ func (c *Cns) Record(domainName string, key string) (string, error) {
 
 	return data.Values[0], nil
 }
+
+func (c *Cns) Addr(domainName string, ticker string) (string, error) {
+	key := "crypto." + s.ToUpper(ticker) + ".address"
+	value, err := c.Record(domainName, key)
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+}
+
+func (c *Cns) AddrVersion(domainName string, ticker string, version string) (string, error) {
+	key := "crypto." + s.ToUpper(ticker) + ".version." + s.ToUpper(version) + ".address"
+	value, err := c.Record(domainName, key)
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+}
+
+func (c *Cns) Email(domainName string) (string, error) {
+	key := "whois.email.value"
+	value, err := c.Record(domainName, key)
+	if err != nil {
+		return "", err
+	}
+
+	return value, nil
+}
+
+func (c *Cns) Resolver(domainName string) (common.Address, error) {
+	data, err := c.Data(domainName, []string{})
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	return data.Resolver, nil
+}
+
+// todo ipfs hash
+// todo http url (redirect)
+// todo dns records
+// todo all records
