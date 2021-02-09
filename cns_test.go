@@ -22,13 +22,26 @@ func TestNewCns(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestCnsData(t *testing.T) {
+func TestCnsDataValue(t *testing.T) {
 	t.Parallel()
 	testDomain := "brad.crypto"
 	expectedRecord := "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8"
 	data, err := cns.Data(testDomain, []string{"crypto.ETH.address"})
 	assert.Nil(t, err)
 	assert.Equal(t, data.Values[0], expectedRecord)
+}
+
+func TestCnsData(t *testing.T) {
+	t.Parallel()
+	testDomain := "brad.crypto"
+	expectedRecord := "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8"
+	expectedOwner := common.HexToAddress("0x8aaD44321A86b170879d7A244c1e8d360c99DdA8")
+	expectedResolver := common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
+	data, err := cns.Data(testDomain, []string{"crypto.ETH.address"})
+	assert.Nil(t, err)
+	assert.Equal(t, data.Values[0], expectedRecord)
+	assert.Equal(t, expectedOwner, data.Owner)
+	assert.Equal(t, expectedResolver, data.Resolver)
 }
 
 func TestCnsEmptyDataValues(t *testing.T) {
@@ -103,7 +116,16 @@ func TestEmail(t *testing.T) {
 func TestResolver(t *testing.T) {
 	t.Parallel()
 	testDomain := "reseller-test-mago017.crypto"
-	expectedRecord := common.HexToAddress("0x878bC2f3f717766ab69C0A5f9A6144931E61AEd3")
+	expectedRecord := "0x878bC2f3f717766ab69C0A5f9A6144931E61AEd3"
+	record, err := cns.Resolver(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestOwner(t *testing.T) {
+	t.Parallel()
+	testDomain := "reseller-test-paul019.crypto"
+	expectedRecord := "0xA1cAc442Be6673C49f8E74FFC7c4fD746f3cBD0D"
 	record, err := cns.Resolver(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
@@ -114,6 +136,42 @@ func TestAddrVersion(t *testing.T) {
 	testDomain := "udtestdev-usdt.crypto"
 	expectedRecord := "0xe7474D07fD2FA286e7e0aa23cd107F8379085037"
 	record, err := cns.AddrVersion(testDomain, "USDT", "ERC20")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestIpfs(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-ipfs.crypto"
+	expectedRecord := "QmVJ26hBrwwNAPVmLavEFXDUunNDXeFSeMPmHuPxKe6dJv"
+	record, err := cns.IpfsHash(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestIpfsLegacy(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-ipfs-legacy.crypto"
+	expectedRecord := "QmT9qk3CRYbFDWpDFYeAv8T8H1gnongwKhh5J68NLkLir6"
+	record, err := cns.IpfsHash(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestHttpUrl(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-redirect.crypto"
+	expectedRecord := "https://example.com/home.html"
+	record, err := cns.HttpUrl(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestHttpUrlLegacy(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-redirect-legacy.crypto"
+	expectedRecord := "https://legacy-example.com/home.html"
+	record, err := cns.HttpUrl(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
 }

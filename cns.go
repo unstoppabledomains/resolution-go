@@ -111,18 +111,53 @@ func (c *Cns) Email(domainName string) (string, error) {
 	return value, nil
 }
 
-func (c *Cns) Resolver(domainName string) (common.Address, error) {
+func (c *Cns) Resolver(domainName string) (string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
-		return common.Address{}, err
+		return "", err
 	}
 
-	return data.Resolver, nil
+	return data.Resolver.String(), nil
 }
 
-// todo return string instead of Address type
-// todo add owner
-// todo ipfs hash
-// todo http url (redirect)
+func (c *Cns) Owner(domainName string) (string, error) {
+	data, err := c.Data(domainName, []string{})
+	if err != nil {
+		return "", err
+	}
+
+	return data.Owner.String(), nil
+}
+
+func (c *Cns) IpfsHash(domainName string) (string, error) {
+	data, err := c.Data(domainName, []string{"dweb.ipfs.hash", "ipfs.html.value"})
+	if err != nil {
+		return "", err
+	}
+	if data.Values[0] != "" {
+		return data.Values[0], nil
+	}
+	if data.Values[1] != "" {
+		return data.Values[1], nil
+	}
+
+	return "", nil
+}
+
+func (c *Cns) HttpUrl(domainName string) (string, error) {
+	data, err := c.Data(domainName, []string{"browser.redirect_url", "ipfs.redirect_domain.value"})
+	if err != nil {
+		return "", err
+	}
+	if data.Values[0] != "" {
+		return data.Values[0], nil
+	}
+	if data.Values[1] != "" {
+		return data.Values[1], nil
+	}
+
+	return "", nil
+}
+
 // todo dns records
 // todo all records
