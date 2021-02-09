@@ -120,6 +120,8 @@ func (c *Cns) Resolver(domainName string) (common.Address, error) {
 	return data.Resolver, nil
 }
 
+// todo return string instead of Address type
+// todo add owner
 // todo ipfs hash
 // todo http url (redirect)
 // todo dns records
