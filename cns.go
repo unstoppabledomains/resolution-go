@@ -2,40 +2,44 @@ package resolution
 
 import (
 	"github.com/DeRain/resolution-go/cns/contracts/proxyreader"
-	"github.com/DeRain/resolution-go/cns/supportedkeys"
+	"github.com/DeRain/resolution-go/cns/contracts/resolver"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	kns "github.com/jgimeno/go-namehash"
 	"github.com/spf13/viper"
+	"math/big"
 	s "strings"
 )
 
-const DefaultProvider = "https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711"
-
-var zeroAddress = common.HexToAddress("0x0")
-var proxyReaderMainnetAddress = common.HexToAddress("0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5")
-
 type Cns struct {
-	ProxyReader   *proxyreader.Contract
-	SupportedKeys *viper.Viper
+	ProxyReader         *proxyreader.Contract
+	SupportedKeysConfig *viper.Viper
+	ContractBackend     bind.ContractBackend
 }
 
+const defaultProvider = "https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711"
+const advancedEventsStartingBlock uint64 = 9923764
+
+var zeroAddress = common.HexToAddress("0x0")
+var mainnetProxyReader = common.HexToAddress("0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5")
+var mainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
+
 func NewCns(backend bind.ContractBackend) (*Cns, error) {
-	contract, err := proxyreader.NewContract(proxyReaderMainnetAddress, backend)
+	contract, err := proxyreader.NewContract(mainnetProxyReader, backend)
 	if err != nil {
 		return nil, err
 	}
-	supportedKeys, err := supportedkeys.NewConfig()
+	supportedKeysConfig, err := NewSupportedKeysConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Cns{ProxyReader: contract, SupportedKeys: supportedKeys}, nil
+	return &Cns{ProxyReader: contract, SupportedKeysConfig: supportedKeysConfig, ContractBackend: backend}, nil
 }
 
 func NewCnsWithDefaultBackend() (*Cns, error) {
-	backend, err := ethclient.Dial(DefaultProvider)
+	backend, err := ethclient.Dial(defaultProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +73,7 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 	return &data, nil
 }
 
+// todo return map
 func (c *Cns) Records(domainName string, keys []string) ([]string, error) {
 	data, err := c.Data(domainName, keys)
 	if err != nil {
@@ -166,5 +171,58 @@ func (c *Cns) HttpUrl(domainName string) (string, error) {
 	return "", nil
 }
 
+func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
+	data, err := c.Data(domainName, []string{})
+	if err != nil {
+		return nil, err
+	}
+	if data.Resolver == mainnetDefaultResolver {
+		resolverContract, err := resolver.NewContract(data.Resolver, c.ContractBackend)
+		if err != nil {
+			return nil, err
+		}
+		normalizedName := NormalizeName(domainName)
+		namehash := kns.NameHash(normalizedName)
+		resetRecordsIterator, err := resolverContract.FilterResetRecords(&bind.FilterOpts{Start: advancedEventsStartingBlock}, []*big.Int{namehash.Big()})
+		if err != nil {
+			return nil, err
+		}
+		newKeyEventsStartingBlock := advancedEventsStartingBlock
+		for resetRecordsIterator.Next() {
+			if resetRecordsIterator.Error() != nil {
+				return nil, err
+			}
+			newKeyEventsStartingBlock = resetRecordsIterator.Event.Raw.BlockNumber
+		}
+		var allKeys []string
+		newKeyIterator, err := resolverContract.FilterNewKey(&bind.FilterOpts{Start: newKeyEventsStartingBlock}, []*big.Int{namehash.Big()}, []string{})
+		if err != nil {
+			return nil, err
+		}
+		for newKeyIterator.Next() {
+			if newKeyIterator.Error() != nil {
+				return nil, err
+			}
+			allKeys = append(allKeys, newKeyIterator.Event.Key)
+		}
+		data, err := c.Data(domainName, allKeys)
+		if err != nil {
+			return nil, err
+		}
+		// todo handle all keys - zero
+		allRecords := make(map[string]string)
+		for index, key := range allKeys {
+			allRecords[key] = data.Values[index]
+		}
+		return allRecords, nil
+	}
+	// todo handle legacy resolver
+	// todo filter keys with empty values
+
+	return nil, err
+}
+
+// todo chat id
+// todo chat pk
 // todo dns records
 // todo all records

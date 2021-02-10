@@ -1,21 +1,21 @@
-package supportedkeys
+package resolution
 
 import (
 	"bytes"
 	"github.com/spf13/viper"
 )
 
-func NewConfig() (*viper.Viper, error) {
+func NewSupportedKeysConfig() (*viper.Viper, error) {
 	config := viper.New()
 	config.SetConfigType("json")
-	err := config.ReadConfig(bytes.NewBuffer(rawJson))
+	err := config.ReadConfig(bytes.NewBuffer(supportedKeysJson))
 	if err != nil {
 		return nil, err
 	}
 	return config, nil
 }
 
-var rawJson = []byte(`
+var supportedKeysJson = []byte(`
 {
     "version": "1.1.0",
     "keys": {

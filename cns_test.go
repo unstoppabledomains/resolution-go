@@ -17,7 +17,7 @@ func TestNewCnsWithDefaultProvider(t *testing.T) {
 
 func TestNewCns(t *testing.T) {
 	t.Parallel()
-	backend, _ := ethclient.Dial(DefaultProvider)
+	backend, _ := ethclient.Dial("https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711")
 	_, err := NewCns(backend)
 	assert.Nil(t, err)
 }
@@ -25,7 +25,7 @@ func TestNewCns(t *testing.T) {
 func TestNewCnsWithSupportedKeys(t *testing.T) {
 	t.Parallel()
 	cns, _ := NewCnsWithDefaultBackend()
-	deprecatedKeyName := cns.SupportedKeys.GetString("keys.crypto.ETH.address.deprecatedKeyName")
+	deprecatedKeyName := cns.SupportedKeysConfig.GetString("keys.crypto.ETH.address.deprecatedKeyName")
 	assert.Equal(t, "ETH", deprecatedKeyName)
 }
 
@@ -181,4 +181,20 @@ func TestHttpUrlLegacy(t *testing.T) {
 	record, err := cns.HttpUrl(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
+}
+
+func TestAllRecords(t *testing.T) {
+	t.Parallel()
+	testDomain := "brad.crypto"
+	expectedRecords := map[string]string{
+		"crypto.BTC.address":         "bc1q359khn0phg58xgezyqsuuaha28zkwx047c0c3y",
+		"crypto.ETH.address":         "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8",
+		"gundb.public_key.value":     "pqeBHabDQdCHhbdivgNEc74QO-x8CPGXq4PKWgfIzhY.7WJR5cZFuSyh1bFwx0GWzjmrim0T5Y6Bp0SSK0im3nI",
+		"gundb.username.value":       "0x8912623832e174f2eb1f59cc3b587444d619376ad5bf10070e937e0dc22b9ffb2e3ae059e6ebf729f87746b2f71e5d88ec99c1fb3c7c49b8617e2520d474c48e1c",
+		"ipfs.html.value":            "Qme54oEzRkgooJbCDr78vzKAWcv6DDEZqRhhDyDtzgrZP6",
+		"ipfs.redirect_domain.value": "https://abbfe6z95qov3d40hf6j30g7auo7afhp.mypinata.cloud/ipfs/Qme54oEzRkgooJbCDr78vzKAWcv6DDEZqRhhDyDtzgrZP6",
+	}
+	allRecords, err := cns.AllRecords(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, allRecords)
 }
