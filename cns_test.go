@@ -22,6 +22,13 @@ func TestNewCns(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestNewCnsWithSupportedKeys(t *testing.T) {
+	t.Parallel()
+	cns, _ := NewCnsWithDefaultBackend()
+	deprecatedKeyName := cns.SupportedKeys.GetString("keys.crypto.ETH.address.deprecatedKeyName")
+	assert.Equal(t, "ETH", deprecatedKeyName)
+}
+
 func TestCnsDataValue(t *testing.T) {
 	t.Parallel()
 	testDomain := "brad.crypto"

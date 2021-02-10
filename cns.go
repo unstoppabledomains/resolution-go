@@ -2,10 +2,12 @@ package resolution
 
 import (
 	"github.com/DeRain/resolution-go/cns/contracts/proxyreader"
+	"github.com/DeRain/resolution-go/cns/supportedkeys"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	kns "github.com/jgimeno/go-namehash"
+	"github.com/spf13/viper"
 	s "strings"
 )
 
@@ -15,7 +17,8 @@ var zeroAddress = common.HexToAddress("0x0")
 var proxyReaderMainnetAddress = common.HexToAddress("0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5")
 
 type Cns struct {
-	ProxyReader *proxyreader.Contract
+	ProxyReader   *proxyreader.Contract
+	SupportedKeys *viper.Viper
 }
 
 func NewCns(backend bind.ContractBackend) (*Cns, error) {
@@ -23,8 +26,12 @@ func NewCns(backend bind.ContractBackend) (*Cns, error) {
 	if err != nil {
 		return nil, err
 	}
+	supportedKeys, err := supportedkeys.NewConfig()
+	if err != nil {
+		return nil, err
+	}
 
-	return &Cns{ProxyReader: contract}, nil
+	return &Cns{ProxyReader: contract, SupportedKeys: supportedKeys}, nil
 }
 
 func NewCnsWithDefaultBackend() (*Cns, error) {
