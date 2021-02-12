@@ -5,6 +5,5 @@ go 1.15
 require (
 	github.com/ethereum/go-ethereum v1.9.25
 	github.com/jgimeno/go-namehash v0.0.0-20180808144722-2773b36cc1f8
-	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 )

@@ -7,15 +7,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	kns "github.com/jgimeno/go-namehash"
-	"github.com/spf13/viper"
 	"math/big"
 	s "strings"
 )
 
 type Cns struct {
-	ProxyReader         *proxyreader.Contract
-	SupportedKeysConfig *viper.Viper
-	ContractBackend     bind.ContractBackend
+	ProxyReader     *proxyreader.Contract
+	SupportedKeys   SupportedKeys
+	ContractBackend bind.ContractBackend
 }
 
 const defaultProvider = "https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711"
@@ -30,12 +29,12 @@ func NewCns(backend bind.ContractBackend) (*Cns, error) {
 	if err != nil {
 		return nil, err
 	}
-	supportedKeysConfig, err := NewSupportedKeysConfig()
+	supportedKeys, err := NewSupportedKeys()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Cns{ProxyReader: contract, SupportedKeysConfig: supportedKeysConfig, ContractBackend: backend}, nil
+	return &Cns{ProxyReader: contract, SupportedKeys: supportedKeys, ContractBackend: backend}, nil
 }
 
 func NewCnsWithDefaultBackend() (*Cns, error) {
@@ -176,6 +175,7 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	var allKeys []string
 	if data.Resolver == mainnetDefaultResolver {
 		resolverContract, err := resolver.NewContract(data.Resolver, c.ContractBackend)
 		if err != nil {
@@ -194,7 +194,6 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 			}
 			newKeyEventsStartingBlock = resetRecordsIterator.Event.Raw.BlockNumber
 		}
-		var allKeys []string
 		newKeyIterator, err := resolverContract.FilterNewKey(&bind.FilterOpts{Start: newKeyEventsStartingBlock}, []*big.Int{namehash.Big()}, []string{})
 		if err != nil {
 			return nil, err
@@ -205,24 +204,30 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 			}
 			allKeys = append(allKeys, newKeyIterator.Event.Key)
 		}
-		data, err := c.Data(domainName, allKeys)
-		if err != nil {
-			return nil, err
+		if len(allKeys) == 0 {
+			for key := range c.SupportedKeys {
+				allKeys = append(allKeys, key)
+			}
 		}
-		// todo handle all keys - zero
-		allRecords := make(map[string]string)
-		for index, key := range allKeys {
-			allRecords[key] = data.Values[index]
+	} else {
+		for key := range c.SupportedKeys {
+			allKeys = append(allKeys, key)
 		}
-		return allRecords, nil
 	}
-	// todo handle legacy resolver
-	// todo filter keys with empty values
+	recordsData, err := c.Data(domainName, allKeys)
+	if err != nil {
+		return nil, err
+	}
+	allRecords := make(map[string]string)
+	for index, key := range allKeys {
+		if len(recordsData.Values[index]) > 0 {
+			allRecords[key] = recordsData.Values[index]
+		}
+	}
 
-	return nil, err
+	return allRecords, nil
 }
 
 // todo chat id
 // todo chat pk
 // todo dns records
-// todo all records

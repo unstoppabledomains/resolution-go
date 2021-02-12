@@ -5,10 +5,10 @@ import (
 	"testing"
 )
 
-func TestNewSupportedKeysConfig(t *testing.T) {
+func TestNewSupportedKeys(t *testing.T) {
 	t.Parallel()
-	config, err := NewSupportedKeysConfig()
+	keys, err := NewSupportedKeys()
 	assert.Nil(t, err)
-	assert.Equal(t, "1.1.0", config.Get("version"))
-	assert.Equal(t, "BTC", config.Get("keys.crypto.BTC.address.deprecatedKeyName"))
+	assert.Equal(t, "ETH", keys["crypto.ETH.address"].DeprecatedKeyName)
+	assert.Equal(t, "BTC", keys["crypto.BTC.address"].DeprecatedKeyName)
 }
