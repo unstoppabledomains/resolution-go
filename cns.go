@@ -72,14 +72,16 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 	return &data, nil
 }
 
-// todo return map
-func (c *Cns) Records(domainName string, keys []string) ([]string, error) {
+func (c *Cns) Records(domainName string, keys []string) (map[string]string, error) {
 	data, err := c.Data(domainName, keys)
 	if err != nil {
 		return nil, err
 	}
-
-	return data.Values, nil
+	allRecords := make(map[string]string)
+	for index, key := range keys {
+		allRecords[key] = data.Values[index]
+	}
+	return allRecords, nil
 }
 
 func (c *Cns) Record(domainName string, key string) (string, error) {

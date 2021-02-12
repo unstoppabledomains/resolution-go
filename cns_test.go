@@ -78,10 +78,10 @@ func TestCnsDomainNotConfigured(t *testing.T) {
 func TestCnsRecords(t *testing.T) {
 	t.Parallel()
 	testDomain := "brad.crypto"
-	expectedRecords := []string{"0x8aaD44321A86b170879d7A244c1e8d360c99DdA8", "bc1q359khn0phg58xgezyqsuuaha28zkwx047c0c3y"}
+	expectedRecords := map[string]string{"crypto.ETH.address": "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8", "crypto.BTC.address": "bc1q359khn0phg58xgezyqsuuaha28zkwx047c0c3y"}
 	records, err := cns.Records(testDomain, []string{"crypto.ETH.address", "crypto.BTC.address"})
 	assert.Nil(t, err)
-	assert.ObjectsAreEqual(records, expectedRecords)
+	assert.Equal(t, records, expectedRecords)
 }
 
 func TestCnsRecord(t *testing.T) {
