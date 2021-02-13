@@ -5,6 +5,7 @@ import (
 )
 
 func TestNormalizeName(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		input  string
 		output string

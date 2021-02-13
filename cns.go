@@ -143,30 +143,30 @@ func (c *Cns) Owner(domainName string) (string, error) {
 }
 
 func (c *Cns) IpfsHash(domainName string) (string, error) {
-	data, err := c.Data(domainName, []string{"dweb.ipfs.hash", "ipfs.html.value"})
+	records, err := c.Records(domainName, []string{"dweb.ipfs.hash", "ipfs.html.value"})
 	if err != nil {
 		return "", err
 	}
-	if data.Values[0] != "" {
-		return data.Values[0], nil
+	if records["dweb.ipfs.hash"] != "" {
+		return records["dweb.ipfs.hash"], nil
 	}
-	if data.Values[1] != "" {
-		return data.Values[1], nil
+	if records["ipfs.html.value"] != "" {
+		return records["ipfs.html.value"], nil
 	}
 
 	return "", nil
 }
 
 func (c *Cns) HttpUrl(domainName string) (string, error) {
-	data, err := c.Data(domainName, []string{"browser.redirect_url", "ipfs.redirect_domain.value"})
+	records, err := c.Records(domainName, []string{"browser.redirect_url", "ipfs.redirect_domain.value"})
 	if err != nil {
 		return "", err
 	}
-	if data.Values[0] != "" {
-		return data.Values[0], nil
+	if records["browser.redirect_url"] != "" {
+		return records["browser.redirect_url"], nil
 	}
-	if data.Values[1] != "" {
-		return data.Values[1], nil
+	if records["ipfs.redirect_domain.value"] != "" {
+		return records["ipfs.redirect_domain.value"], nil
 	}
 
 	return "", nil
@@ -230,6 +230,4 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 	return allRecords, nil
 }
 
-// todo chat id
-// todo chat pk
 // todo dns records

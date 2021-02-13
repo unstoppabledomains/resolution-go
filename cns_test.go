@@ -198,3 +198,19 @@ func TestAllRecords(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, allRecords)
 }
+
+func TestAllRecordsStandardKeys(t *testing.T) {
+	t.Parallel()
+	testDomain := "monmouthcounty.crypto"
+	expectedRecords := map[string]string{
+		"crypto.BTC.address":         "3NwuV8nVT2VKbtCs8evChdiW6kHTHcVpdn",
+		"crypto.ETH.address":         "0x1C42088b82f6Fa5fB883A14240C4E066dDFf1517",
+		"crypto.LTC.address":         "MTnTNwKikiMi97Teq8XQRabL9SZ4HjnKNB",
+		"crypto.ADA.address":         "DdzFFzCqrhsfc3MQvjsLr9BHkaFYeE7BotyTATdETRoSPj6QPiotK4xpcFZk66KVmtr87tvUFTcbTHZRkcdbMR5Ss6jCfzCVtFRMB7WE",
+		"ipfs.html.value":            "QmYqX8D8SkaF5YcpaWMyi5xM43UEteFiSNKYsjLcdvCWud",
+		"ipfs.redirect_domain.value": "https://abbfe6z95qov3d40hf6j30g7auo7afhp.mypinata.cloud/ipfs/QmYqX8D8SkaF5YcpaWMyi5xM43UEteFiSNKYsjLcdvCWud",
+	}
+	allRecords, err := cns.AllRecords(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, allRecords)
+}
