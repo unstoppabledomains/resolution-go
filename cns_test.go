@@ -1,6 +1,7 @@
 package resolution
 
 import (
+	"github.com/DeRain/resolution-go/dnsrecords"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
@@ -111,7 +112,7 @@ func TestCnsAddrLowerCaseTicker(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestEmail(t *testing.T) {
+func TestCnsEmail(t *testing.T) {
 	t.Parallel()
 	testDomain := "reseller-test-paul019.crypto"
 	expectedRecord := "paul@unstoppabledomains.com"
@@ -120,7 +121,7 @@ func TestEmail(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestResolver(t *testing.T) {
+func TestCnsResolver(t *testing.T) {
 	t.Parallel()
 	testDomain := "reseller-test-mago017.crypto"
 	expectedRecord := "0x878bC2f3f717766ab69C0A5f9A6144931E61AEd3"
@@ -129,7 +130,7 @@ func TestResolver(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestOwner(t *testing.T) {
+func TestCnsOwner(t *testing.T) {
 	t.Parallel()
 	testDomain := "reseller-test-paul019.crypto"
 	expectedRecord := "0xA1cAc442Be6673C49f8E74FFC7c4fD746f3cBD0D"
@@ -138,7 +139,7 @@ func TestOwner(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestAddrVersion(t *testing.T) {
+func TestCnsAddrVersion(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-usdt.crypto"
 	expectedRecord := "0xe7474D07fD2FA286e7e0aa23cd107F8379085037"
@@ -147,7 +148,7 @@ func TestAddrVersion(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestIpfs(t *testing.T) {
+func TestCnsIpfs(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-ipfs.crypto"
 	expectedRecord := "QmVJ26hBrwwNAPVmLavEFXDUunNDXeFSeMPmHuPxKe6dJv"
@@ -156,7 +157,7 @@ func TestIpfs(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestIpfsLegacy(t *testing.T) {
+func TestCnsIpfsLegacy(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-ipfs-legacy.crypto"
 	expectedRecord := "QmT9qk3CRYbFDWpDFYeAv8T8H1gnongwKhh5J68NLkLir6"
@@ -165,7 +166,7 @@ func TestIpfsLegacy(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestHttpUrl(t *testing.T) {
+func TestCnsHttpUrl(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-redirect.crypto"
 	expectedRecord := "https://example.com/home.html"
@@ -174,7 +175,7 @@ func TestHttpUrl(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestHttpUrlLegacy(t *testing.T) {
+func TestCnsHttpUrlLegacy(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-redirect-legacy.crypto"
 	expectedRecord := "https://legacy-example.com/home.html"
@@ -183,7 +184,7 @@ func TestHttpUrlLegacy(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestAllRecords(t *testing.T) {
+func TestCnsAllRecords(t *testing.T) {
 	t.Parallel()
 	testDomain := "brad.crypto"
 	expectedRecords := map[string]string{
@@ -199,7 +200,7 @@ func TestAllRecords(t *testing.T) {
 	assert.Equal(t, expectedRecords, allRecords)
 }
 
-func TestAllRecordsStandardKeys(t *testing.T) {
+func TestCnsAllRecordsStandardKeys(t *testing.T) {
 	t.Parallel()
 	testDomain := "monmouthcounty.crypto"
 	expectedRecords := map[string]string{
@@ -213,4 +214,39 @@ func TestAllRecordsStandardKeys(t *testing.T) {
 	allRecords, err := cns.AllRecords(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, allRecords)
+}
+
+func TestCnsDnsA(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-dns.crypto"
+	expectedRecords := []dnsrecords.Record{
+		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.1"},
+		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.2"},
+	}
+	dnsRecords, err := cns.Dns(testDomain, []dnsrecords.Type{"A"})
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, expectedRecords, dnsRecords)
+}
+
+func TestCnsDnsCname(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-dns-cname.crypto"
+	expectedRecords := []dnsrecords.Record{
+		{Type: dnsrecords.CNAME, TTL: 1111, Value: "example.com."},
+	}
+	dnsRecords, err := cns.Dns(testDomain, []dnsrecords.Type{"CNAME"})
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, expectedRecords, dnsRecords)
+}
+
+func TestCnsDnsGlobalTtl(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-dns-global-ttl.crypto"
+	expectedRecords := []dnsrecords.Record{
+		{Type: dnsrecords.A, TTL: 1000, Value: "10.0.0.1"},
+		{Type: dnsrecords.A, TTL: 1000, Value: "10.0.0.2"},
+	}
+	dnsRecords, err := cns.Dns(testDomain, []dnsrecords.Type{"A"})
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, expectedRecords, dnsRecords)
 }

@@ -3,6 +3,7 @@ package resolution
 import (
 	"github.com/DeRain/resolution-go/cns/contracts/proxyreader"
 	"github.com/DeRain/resolution-go/cns/contracts/resolver"
+	"github.com/DeRain/resolution-go/dnsrecords"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -56,6 +57,7 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 	Values   []string
 }, error) {
 	normalizedName := NormalizeName(domainName)
+	// todo validate domain name
 	namehash := kns.NameHash(normalizedName)
 	tokenId := namehash.Big()
 	data, err := c.ProxyReader.GetData(&bind.CallOpts{Pending: false}, keys, tokenId)
@@ -97,6 +99,7 @@ func (c *Cns) Record(domainName string, key string) (string, error) {
 }
 
 func (c *Cns) Addr(domainName string, ticker string) (string, error) {
+	// todo replace concat by string builder
 	key := "crypto." + s.ToUpper(ticker) + ".address"
 	value, err := c.Record(domainName, key)
 	if err != nil {
@@ -106,6 +109,7 @@ func (c *Cns) Addr(domainName string, ticker string) (string, error) {
 }
 
 func (c *Cns) AddrVersion(domainName string, ticker string, version string) (string, error) {
+	// todo replace concat by string builder
 	key := "crypto." + s.ToUpper(ticker) + ".version." + s.ToUpper(version) + ".address"
 	value, err := c.Record(domainName, key)
 	if err != nil {
@@ -230,4 +234,19 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 	return allRecords, nil
 }
 
-// todo dns records
+func (c *Cns) Dns(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
+	keys, err := DnsTypesToCryptoRecordKeys(types)
+	if err != nil {
+		return nil, err
+	}
+	records, err := c.Records(domainName, keys)
+	if err != nil {
+		return nil, err
+	}
+	dnsRecords, err := CryptoRecordsToDns(records)
+	if err != nil {
+		return nil, err
+	}
+
+	return dnsRecords, nil
+}
