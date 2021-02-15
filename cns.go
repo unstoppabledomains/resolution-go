@@ -18,15 +18,15 @@ type Cns struct {
 	ContractBackend bind.ContractBackend
 }
 
-const defaultProvider = "https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711"
-const advancedEventsStartingBlock uint64 = 9923764
+const cnsProvider = "https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711"
+const cnsEventsStartingBlock uint64 = 9923764
 
-var zeroAddress = common.HexToAddress("0x0")
-var mainnetProxyReader = common.HexToAddress("0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5")
-var mainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
+var cnsZeroAddress = common.HexToAddress("0x0")
+var cnsMainnetProxyReader = common.HexToAddress("0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5")
+var cnsMainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
 
 func NewCns(backend bind.ContractBackend) (*Cns, error) {
-	contract, err := proxyreader.NewContract(mainnetProxyReader, backend)
+	contract, err := proxyreader.NewContract(cnsMainnetProxyReader, backend)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func NewCns(backend bind.ContractBackend) (*Cns, error) {
 }
 
 func NewCnsWithDefaultBackend() (*Cns, error) {
-	backend, err := ethclient.Dial(defaultProvider)
+	backend, err := ethclient.Dial(cnsProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -64,10 +64,10 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 	if err != nil {
 		return nil, err
 	}
-	if data.Owner == zeroAddress {
+	if data.Owner == cnsZeroAddress {
 		return nil, &DomainNotRegistered{DomainName: normalizedName}
 	}
-	if data.Resolver == zeroAddress {
+	if data.Resolver == cnsZeroAddress {
 		return nil, &DomainNotConfigured{DomainName: normalizedName}
 	}
 
@@ -182,18 +182,18 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 		return nil, err
 	}
 	var allKeys []string
-	if data.Resolver == mainnetDefaultResolver {
+	if data.Resolver == cnsMainnetDefaultResolver {
 		resolverContract, err := resolver.NewContract(data.Resolver, c.ContractBackend)
 		if err != nil {
 			return nil, err
 		}
 		normalizedName := NormalizeName(domainName)
 		namehash := kns.NameHash(normalizedName)
-		resetRecordsIterator, err := resolverContract.FilterResetRecords(&bind.FilterOpts{Start: advancedEventsStartingBlock}, []*big.Int{namehash.Big()})
+		resetRecordsIterator, err := resolverContract.FilterResetRecords(&bind.FilterOpts{Start: cnsEventsStartingBlock}, []*big.Int{namehash.Big()})
 		if err != nil {
 			return nil, err
 		}
-		newKeyEventsStartingBlock := advancedEventsStartingBlock
+		newKeyEventsStartingBlock := cnsEventsStartingBlock
 		for resetRecordsIterator.Next() {
 			if resetRecordsIterator.Error() != nil {
 				return nil, err
