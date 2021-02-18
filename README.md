@@ -1,2 +1,2 @@
-# Resolve .crypto domains in golang
+# Resolve .crypto and .zil domains in golang
 
