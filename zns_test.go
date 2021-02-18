@@ -1,6 +1,7 @@
 package resolution
 
 import (
+	"github.com/DeRain/resolution-go/dnsrecords"
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -69,6 +70,13 @@ func TestZnsRecords(t *testing.T) {
 	assert.Equal(t, expectedRecords, records)
 }
 
+func TestZnsNoRecords(t *testing.T) {
+	t.Parallel()
+	records, err := zns.Records("brad.zil", []string{})
+	assert.Nil(t, err)
+	assert.Empty(t, records)
+}
+
 func TestZnsEmptyRecords(t *testing.T) {
 	t.Parallel()
 	expectedRecords := map[string]string{
@@ -110,4 +118,82 @@ func TestZnsResolver(t *testing.T) {
 	resolver, err := zns.Resolver("brad.zil")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResolver, resolver)
+}
+
+func TestZnsAddr(t *testing.T) {
+	t.Parallel()
+	expectedRecord := "0x45b31e01AA6f42F0549aD482BE81635ED3149abb"
+	record, err := zns.Addr("brad.zil", "ETH")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestZnsAddrVersion(t *testing.T) {
+	t.Parallel()
+	expectedRecord := "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8"
+	record, err := zns.AddrVersion("ffffffff.zil", "USDT", "ERC20")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestZnsEmail(t *testing.T) {
+	t.Parallel()
+	expectedEmail := "derainberk@gmail.com"
+	email, err := zns.Email("ffffffff.zil")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedEmail, email)
+}
+
+func TestZnsAllRecords(t *testing.T) {
+	t.Parallel()
+	expectedRecords := map[string]string{
+		"ipfs.html.value":            "QmVaAtQbi3EtsfpKoLzALm6vXphdi2KjMgxEDKeGg6wHuK",
+		"crypto.BCH.address":         "qrq4sk49ayvepqz7j7ep8x4km2qp8lauvcnzhveyu6",
+		"crypto.BTC.address":         "1EVt92qQnaLDcmVFtHivRJaunG2mf2C3mB",
+		"crypto.ETH.address":         "0x45b31e01AA6f42F0549aD482BE81635ED3149abb",
+		"crypto.LTC.address":         "LetmswTW3b7dgJ46mXuiXMUY17XbK29UmL",
+		"crypto.XMR.address":         "447d7TVFkoQ57k3jm3wGKoEAkfEym59mK96Xw5yWamDNFGaLKW5wL2qK5RMTDKGSvYfQYVN7dLSrLdkwtKH3hwbSCQCu26d",
+		"crypto.ZEC.address":         "t1h7ttmQvWCSH1wfrcmvT4mZJfGw2DgCSqV",
+		"crypto.ZIL.address":         "zil1yu5u4hegy9v3xgluweg4en54zm8f8auwxu0xxj",
+		"crypto.DASH.address":        "XnixreEBqFuSLnDSLNbfqMH1GsZk7cgW4j",
+		"ipfs.redirect_domain.value": "www.unstoppabledomains.com",
+	}
+	records, err := zns.AllRecords("brad.zil")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, records)
+}
+
+func TestZnsIpfs(t *testing.T) {
+	t.Parallel()
+	testDomain := "ffffffff.zil"
+	expectedRecord := "Qme54oEzRkgooJbCDr78vzKAWcv6DDEZqRhhDyDtzgrZP6"
+	record, err := zns.IpfsHash(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestZnsHttpUrl(t *testing.T) {
+	t.Parallel()
+	testDomain := "ffffffff.zil"
+	expectedRecord := "https://example.com/home.html"
+	record, err := zns.HttpUrl(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+// todo Configure DNS records for .zil domain
+func TestZnsDns(t *testing.T) {
+	t.Parallel()
+	testDomain := "ffffffff.zil"
+	dnsRecords, err := zns.Dns(testDomain, []dnsrecords.Type{"A"})
+	assert.Nil(t, err)
+	assert.Empty(t, dnsRecords)
+}
+
+func TestZnsEmptyDns(t *testing.T) {
+	t.Parallel()
+	testDomain := "ffffffff.zil"
+	dnsRecords, err := zns.Dns(testDomain, []dnsrecords.Type{})
+	assert.Nil(t, err)
+	assert.Empty(t, dnsRecords)
 }

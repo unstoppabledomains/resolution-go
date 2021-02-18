@@ -14,6 +14,14 @@ func TestDnsTypesToRecordKeys(t *testing.T) {
 	assert.Equal(t, expectedRecords, records)
 }
 
+func TestEmptyDnsTypesToRecordKeys(t *testing.T) {
+	t.Parallel()
+	expectedRecords := []string{"dns.ttl"}
+	records, err := DnsTypesToCryptoRecordKeys([]dnsrecords.Type{})
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, records)
+}
+
 func TestCryptoRecordsToDns(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []dnsrecords.Record{
@@ -114,4 +122,11 @@ func TestCryptoRecordsToDnsInvalidRecordTTL(t *testing.T) {
 	})
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, expectedRecords, records)
+}
+
+func TestCryptoRecordsToDnsEmpty(t *testing.T) {
+	t.Parallel()
+	records, err := CryptoRecordsToDns(map[string]string{})
+	assert.Nil(t, err)
+	assert.Empty(t, records)
 }

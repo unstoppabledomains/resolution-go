@@ -2,8 +2,9 @@ package resolution
 
 import (
 	"encoding/json"
+	"github.com/DeRain/resolution-go/dnsrecords"
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
-	"strings"
+	s "strings"
 )
 
 const znsDefaultProvider = "https://api.zilliqa.com"
@@ -73,7 +74,7 @@ func (z *Zns) State(domainName string) (*znsDomainState, error) {
 		return nil, &DomainNotConfigured{DomainName: domainName}
 	}
 
-	response, err = z.Provider.GetSmartContractSubState(strings.TrimPrefix(resolver, "0x"), znsContractField, []string{})
+	response, err = z.Provider.GetSmartContractSubState(s.TrimPrefix(resolver, "0x"), znsContractField, []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -124,4 +125,89 @@ func (z *Zns) Resolver(domainName string) (string, error) {
 	}
 
 	return state.Resolver, err
+}
+
+func (z *Zns) Addr(domainName string, ticker string) (string, error) {
+	key := "crypto." + s.ToUpper(ticker) + ".address"
+	value, err := z.Record(domainName, key)
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+}
+
+func (z *Zns) AddrVersion(domainName string, ticker string, version string) (string, error) {
+	// todo replace concat by string builder
+	key := "crypto." + s.ToUpper(ticker) + ".version." + s.ToUpper(version) + ".address"
+	value, err := z.Record(domainName, key)
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+}
+
+func (z *Zns) Email(domainName string) (string, error) {
+	key := "whois.email.value"
+	value, err := z.Record(domainName, key)
+	if err != nil {
+		return "", err
+	}
+
+	return value, nil
+}
+
+func (z *Zns) AllRecords(domainName string) (map[string]string, error) {
+	state, err := z.State(domainName)
+	if err != nil {
+		return nil, err
+	}
+
+	return state.Records, err
+}
+
+func (z *Zns) IpfsHash(domainName string) (string, error) {
+	records, err := z.Records(domainName, []string{"dweb.ipfs.hash", "ipfs.html.value"})
+	if err != nil {
+		return "", err
+	}
+	if records["dweb.ipfs.hash"] != "" {
+		return records["dweb.ipfs.hash"], nil
+	}
+	if records["ipfs.html.value"] != "" {
+		return records["ipfs.html.value"], nil
+	}
+
+	return "", nil
+}
+
+func (z *Zns) HttpUrl(domainName string) (string, error) {
+	records, err := z.Records(domainName, []string{"browser.redirect_url", "ipfs.redirect_domain.value"})
+	if err != nil {
+		return "", err
+	}
+	if records["browser.redirect_url"] != "" {
+		return records["browser.redirect_url"], nil
+	}
+	if records["ipfs.redirect_domain.value"] != "" {
+		return records["ipfs.redirect_domain.value"], nil
+	}
+
+	return "", nil
+}
+
+func (z *Zns) Dns(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
+	keys, err := DnsTypesToCryptoRecordKeys(types)
+	if err != nil {
+		return nil, err
+	}
+	records, err := z.Records(domainName, keys)
+	if err != nil {
+		return nil, err
+	}
+	dnsRecords, err := CryptoRecordsToDns(records)
+	if err != nil {
+		return nil, err
+	}
+
+	return dnsRecords, nil
 }

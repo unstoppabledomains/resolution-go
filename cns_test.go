@@ -85,6 +85,14 @@ func TestCnsRecords(t *testing.T) {
 	assert.Equal(t, records, expectedRecords)
 }
 
+func TestCnsNoRecords(t *testing.T) {
+	t.Parallel()
+	testDomain := "brad.crypto"
+	records, err := cns.Records(testDomain, []string{})
+	assert.Nil(t, err)
+	assert.Empty(t, records)
+}
+
 func TestCnsEmptyRecords(t *testing.T) {
 	t.Parallel()
 	testDomain := "brad.crypto"
