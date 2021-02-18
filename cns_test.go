@@ -85,6 +85,15 @@ func TestCnsRecords(t *testing.T) {
 	assert.Equal(t, records, expectedRecords)
 }
 
+func TestCnsEmptyRecords(t *testing.T) {
+	t.Parallel()
+	testDomain := "brad.crypto"
+	expectedRecords := map[string]string{"record-not-exist": "", "crypto.ETH.address": "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8", "crypto.BTC.address": "bc1q359khn0phg58xgezyqsuuaha28zkwx047c0c3y"}
+	records, err := cns.Records(testDomain, []string{"record-not-exist", "crypto.ETH.address", "crypto.BTC.address"})
+	assert.Nil(t, err)
+	assert.Equal(t, records, expectedRecords)
+}
+
 func TestCnsRecord(t *testing.T) {
 	t.Parallel()
 	testDomain := "brad.crypto"
@@ -92,6 +101,14 @@ func TestCnsRecord(t *testing.T) {
 	record, err := cns.Record(testDomain, "crypto.ETH.address")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
+}
+
+func TestCnsEmptyRecord(t *testing.T) {
+	t.Parallel()
+	testDomain := "brad.crypto"
+	record, err := cns.Record(testDomain, "record-not-exist")
+	assert.Nil(t, err)
+	assert.Empty(t, record)
 }
 
 func TestCnsAddr(t *testing.T) {

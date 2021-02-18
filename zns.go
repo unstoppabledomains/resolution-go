@@ -11,12 +11,12 @@ const znsMainnetRegistry = "9611c53BE6d1b32058b2747bdeCECed7e1216793"
 const znsContractField = "records"
 const znsZeroAddress = "0x0000000000000000000000000000000000000000"
 
-type ZnsProvider interface {
-	GetSmartContractSubState(contractAddress string, params ...interface{}) (string, error)
-}
-
 type Zns struct {
 	Provider ZnsProvider
+}
+
+type ZnsProvider interface {
+	GetSmartContractSubState(contractAddress string, params ...interface{}) (string, error)
 }
 
 type registrySubState struct {
@@ -45,7 +45,8 @@ func NewZnsWithDefaultProvider() *Zns {
 	return &Zns{Provider: provider.NewProvider(znsDefaultProvider)}
 }
 
-func (z *Zns) State(domainName string, keys []string) (*znsDomainState, error) {
+func (z *Zns) State(domainName string) (*znsDomainState, error) {
+	// todo validate domain name
 	namehash, err := ZnsNameHash(domainName)
 	if err != nil {
 		return nil, err
@@ -72,7 +73,7 @@ func (z *Zns) State(domainName string, keys []string) (*znsDomainState, error) {
 		return nil, &DomainNotConfigured{DomainName: domainName}
 	}
 
-	response, err = z.Provider.GetSmartContractSubState(strings.TrimPrefix(resolver, "0x"), znsContractField, keys)
+	response, err = z.Provider.GetSmartContractSubState(strings.TrimPrefix(resolver, "0x"), znsContractField, []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -84,4 +85,43 @@ func (z *Zns) State(domainName string, keys []string) (*znsDomainState, error) {
 	records := resolverState.Result[znsContractField]
 
 	return &znsDomainState{Owner: owner, Resolver: resolver, Records: records}, nil
+}
+
+func (z *Zns) Records(domainName string, keys []string) (map[string]string, error) {
+	state, err := z.State(domainName)
+	if err != nil {
+		return nil, err
+	}
+	records := make(map[string]string, len(keys))
+	for _, recordKey := range keys {
+		records[recordKey] = state.Records[recordKey]
+	}
+
+	return records, err
+}
+
+func (z *Zns) Record(domainName string, key string) (string, error) {
+	records, err := z.Records(domainName, []string{key})
+	if err != nil {
+		return "", nil
+	}
+	return records[key], nil
+}
+
+func (z *Zns) Owner(domainName string) (string, error) {
+	state, err := z.State(domainName)
+	if err != nil {
+		return "", err
+	}
+
+	return state.Owner, err
+}
+
+func (z *Zns) Resolver(domainName string) (string, error) {
+	state, err := z.State(domainName)
+	if err != nil {
+		return "", err
+	}
+
+	return state.Resolver, err
 }

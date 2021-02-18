@@ -79,7 +79,7 @@ func (c *Cns) Records(domainName string, keys []string) (map[string]string, erro
 	if err != nil {
 		return nil, err
 	}
-	allRecords := make(map[string]string)
+	allRecords := make(map[string]string, len(keys))
 	for index, key := range keys {
 		allRecords[key] = data.Values[index]
 	}
@@ -87,15 +87,11 @@ func (c *Cns) Records(domainName string, keys []string) (map[string]string, erro
 }
 
 func (c *Cns) Record(domainName string, key string) (string, error) {
-	data, err := c.Data(domainName, []string{key})
+	records, err := c.Records(domainName, []string{key})
 	if err != nil {
 		return "", err
 	}
-	if len(data.Values) == 0 {
-		return "", nil
-	}
-
-	return data.Values[0], nil
+	return records[key], nil
 }
 
 func (c *Cns) Addr(domainName string, ticker string) (string, error) {

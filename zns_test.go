@@ -21,10 +21,9 @@ func TestNewZnsWithDefaultProvider(t *testing.T) {
 	assert.IsType(t, &Zns{Provider: nil}, zns)
 }
 
-// todo check edge cases
-func TestZnsState(t *testing.T) {
+func TestZnsStateAllRecords(t *testing.T) {
 	t.Parallel()
-	expectedRecord := map[string]string{
+	expectedRecords := map[string]string{
 		"ipfs.html.value":            "QmVaAtQbi3EtsfpKoLzALm6vXphdi2KjMgxEDKeGg6wHuK",
 		"crypto.BCH.address":         "qrq4sk49ayvepqz7j7ep8x4km2qp8lauvcnzhveyu6",
 		"crypto.BTC.address":         "1EVt92qQnaLDcmVFtHivRJaunG2mf2C3mB",
@@ -38,9 +37,77 @@ func TestZnsState(t *testing.T) {
 	}
 	expectedOwner := "0x2d418942dce1afa02d0733a2000c71b371a6ac07"
 	expectedResolver := "0xdac22230adfe4601f00631eae92df6d77f054891"
-	state, err := zns.State("brad.zil", []string{})
+	state, err := zns.State("brad.zil")
 	assert.Nil(t, err)
-	assert.Equal(t, expectedRecord, state.Records)
+	assert.Equal(t, expectedRecords, state.Records)
 	assert.Equal(t, expectedOwner, state.Owner)
 	assert.Equal(t, expectedResolver, state.Resolver)
+}
+
+func TestZnsStateDomainNotRegistered(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotRegistered
+	_, err := zns.State("long-not-registered-name.zil")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestZnsStateDomainNotConfigured(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotConfigured
+	_, err := zns.State("1010.zil")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestZnsRecords(t *testing.T) {
+	t.Parallel()
+	expectedRecords := map[string]string{
+		"ipfs.html.value":    "QmVaAtQbi3EtsfpKoLzALm6vXphdi2KjMgxEDKeGg6wHuK",
+		"crypto.BCH.address": "qrq4sk49ayvepqz7j7ep8x4km2qp8lauvcnzhveyu6",
+	}
+	records, err := zns.Records("brad.zil", []string{"ipfs.html.value", "crypto.BCH.address"})
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, records)
+}
+
+func TestZnsEmptyRecords(t *testing.T) {
+	t.Parallel()
+	expectedRecords := map[string]string{
+		"ipfs.html.value":    "QmVaAtQbi3EtsfpKoLzALm6vXphdi2KjMgxEDKeGg6wHuK",
+		"crypto.BCH.address": "qrq4sk49ayvepqz7j7ep8x4km2qp8lauvcnzhveyu6",
+		"key-not-exist":      "",
+	}
+	records, err := zns.Records("brad.zil", []string{"ipfs.html.value", "crypto.BCH.address", "key-not-exist"})
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, records)
+}
+
+func TestZnsRecord(t *testing.T) {
+	t.Parallel()
+	expectedRecord := "0x45b31e01AA6f42F0549aD482BE81635ED3149abb"
+	record, err := zns.Record("brad.zil", "crypto.ETH.address")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestZnsEmptyRecord(t *testing.T) {
+	t.Parallel()
+	record, err := zns.Record("brad.zil", "non-existent-key")
+	assert.Nil(t, err)
+	assert.Empty(t, record)
+}
+
+func TestZnsOwner(t *testing.T) {
+	t.Parallel()
+	expectedOwner := "0x2d418942dce1afa02d0733a2000c71b371a6ac07"
+	owner, err := zns.Owner("brad.zil")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedOwner, owner)
+}
+
+func TestZnsResolver(t *testing.T) {
+	t.Parallel()
+	expectedResolver := "0xdac22230adfe4601f00631eae92df6d77f054891"
+	resolver, err := zns.Resolver("brad.zil")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedResolver, resolver)
 }
