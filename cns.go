@@ -1,15 +1,16 @@
 package resolution
 
 import (
-	"github.com/DeRain/resolution-go/cns/contracts/proxyreader"
-	"github.com/DeRain/resolution-go/cns/contracts/resolver"
-	"github.com/DeRain/resolution-go/dnsrecords"
+	"math/big"
+	s "strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	kns "github.com/jgimeno/go-namehash"
-	"math/big"
-	s "strings"
+	"github.com/unstoppabledomains/resolution-go/cns/contracts/proxyreader"
+	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
+	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
 type Cns struct {

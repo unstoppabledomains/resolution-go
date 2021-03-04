@@ -1,10 +1,11 @@
 package resolution
 
 import (
-	"github.com/DeRain/resolution-go/dnsrecords"
+	"testing"
+
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
 var zns = NewZnsWithDefaultProvider()

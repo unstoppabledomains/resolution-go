@@ -1,11 +1,12 @@
 package resolution
 
 import (
-	"github.com/DeRain/resolution-go/dnsrecords"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
 var cns, _ = NewCnsWithDefaultBackend()
