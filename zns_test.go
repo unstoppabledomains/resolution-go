@@ -1,10 +1,11 @@
 package resolution
 
 import (
+	"testing"
+
 	"github.com/DeRain/resolution-go/dnsrecords"
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 var zns = NewZnsWithDefaultProvider()
@@ -172,11 +173,11 @@ func TestZnsIpfs(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestZnsHttpUrl(t *testing.T) {
+func TestZnsHTTPUrl(t *testing.T) {
 	t.Parallel()
 	testDomain := "ffffffff.zil"
 	expectedRecord := "https://example.com/home.html"
-	record, err := zns.HttpUrl(testDomain)
+	record, err := zns.HTTPUrl(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
 }
@@ -185,7 +186,7 @@ func TestZnsHttpUrl(t *testing.T) {
 func TestZnsDns(t *testing.T) {
 	t.Parallel()
 	testDomain := "ffffffff.zil"
-	dnsRecords, err := zns.Dns(testDomain, []dnsrecords.Type{"A"})
+	dnsRecords, err := zns.DNS(testDomain, []dnsrecords.Type{"A"})
 	assert.Nil(t, err)
 	assert.Empty(t, dnsRecords)
 }
@@ -193,7 +194,7 @@ func TestZnsDns(t *testing.T) {
 func TestZnsEmptyDns(t *testing.T) {
 	t.Parallel()
 	testDomain := "ffffffff.zil"
-	dnsRecords, err := zns.Dns(testDomain, []dnsrecords.Type{})
+	dnsRecords, err := zns.DNS(testDomain, []dnsrecords.Type{})
 	assert.Nil(t, err)
 	assert.Empty(t, dnsRecords)
 }

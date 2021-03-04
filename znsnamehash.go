@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// ZnsNameHash Namehash for .zil domains
 func ZnsNameHash(domainName string) (string, error) {
 	normalizedName := NormalizeName(domainName)
 	domainNodes := strings.Split(normalizedName, ".")

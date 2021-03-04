@@ -4,24 +4,26 @@ import (
 	"encoding/json"
 )
 
+// SupportedKeys struct of supported keys
 type SupportedKeys map[string]struct {
 	DeprecatedKeyName string
 	Deprecated        bool
 	ValidationRegex   string
 }
 
+// NewSupportedKeys returns SupportedKeys
 func NewSupportedKeys() (SupportedKeys, error) {
 	var keysObject struct {
 		Keys SupportedKeys
 	}
-	err := json.Unmarshal(supportedKeysJson, &keysObject)
+	err := json.Unmarshal(supportedKeysJSON, &keysObject)
 	if err != nil {
 		return nil, err
 	}
 	return keysObject.Keys, nil
 }
 
-var supportedKeysJson = []byte(`
+var supportedKeysJSON = []byte(`
 {
     "version": "1.1.0",
     "keys": {
