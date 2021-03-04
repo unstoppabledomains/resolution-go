@@ -1,4 +1,4 @@
-module github.com/DeRain/resolution-go
+module github.com/unstoppabledomains/resolution-go
 
 go 1.15
 

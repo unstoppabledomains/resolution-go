@@ -2,9 +2,10 @@ package resolution
 
 import (
 	"encoding/json"
-	"github.com/DeRain/resolution-go/dnsrecords"
-	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	s "strings"
+
+	"github.com/Zilliqa/gozilliqa-sdk/provider"
+	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
 const znsDefaultProvider = "https://api.zilliqa.com"

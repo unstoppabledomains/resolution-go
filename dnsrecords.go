@@ -3,9 +3,10 @@ package resolution
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/DeRain/resolution-go/dnsrecords"
 	"strconv"
 	"strings"
+
+	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
 func DnsTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
