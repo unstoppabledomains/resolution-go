@@ -3,9 +3,9 @@ package resolution
 import (
 	"testing"
 
-	"github.com/DeRain/resolution-go/dnsrecords"
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/stretchr/testify/assert"
+	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
 var zns = NewZnsWithDefaultProvider()

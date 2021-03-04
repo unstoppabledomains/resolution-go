@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/DeRain/resolution-go/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
 // DNSTypesToCryptoRecordKeys Converts dns types to crypto record keys

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	s "strings"
 
-	"github.com/DeRain/resolution-go/dnsrecords"
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
+	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
 const znsDefaultProvider = "https://api.zilliqa.com"
