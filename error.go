@@ -1,9 +1,12 @@
 package resolution
 
+// DomainNotRegistered Error when domain is missing an owner
+
 type DomainNotRegistered struct {
 	DomainName string
 }
 
+// DomainNotConfigured Error when domain does not have a resolver set
 type DomainNotConfigured struct {
 	DomainName string
 }

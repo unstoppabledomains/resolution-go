@@ -26,6 +26,7 @@ var cnsZeroAddress = common.HexToAddress("0x0")
 var cnsMainnetProxyReader = common.HexToAddress("0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5")
 var cnsMainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
 
+// NewCns Creates instance of Cns with specific provider
 func NewCns(backend bind.ContractBackend) (*Cns, error) {
 	contract, err := proxyreader.NewContract(cnsMainnetProxyReader, backend)
 	if err != nil {
@@ -39,6 +40,7 @@ func NewCns(backend bind.ContractBackend) (*Cns, error) {
 	return &Cns{ProxyReader: contract, SupportedKeys: supportedKeys, ContractBackend: backend}, nil
 }
 
+// NewCnsWithDefaultBackend Creates instance of Cns with default provider
 func NewCnsWithDefaultBackend() (*Cns, error) {
 	backend, err := ethclient.Dial(cnsProvider)
 	if err != nil {
@@ -52,6 +54,7 @@ func NewCnsWithDefaultBackend() (*Cns, error) {
 	return cns, nil
 }
 
+// Data Retrieve data of domain
 func (c *Cns) Data(domainName string, keys []string) (*struct {
 	Resolver common.Address
 	Owner    common.Address
@@ -60,8 +63,8 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 	normalizedName := NormalizeName(domainName)
 	// todo validate domain name
 	namehash := kns.NameHash(normalizedName)
-	tokenId := namehash.Big()
-	data, err := c.ProxyReader.GetData(&bind.CallOpts{Pending: false}, keys, tokenId)
+	tokenID := namehash.Big()
+	data, err := c.ProxyReader.GetData(&bind.CallOpts{Pending: false}, keys, tokenID)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +78,7 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 	return &data, nil
 }
 
+// Records retrieve records of domain
 func (c *Cns) Records(domainName string, keys []string) (map[string]string, error) {
 	data, err := c.Data(domainName, keys)
 	if err != nil {
@@ -87,6 +91,7 @@ func (c *Cns) Records(domainName string, keys []string) (map[string]string, erro
 	return allRecords, nil
 }
 
+// Record Retrieve single record of domain
 func (c *Cns) Record(domainName string, key string) (string, error) {
 	records, err := c.Records(domainName, []string{key})
 	if err != nil {
@@ -95,6 +100,7 @@ func (c *Cns) Record(domainName string, key string) (string, error) {
 	return records[key], nil
 }
 
+// Addr Retrieve the value of domain's currency ticker
 func (c *Cns) Addr(domainName string, ticker string) (string, error) {
 	// todo replace concat by string builder
 	key := "crypto." + s.ToUpper(ticker) + ".address"
@@ -105,6 +111,7 @@ func (c *Cns) Addr(domainName string, ticker string) (string, error) {
 	return value, nil
 }
 
+// AddrVersion Retrieve the version value of domain's currency ticker - useful for multichain currencies
 func (c *Cns) AddrVersion(domainName string, ticker string, version string) (string, error) {
 	// todo replace concat by string builder
 	key := "crypto." + s.ToUpper(ticker) + ".version." + s.ToUpper(version) + ".address"
@@ -115,6 +122,7 @@ func (c *Cns) AddrVersion(domainName string, ticker string, version string) (str
 	return value, nil
 }
 
+// Email Retrieve the email of domain
 func (c *Cns) Email(domainName string) (string, error) {
 	key := "whois.email.value"
 	value, err := c.Record(domainName, key)
@@ -125,6 +133,7 @@ func (c *Cns) Email(domainName string) (string, error) {
 	return value, nil
 }
 
+// Resolver Retrieve the resolver set for a domain
 func (c *Cns) Resolver(domainName string) (string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
@@ -134,6 +143,7 @@ func (c *Cns) Resolver(domainName string) (string, error) {
 	return data.Resolver.String(), nil
 }
 
+// Owner Retrieve the owner of a domain
 func (c *Cns) Owner(domainName string) (string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
@@ -143,6 +153,7 @@ func (c *Cns) Owner(domainName string) (string, error) {
 	return data.Owner.String(), nil
 }
 
+// IpfsHash Retrieve the ipfs hash of a domain
 func (c *Cns) IpfsHash(domainName string) (string, error) {
 	records, err := c.Records(domainName, []string{"dweb.ipfs.hash", "ipfs.html.value"})
 	if err != nil {
@@ -158,7 +169,8 @@ func (c *Cns) IpfsHash(domainName string) (string, error) {
 	return "", nil
 }
 
-func (c *Cns) HttpUrl(domainName string) (string, error) {
+// HTTPUrl Retrieve the http redirect url of a domain
+func (c *Cns) HTTPUrl(domainName string) (string, error) {
 	records, err := c.Records(domainName, []string{"browser.redirect_url", "ipfs.redirect_domain.value"})
 	if err != nil {
 		return "", err
@@ -173,6 +185,7 @@ func (c *Cns) HttpUrl(domainName string) (string, error) {
 	return "", nil
 }
 
+// AllRecords Retrieve all records of a domain
 func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
@@ -231,8 +244,9 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 	return allRecords, nil
 }
 
-func (c *Cns) Dns(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
-	keys, err := DnsTypesToCryptoRecordKeys(types)
+// DNS Retrieve the DNS records of a domain
+func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
+	keys, err := DNSTypesToCryptoRecordKeys(types)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +254,7 @@ func (c *Cns) Dns(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 	if err != nil {
 		return nil, err
 	}
-	dnsRecords, err := CryptoRecordsToDns(records)
+	dnsRecords, err := CryptoRecordsToDNS(records)
 	if err != nil {
 		return nil, err
 	}

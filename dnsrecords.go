@@ -9,7 +9,8 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
-func DnsTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
+// DNSTypesToCryptoRecordKeys Converts dns types to crypto record keys
+func DNSTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
 	recordKeys := []string{"dns.ttl"}
 	var key strings.Builder
 	var ttlKey strings.Builder
@@ -30,7 +31,8 @@ func DnsTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
 	return recordKeys, nil
 }
 
-func CryptoRecordsToDns(cryptoRecords map[string]string) ([]dnsrecords.Record, error) {
+// CryptoRecordsToDNS Converts crypto records dns types
+func CryptoRecordsToDNS(cryptoRecords map[string]string) ([]dnsrecords.Record, error) {
 	var globalTTL = dnsrecords.DefaultTTL
 	if cryptoRecords["dns.ttl"] != "" {
 		parsedTTL, err := strconv.ParseUint(cryptoRecords["dns.ttl"], 10, 32)
@@ -39,7 +41,7 @@ func CryptoRecordsToDns(cryptoRecords map[string]string) ([]dnsrecords.Record, e
 		}
 	}
 	var ttlKey strings.Builder
-	var parsedDnsRecords []dnsrecords.Record
+	var parsedDNSRecords []dnsrecords.Record
 	for cryptoKey, cryptoValue := range cryptoRecords {
 		if strings.Index(cryptoKey, "dns.") == 0 {
 			keyParts := strings.Split(cryptoKey, ".")
@@ -57,16 +59,16 @@ func CryptoRecordsToDns(cryptoRecords map[string]string) ([]dnsrecords.Record, e
 						recordTTL = uint32(parsedTTL)
 					}
 				}
-				var parsedDnsRecordValues []string
-				err = json.Unmarshal([]byte(cryptoValue), &parsedDnsRecordValues)
+				var parsedDNSRecordValues []string
+				err = json.Unmarshal([]byte(cryptoValue), &parsedDNSRecordValues)
 				if err == nil {
-					for _, dnsRecordValue := range parsedDnsRecordValues {
-						parsedDnsRecords = append(parsedDnsRecords, dnsrecords.Record{Type: recordType, TTL: recordTTL, Value: dnsRecordValue})
+					for _, dnsRecordValue := range parsedDNSRecordValues {
+						parsedDNSRecords = append(parsedDNSRecords, dnsrecords.Record{Type: recordType, TTL: recordTTL, Value: dnsRecordValue})
 					}
 				}
 			}
 		}
 	}
 
-	return parsedDnsRecords, nil
+	return parsedDNSRecords, nil
 }

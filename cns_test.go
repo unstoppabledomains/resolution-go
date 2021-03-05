@@ -192,11 +192,11 @@ func TestCnsIpfsLegacy(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestCnsHttpUrl(t *testing.T) {
+func TestCnsHTTPUrl(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-redirect.crypto"
 	expectedRecord := "https://example.com/home.html"
-	record, err := cns.HttpUrl(testDomain)
+	record, err := cns.HTTPUrl(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
 }
@@ -205,7 +205,7 @@ func TestCnsHttpUrlLegacy(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-redirect-legacy.crypto"
 	expectedRecord := "https://legacy-example.com/home.html"
-	record, err := cns.HttpUrl(testDomain)
+	record, err := cns.HTTPUrl(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
 }
@@ -249,7 +249,7 @@ func TestCnsDnsA(t *testing.T) {
 		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.1"},
 		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.2"},
 	}
-	dnsRecords, err := cns.Dns(testDomain, []dnsrecords.Type{"A"})
+	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"A"})
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, expectedRecords, dnsRecords)
 }
@@ -260,7 +260,7 @@ func TestCnsDnsCname(t *testing.T) {
 	expectedRecords := []dnsrecords.Record{
 		{Type: dnsrecords.CNAME, TTL: 1111, Value: "example.com."},
 	}
-	dnsRecords, err := cns.Dns(testDomain, []dnsrecords.Type{"CNAME"})
+	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"CNAME"})
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, expectedRecords, dnsRecords)
 }
@@ -272,7 +272,7 @@ func TestCnsDnsGlobalTtl(t *testing.T) {
 		{Type: dnsrecords.A, TTL: 1000, Value: "10.0.0.1"},
 		{Type: dnsrecords.A, TTL: 1000, Value: "10.0.0.2"},
 	}
-	dnsRecords, err := cns.Dns(testDomain, []dnsrecords.Type{"A"})
+	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"A"})
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, expectedRecords, dnsRecords)
 }
