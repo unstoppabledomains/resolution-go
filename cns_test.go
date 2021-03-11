@@ -19,7 +19,7 @@ func TestNewCnsWithDefaultProvider(t *testing.T) {
 
 func TestNewCns(t *testing.T) {
 	t.Parallel()
-	backend, _ := ethclient.Dial("https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711")
+	backend, _ := ethclient.Dial("https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
 	_, err := NewCns(backend)
 	assert.Nil(t, err)
 }
@@ -275,4 +275,11 @@ func TestCnsDnsGlobalTtl(t *testing.T) {
 	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"A"})
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, expectedRecords, dnsRecords)
+}
+
+func TestCnsIsSupportedDomain(t *testing.T) {
+	t.Parallel()
+	assert.True(t, cns.IsSupportedDomain("valid.crypto"))
+	assert.False(t, cns.IsSupportedDomain("invalid.zil"))
+	assert.False(t, cns.IsSupportedDomain("invalid.com"))
 }

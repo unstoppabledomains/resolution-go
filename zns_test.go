@@ -182,7 +182,6 @@ func TestZnsHTTPUrl(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-// todo Configure DNS records for .zil domain
 func TestZnsDns(t *testing.T) {
 	t.Parallel()
 	testDomain := "ffffffff.zil"
@@ -197,4 +196,11 @@ func TestZnsEmptyDns(t *testing.T) {
 	dnsRecords, err := zns.DNS(testDomain, []dnsrecords.Type{})
 	assert.Nil(t, err)
 	assert.Empty(t, dnsRecords)
+}
+
+func TestZnsIsSupportedDomain(t *testing.T) {
+	t.Parallel()
+	assert.True(t, zns.IsSupportedDomain("valid.zil"))
+	assert.False(t, zns.IsSupportedDomain("valid.crypto"))
+	assert.False(t, zns.IsSupportedDomain("invalid.com"))
 }

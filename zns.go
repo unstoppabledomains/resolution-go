@@ -2,7 +2,7 @@ package resolution
 
 import (
 	"encoding/json"
-	s "strings"
+	"strings"
 
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
@@ -81,7 +81,7 @@ func (z *Zns) State(domainName string) (*ZnsDomainState, error) {
 		return nil, &DomainNotConfigured{DomainName: domainName}
 	}
 
-	response, err = z.Provider.GetSmartContractSubState(s.TrimPrefix(resolver, "0x"), znsContractField, []string{})
+	response, err = z.Provider.GetSmartContractSubState(strings.TrimPrefix(resolver, "0x"), znsContractField, []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,10 @@ func (z *Zns) Resolver(domainName string) (string, error) {
 
 // Addr Retrieve the value of domain's currency ticker
 func (z *Zns) Addr(domainName string, ticker string) (string, error) {
-	key := "crypto." + s.ToUpper(ticker) + ".address"
+	key, err := BuildCryptoKey(ticker)
+	if err != nil {
+		return "", err
+	}
 	value, err := z.Record(domainName, key)
 	if err != nil {
 		return "", err
@@ -150,8 +153,10 @@ func (z *Zns) Addr(domainName string, ticker string) (string, error) {
 
 // AddrVersion Retrieve the version value of domain's currency ticker - useful for multichain currencies
 func (z *Zns) AddrVersion(domainName string, ticker string, version string) (string, error) {
-	// todo replace concat by string builder
-	key := "crypto." + s.ToUpper(ticker) + ".version." + s.ToUpper(version) + ".address"
+	key, err := BuildCryptoKeyVersion(ticker, version)
+	if err != nil {
+		return "", err
+	}
 	value, err := z.Record(domainName, key)
 	if err != nil {
 		return "", err
@@ -161,8 +166,7 @@ func (z *Zns) AddrVersion(domainName string, ticker string, version string) (str
 
 // Email Retrieve the email of a domain
 func (z *Zns) Email(domainName string) (string, error) {
-	key := "whois.email.value"
-	value, err := z.Record(domainName, key)
+	value, err := z.Record(domainName, EmailKey)
 	if err != nil {
 		return "", err
 	}
@@ -182,34 +186,20 @@ func (z *Zns) AllRecords(domainName string) (map[string]string, error) {
 
 // IpfsHash Retrieve the ipfs hash of a domain
 func (z *Zns) IpfsHash(domainName string) (string, error) {
-	records, err := z.Records(domainName, []string{"dweb.ipfs.hash", "ipfs.html.value"})
+	records, err := z.Records(domainName, IPFSKeys)
 	if err != nil {
 		return "", err
 	}
-	if records["dweb.ipfs.hash"] != "" {
-		return records["dweb.ipfs.hash"], nil
-	}
-	if records["ipfs.html.value"] != "" {
-		return records["ipfs.html.value"], nil
-	}
-
-	return "", nil
+	return ReturnFirstNonEmpty(records, IPFSKeys), nil
 }
 
 // HTTPUrl Retrieve the http redirect url of a domain
 func (z *Zns) HTTPUrl(domainName string) (string, error) {
-	records, err := z.Records(domainName, []string{"browser.redirect_url", "ipfs.redirect_domain.value"})
+	records, err := z.Records(domainName, RedirectUrlKeys)
 	if err != nil {
 		return "", err
 	}
-	if records["browser.redirect_url"] != "" {
-		return records["browser.redirect_url"], nil
-	}
-	if records["ipfs.redirect_domain.value"] != "" {
-		return records["ipfs.redirect_domain.value"], nil
-	}
-
-	return "", nil
+	return ReturnFirstNonEmpty(records, RedirectUrlKeys), nil
 }
 
 // DNS Retrieve DNS records of domain
@@ -228,4 +218,9 @@ func (z *Zns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 	}
 
 	return dnsRecords, nil
+}
+
+// IsSupportedDomain checks whether domain name is supported by the naming service
+func (z *Zns) IsSupportedDomain(domainName string) bool {
+	return strings.HasSuffix(domainName, ".zil")
 }

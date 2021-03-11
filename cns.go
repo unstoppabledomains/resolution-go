@@ -1,9 +1,6 @@
 package resolution
 
 import (
-	"math/big"
-	s "strings"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -11,6 +8,8 @@ import (
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/proxyreader"
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
+	"math/big"
+	"strings"
 )
 
 type Cns struct {
@@ -19,7 +18,7 @@ type Cns struct {
 	ContractBackend bind.ContractBackend
 }
 
-const cnsProvider = "https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711"
+const cnsProvider = "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
 const cnsEventsStartingBlock uint64 = 9923764
 
 var cnsZeroAddress = common.HexToAddress("0x0")
@@ -102,8 +101,10 @@ func (c *Cns) Record(domainName string, key string) (string, error) {
 
 // Addr Retrieve the value of domain's currency ticker
 func (c *Cns) Addr(domainName string, ticker string) (string, error) {
-	// todo replace concat by string builder
-	key := "crypto." + s.ToUpper(ticker) + ".address"
+	key, err := BuildCryptoKey(ticker)
+	if err != nil {
+		return "", err
+	}
 	value, err := c.Record(domainName, key)
 	if err != nil {
 		return "", err
@@ -113,8 +114,10 @@ func (c *Cns) Addr(domainName string, ticker string) (string, error) {
 
 // AddrVersion Retrieve the version value of domain's currency ticker - useful for multichain currencies
 func (c *Cns) AddrVersion(domainName string, ticker string, version string) (string, error) {
-	// todo replace concat by string builder
-	key := "crypto." + s.ToUpper(ticker) + ".version." + s.ToUpper(version) + ".address"
+	key, err := BuildCryptoKeyVersion(ticker, version)
+	if err != nil {
+		return "", err
+	}
 	value, err := c.Record(domainName, key)
 	if err != nil {
 		return "", err
@@ -124,8 +127,7 @@ func (c *Cns) AddrVersion(domainName string, ticker string, version string) (str
 
 // Email Retrieve the email of domain
 func (c *Cns) Email(domainName string) (string, error) {
-	key := "whois.email.value"
-	value, err := c.Record(domainName, key)
+	value, err := c.Record(domainName, EmailKey)
 	if err != nil {
 		return "", err
 	}
@@ -155,34 +157,20 @@ func (c *Cns) Owner(domainName string) (string, error) {
 
 // IpfsHash Retrieve the ipfs hash of a domain
 func (c *Cns) IpfsHash(domainName string) (string, error) {
-	records, err := c.Records(domainName, []string{"dweb.ipfs.hash", "ipfs.html.value"})
+	records, err := c.Records(domainName, IPFSKeys)
 	if err != nil {
 		return "", err
 	}
-	if records["dweb.ipfs.hash"] != "" {
-		return records["dweb.ipfs.hash"], nil
-	}
-	if records["ipfs.html.value"] != "" {
-		return records["ipfs.html.value"], nil
-	}
-
-	return "", nil
+	return ReturnFirstNonEmpty(records, IPFSKeys), nil
 }
 
 // HTTPUrl Retrieve the http redirect url of a domain
 func (c *Cns) HTTPUrl(domainName string) (string, error) {
-	records, err := c.Records(domainName, []string{"browser.redirect_url", "ipfs.redirect_domain.value"})
+	records, err := c.Records(domainName, RedirectUrlKeys)
 	if err != nil {
 		return "", err
 	}
-	if records["browser.redirect_url"] != "" {
-		return records["browser.redirect_url"], nil
-	}
-	if records["ipfs.redirect_domain.value"] != "" {
-		return records["ipfs.redirect_domain.value"], nil
-	}
-
-	return "", nil
+	return ReturnFirstNonEmpty(records, RedirectUrlKeys), nil
 }
 
 // AllRecords Retrieve all records of a domain
@@ -260,4 +248,9 @@ func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 	}
 
 	return dnsRecords, nil
+}
+
+// IsSupportedDomain checks whether domain name is supported by the naming service
+func (c *Cns) IsSupportedDomain(domainName string) bool {
+	return strings.HasSuffix(domainName, ".crypto")
 }

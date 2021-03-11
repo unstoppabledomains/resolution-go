@@ -2,6 +2,8 @@ package resolution
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 )
 
 // SupportedKeys struct of supported keys
@@ -9,6 +11,42 @@ type SupportedKeys map[string]struct {
 	DeprecatedKeyName string
 	Deprecated        bool
 	ValidationRegex   string
+}
+
+const EmailKey = "whois.email.value"
+
+var IPFSKeys = []string{"dweb.ipfs.hash", "ipfs.html.value"}
+var RedirectUrlKeys = []string{"browser.redirect_url", "ipfs.redirect_domain.value"}
+
+// BuildCryptoKey returns raw key for crypto currency which is used to query blockchain
+func BuildCryptoKey(ticker string) (string, error) {
+	var key strings.Builder
+	_, err := fmt.Fprintf(&key, "crypto.%s.address", strings.ToUpper(ticker))
+	if err != nil {
+		return "", err
+	}
+	return key.String(), nil
+}
+
+// BuildCryptoKeyVersion returns raw key for multi-chain currency which is used to query blockchain
+func BuildCryptoKeyVersion(ticker string, version string) (string, error) {
+	var key strings.Builder
+	_, err := fmt.Fprintf(&key, "crypto.%s.version.%s.address", strings.ToUpper(ticker), strings.ToUpper(version))
+	if err != nil {
+		return "", err
+	}
+	return key.String(), nil
+}
+
+// ReturnFirstNonEmpty returns first not empty elements from provided records and keys order
+func ReturnFirstNonEmpty(records map[string]string, keysSequence []string) string {
+	for _, key := range keysSequence {
+		if records[key] != "" {
+			return records[key]
+		}
+	}
+
+	return ""
 }
 
 // NewSupportedKeys returns SupportedKeys
@@ -422,6 +460,11 @@ var supportedKeysJSON = []byte(`
             "validationRegex": "^[a-z][a-z1-5.]{10}[a-z1-5]$",
             "deprecated": false
         },
+        "crypto.XDC.address": {
+            "deprecatedKeyName:": "XDC",
+            "validationRegex": "^xdc[a-fA-F0-9]{40}$",
+            "deprecated": false
+        },
         "crypto.USDT.version.ERC20.address": {
             "deprecatedKeyName": "USDT_ERC20",
             "validationRegex": "^0x[a-fA-F0-9]{40}$",
@@ -440,6 +483,31 @@ var supportedKeysJSON = []byte(`
         "crypto.USDT.version.OMNI.address": {
             "deprecatedKeyName": "USDT_OMNI",
             "validationRegex": "^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}$",
+            "deprecated": false
+        },
+        "crypto.FTM.version.ERC20.address" : {
+            "deprecatedKeyName": "FTM_ERC20",
+            "validationRegex": "^0x[a-fA-F0-9]{40}$",
+            "deprecated": false
+        },
+        "crypto.FTM.version.BEP2.address" : {
+            "deprecatedKeyName": "FTM_BEP2",
+            "validationRegex": "^(bnb|tbnb)[a-zA-HJ-NP-Z0-9]{39}$",
+            "deprecated": false
+        },
+        "crypto.FTM.version.OPERA.address" : {
+            "deprecatedKeyName": "FTM_OPERA",
+            "validationRegex": "^0x[a-fA-F0-9]{40}$",
+            "deprecated": false
+        },
+        "crypto.FUSE.version.ERC20.address": {
+            "deprecatedKeyName:": "FUSE_ERC20",
+            "validationRegex": "^0x[a-fA-F0-9]{40}$",
+            "deprecated": false
+        },
+        "crypto.FUSE.version.FUSE.address": {
+            "deprecatedKeyName:": "FUSE_FUSE",
+            "validationRegex": "^0x[a-fA-F0-9]{40}$",
             "deprecated": false
         },
         "social.payid.name": {
@@ -465,6 +533,21 @@ var supportedKeysJSON = []byte(`
         "ipfs.redirect_domain.value": {
             "deprecatedKeyName": "redirect_domain",
             "validationRegex": ".{0,253}",
+            "deprecated": false
+        },
+        "dweb.ipfs.hash": {
+            "deprecatedKeyName": "dweb_hash",
+            "validationRegex": ".{0,100}",
+            "deprecated": false
+        },
+        "browser.redirect_url": {
+            "deprecatedKeyName": "browser_redirect",
+            "validationRegex": ".{0,253}",
+            "deprecated": false
+        },
+        "browser.preferred_protocols": {
+            "deprecatedKeyName": "browser_preferred_protocols",
+            "validationRegex": null,
             "deprecated": false
         },
         "gundb.username.value": {
