@@ -6,20 +6,20 @@ import (
 	"strings"
 )
 
-// SupportedKeys struct of supported keys
-type SupportedKeys map[string]struct {
+// supportedKeys struct of supported keys
+type supportedKeys map[string]struct {
 	DeprecatedKeyName string
 	Deprecated        bool
 	ValidationRegex   string
 }
 
-const EmailKey = "whois.email.value"
+const emailKey = "whois.email.value"
 
-var IPFSKeys = []string{"dweb.ipfs.hash", "ipfs.html.value"}
-var RedirectUrlKeys = []string{"browser.redirect_url", "ipfs.redirect_domain.value"}
+var ipfsKeys = []string{"dweb.ipfs.hash", "ipfs.html.value"}
+var redirectUrlKeys = []string{"browser.redirect_url", "ipfs.redirect_domain.value"}
 
-// BuildCryptoKey returns raw key for crypto currency which is used to query blockchain
-func BuildCryptoKey(ticker string) (string, error) {
+// buildCryptoKey returns raw key for crypto currency which is used to query blockchain
+func buildCryptoKey(ticker string) (string, error) {
 	var key strings.Builder
 	_, err := fmt.Fprintf(&key, "crypto.%s.address", strings.ToUpper(ticker))
 	if err != nil {
@@ -28,8 +28,8 @@ func BuildCryptoKey(ticker string) (string, error) {
 	return key.String(), nil
 }
 
-// BuildCryptoKeyVersion returns raw key for multi-chain currency which is used to query blockchain
-func BuildCryptoKeyVersion(ticker string, version string) (string, error) {
+// buildCryptoKeyVersion returns raw key for multi-chain currency which is used to query blockchain
+func buildCryptoKeyVersion(ticker string, version string) (string, error) {
 	var key strings.Builder
 	_, err := fmt.Fprintf(&key, "crypto.%s.version.%s.address", strings.ToUpper(ticker), strings.ToUpper(version))
 	if err != nil {
@@ -38,8 +38,8 @@ func BuildCryptoKeyVersion(ticker string, version string) (string, error) {
 	return key.String(), nil
 }
 
-// ReturnFirstNonEmpty returns first not empty elements from provided records and keys order
-func ReturnFirstNonEmpty(records map[string]string, keysSequence []string) string {
+// returnFirstNonEmpty returns first not empty elements from provided records and keys order
+func returnFirstNonEmpty(records map[string]string, keysSequence []string) string {
 	for _, key := range keysSequence {
 		if records[key] != "" {
 			return records[key]
@@ -49,10 +49,10 @@ func ReturnFirstNonEmpty(records map[string]string, keysSequence []string) strin
 	return ""
 }
 
-// NewSupportedKeys returns SupportedKeys
-func NewSupportedKeys() (SupportedKeys, error) {
+// newSupportedKeys returns supportedKeys
+func newSupportedKeys() (supportedKeys, error) {
 	var keysObject struct {
-		Keys SupportedKeys
+		Keys supportedKeys
 	}
 	err := json.Unmarshal(supportedKeysJSON, &keysObject)
 	if err != nil {

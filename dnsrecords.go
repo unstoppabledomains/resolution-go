@@ -9,8 +9,7 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
-// DNSTypesToCryptoRecordKeys Converts dns types to crypto record keys
-func DNSTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
+func dnsTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
 	recordKeys := []string{"dns.ttl"}
 	var key strings.Builder
 	var ttlKey strings.Builder
@@ -31,8 +30,7 @@ func DNSTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
 	return recordKeys, nil
 }
 
-// CryptoRecordsToDNS Converts crypto records dns types
-func CryptoRecordsToDNS(cryptoRecords map[string]string) ([]dnsrecords.Record, error) {
+func cryptoRecordsToDNS(cryptoRecords map[string]string) ([]dnsrecords.Record, error) {
 	var globalTTL = dnsrecords.DefaultTTL
 	if cryptoRecords["dns.ttl"] != "" {
 		parsedTTL, err := strconv.ParseUint(cryptoRecords["dns.ttl"], 10, 32)

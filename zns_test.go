@@ -14,13 +14,13 @@ func TestNewZns(t *testing.T) {
 	t.Parallel()
 	znsProvider := provider.NewProvider("https://api.zilliqa.com")
 	zns := NewZns(znsProvider)
-	assert.IsType(t, &Zns{Provider: nil}, zns)
+	assert.IsType(t, &Zns{provider: nil}, zns)
 }
 
 func TestNewZnsWithDefaultProvider(t *testing.T) {
 	t.Parallel()
 	zns := NewZnsWithDefaultProvider()
-	assert.IsType(t, &Zns{Provider: nil}, zns)
+	assert.IsType(t, &Zns{provider: nil}, zns)
 }
 
 func TestZnsStateAllRecords(t *testing.T) {
@@ -203,4 +203,11 @@ func TestZnsIsSupportedDomain(t *testing.T) {
 	assert.True(t, zns.IsSupportedDomain("valid.zil"))
 	assert.False(t, zns.IsSupportedDomain("valid.crypto"))
 	assert.False(t, zns.IsSupportedDomain("invalid.com"))
+}
+
+func TestZnsUnsupportedDomainError(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotSupported
+	_, err := zns.State("invalid.crypto")
+	assert.ErrorAs(t, err, &expectedError)
 }

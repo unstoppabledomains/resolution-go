@@ -17,7 +17,7 @@ func TestNormalizeName(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := NormalizeName(tt.input)
+		result := normalizeName(tt.input)
 		if tt.output != result {
 			t.Errorf("Failure: %v => %v (expected %v)\n", tt.input, result, tt.output)
 		}

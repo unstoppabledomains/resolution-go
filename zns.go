@@ -8,19 +8,21 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
-const znsDefaultProvider = "https://api.zilliqa.com"
-const znsMainnetRegistry = "9611c53BE6d1b32058b2747bdeCECed7e1216793"
-const znsContractField = "records"
-const znsZeroAddress = "0x0000000000000000000000000000000000000000"
-
 // Zns Zns
 type Zns struct {
-	Provider ZnsProvider
+	provider ZnsProvider
 }
 
 // ZnsProvider ZnsProvider
 type ZnsProvider interface {
 	GetSmartContractSubState(contractAddress string, params ...interface{}) (string, error)
+}
+
+// ZnsDomainState State of ZNS domain
+type ZnsDomainState struct {
+	Resolver string
+	Owner    string
+	Records  map[string]string
 }
 
 type registrySubState struct {
@@ -35,31 +37,32 @@ type resolverSubState struct {
 	Result map[string]map[string]string
 }
 
-// ZnsDomainState State of ZNS domain
-type ZnsDomainState struct {
-	Resolver string
-	Owner    string
-	Records  map[string]string
-}
+const znsDefaultProvider = "https://api.zilliqa.com"
+const znsMainnetRegistry = "9611c53BE6d1b32058b2747bdeCECed7e1216793"
+const znsContractField = "records"
+const znsZeroAddress = "0x0000000000000000000000000000000000000000"
 
 // NewZns Creates Zns instance
 func NewZns(provider ZnsProvider) *Zns {
-	return &Zns{Provider: provider}
+	return &Zns{provider: provider}
 }
 
 // NewZnsWithDefaultProvider Creates instance of Zns with default provider
 func NewZnsWithDefaultProvider() *Zns {
-	return &Zns{Provider: provider.NewProvider(znsDefaultProvider)}
+	return &Zns{provider: provider.NewProvider(znsDefaultProvider)}
 }
 
 // State Retrieve the ZnsDomainState of a domain
 func (z *Zns) State(domainName string) (*ZnsDomainState, error) {
-	// todo validate domain name
+	normalizedName := normalizeName(domainName)
+	if !z.IsSupportedDomain(normalizedName) {
+		return nil, &DomainNotSupported{DomainName: normalizedName}
+	}
 	namehash, err := ZnsNameHash(domainName)
 	if err != nil {
 		return nil, err
 	}
-	response, err := z.Provider.GetSmartContractSubState(znsMainnetRegistry, znsContractField, []string{namehash})
+	response, err := z.provider.GetSmartContractSubState(znsMainnetRegistry, znsContractField, []string{namehash})
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +84,7 @@ func (z *Zns) State(domainName string) (*ZnsDomainState, error) {
 		return nil, &DomainNotConfigured{DomainName: domainName}
 	}
 
-	response, err = z.Provider.GetSmartContractSubState(strings.TrimPrefix(resolver, "0x"), znsContractField, []string{})
+	response, err = z.provider.GetSmartContractSubState(strings.TrimPrefix(resolver, "0x"), znsContractField, []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +143,7 @@ func (z *Zns) Resolver(domainName string) (string, error) {
 
 // Addr Retrieve the value of domain's currency ticker
 func (z *Zns) Addr(domainName string, ticker string) (string, error) {
-	key, err := BuildCryptoKey(ticker)
+	key, err := buildCryptoKey(ticker)
 	if err != nil {
 		return "", err
 	}
@@ -153,7 +156,7 @@ func (z *Zns) Addr(domainName string, ticker string) (string, error) {
 
 // AddrVersion Retrieve the version value of domain's currency ticker - useful for multichain currencies
 func (z *Zns) AddrVersion(domainName string, ticker string, version string) (string, error) {
-	key, err := BuildCryptoKeyVersion(ticker, version)
+	key, err := buildCryptoKeyVersion(ticker, version)
 	if err != nil {
 		return "", err
 	}
@@ -166,7 +169,7 @@ func (z *Zns) AddrVersion(domainName string, ticker string, version string) (str
 
 // Email Retrieve the email of a domain
 func (z *Zns) Email(domainName string) (string, error) {
-	value, err := z.Record(domainName, EmailKey)
+	value, err := z.Record(domainName, emailKey)
 	if err != nil {
 		return "", err
 	}
@@ -186,25 +189,25 @@ func (z *Zns) AllRecords(domainName string) (map[string]string, error) {
 
 // IpfsHash Retrieve the ipfs hash of a domain
 func (z *Zns) IpfsHash(domainName string) (string, error) {
-	records, err := z.Records(domainName, IPFSKeys)
+	records, err := z.Records(domainName, ipfsKeys)
 	if err != nil {
 		return "", err
 	}
-	return ReturnFirstNonEmpty(records, IPFSKeys), nil
+	return returnFirstNonEmpty(records, ipfsKeys), nil
 }
 
 // HTTPUrl Retrieve the http redirect url of a domain
 func (z *Zns) HTTPUrl(domainName string) (string, error) {
-	records, err := z.Records(domainName, RedirectUrlKeys)
+	records, err := z.Records(domainName, redirectUrlKeys)
 	if err != nil {
 		return "", err
 	}
-	return ReturnFirstNonEmpty(records, RedirectUrlKeys), nil
+	return returnFirstNonEmpty(records, redirectUrlKeys), nil
 }
 
 // DNS Retrieve DNS records of domain
 func (z *Zns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
-	keys, err := DNSTypesToCryptoRecordKeys(types)
+	keys, err := dnsTypesToCryptoRecordKeys(types)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +215,7 @@ func (z *Zns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 	if err != nil {
 		return nil, err
 	}
-	dnsRecords, err := CryptoRecordsToDNS(records)
+	dnsRecords, err := cryptoRecordsToDNS(records)
 	if err != nil {
 		return nil, err
 	}

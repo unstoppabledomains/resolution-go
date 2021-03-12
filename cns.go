@@ -13,9 +13,9 @@ import (
 )
 
 type Cns struct {
-	ProxyReader     *proxyreader.Contract
-	SupportedKeys   SupportedKeys
-	ContractBackend bind.ContractBackend
+	proxyReader     *proxyreader.Contract
+	supportedKeys   supportedKeys
+	contractBackend bind.ContractBackend
 }
 
 const cnsProvider = "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
@@ -31,12 +31,12 @@ func NewCns(backend bind.ContractBackend) (*Cns, error) {
 	if err != nil {
 		return nil, err
 	}
-	supportedKeys, err := NewSupportedKeys()
+	supportedKeys, err := newSupportedKeys()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Cns{ProxyReader: contract, SupportedKeys: supportedKeys, ContractBackend: backend}, nil
+	return &Cns{proxyReader: contract, supportedKeys: supportedKeys, contractBackend: backend}, nil
 }
 
 // NewCnsWithDefaultBackend Creates instance of Cns with default provider
@@ -59,11 +59,13 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 	Owner    common.Address
 	Values   []string
 }, error) {
-	normalizedName := NormalizeName(domainName)
-	// todo validate domain name
+	normalizedName := normalizeName(domainName)
+	if !c.IsSupportedDomain(normalizedName) {
+		return nil, &DomainNotSupported{DomainName: normalizedName}
+	}
 	namehash := kns.NameHash(normalizedName)
 	tokenID := namehash.Big()
-	data, err := c.ProxyReader.GetData(&bind.CallOpts{Pending: false}, keys, tokenID)
+	data, err := c.proxyReader.GetData(&bind.CallOpts{Pending: false}, keys, tokenID)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +103,7 @@ func (c *Cns) Record(domainName string, key string) (string, error) {
 
 // Addr Retrieve the value of domain's currency ticker
 func (c *Cns) Addr(domainName string, ticker string) (string, error) {
-	key, err := BuildCryptoKey(ticker)
+	key, err := buildCryptoKey(ticker)
 	if err != nil {
 		return "", err
 	}
@@ -114,7 +116,7 @@ func (c *Cns) Addr(domainName string, ticker string) (string, error) {
 
 // AddrVersion Retrieve the version value of domain's currency ticker - useful for multichain currencies
 func (c *Cns) AddrVersion(domainName string, ticker string, version string) (string, error) {
-	key, err := BuildCryptoKeyVersion(ticker, version)
+	key, err := buildCryptoKeyVersion(ticker, version)
 	if err != nil {
 		return "", err
 	}
@@ -127,7 +129,7 @@ func (c *Cns) AddrVersion(domainName string, ticker string, version string) (str
 
 // Email Retrieve the email of domain
 func (c *Cns) Email(domainName string) (string, error) {
-	value, err := c.Record(domainName, EmailKey)
+	value, err := c.Record(domainName, emailKey)
 	if err != nil {
 		return "", err
 	}
@@ -157,20 +159,20 @@ func (c *Cns) Owner(domainName string) (string, error) {
 
 // IpfsHash Retrieve the ipfs hash of a domain
 func (c *Cns) IpfsHash(domainName string) (string, error) {
-	records, err := c.Records(domainName, IPFSKeys)
+	records, err := c.Records(domainName, ipfsKeys)
 	if err != nil {
 		return "", err
 	}
-	return ReturnFirstNonEmpty(records, IPFSKeys), nil
+	return returnFirstNonEmpty(records, ipfsKeys), nil
 }
 
 // HTTPUrl Retrieve the http redirect url of a domain
 func (c *Cns) HTTPUrl(domainName string) (string, error) {
-	records, err := c.Records(domainName, RedirectUrlKeys)
+	records, err := c.Records(domainName, redirectUrlKeys)
 	if err != nil {
 		return "", err
 	}
-	return ReturnFirstNonEmpty(records, RedirectUrlKeys), nil
+	return returnFirstNonEmpty(records, redirectUrlKeys), nil
 }
 
 // AllRecords Retrieve all records of a domain
@@ -181,11 +183,11 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 	}
 	var allKeys []string
 	if data.Resolver == cnsMainnetDefaultResolver {
-		resolverContract, err := resolver.NewContract(data.Resolver, c.ContractBackend)
+		resolverContract, err := resolver.NewContract(data.Resolver, c.contractBackend)
 		if err != nil {
 			return nil, err
 		}
-		normalizedName := NormalizeName(domainName)
+		normalizedName := normalizeName(domainName)
 		namehash := kns.NameHash(normalizedName)
 		resetRecordsIterator, err := resolverContract.FilterResetRecords(&bind.FilterOpts{Start: cnsEventsStartingBlock}, []*big.Int{namehash.Big()})
 		if err != nil {
@@ -209,12 +211,12 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 			allKeys = append(allKeys, newKeyIterator.Event.Key)
 		}
 		if len(allKeys) == 0 {
-			for key := range c.SupportedKeys {
+			for key := range c.supportedKeys {
 				allKeys = append(allKeys, key)
 			}
 		}
 	} else {
-		for key := range c.SupportedKeys {
+		for key := range c.supportedKeys {
 			allKeys = append(allKeys, key)
 		}
 	}
@@ -234,7 +236,7 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 
 // DNS Retrieve the DNS records of a domain
 func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
-	keys, err := DNSTypesToCryptoRecordKeys(types)
+	keys, err := dnsTypesToCryptoRecordKeys(types)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +244,7 @@ func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 	if err != nil {
 		return nil, err
 	}
-	dnsRecords, err := CryptoRecordsToDNS(records)
+	dnsRecords, err := cryptoRecordsToDNS(records)
 	if err != nil {
 		return nil, err
 	}

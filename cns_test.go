@@ -27,7 +27,7 @@ func TestNewCns(t *testing.T) {
 func TestNewCnsWithSupportedKeys(t *testing.T) {
 	t.Parallel()
 	cns, _ := NewCnsWithDefaultBackend()
-	deprecatedKeyName := cns.SupportedKeys["crypto.ETH.address"]
+	deprecatedKeyName := cns.supportedKeys["crypto.ETH.address"]
 	assert.Equal(t, "ETH", deprecatedKeyName.DeprecatedKeyName)
 }
 
@@ -246,8 +246,8 @@ func TestCnsDnsA(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-dns.crypto"
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.1"},
-		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.2"},
+		{Type: "A", TTL: 1800, Value: "10.0.0.1"},
+		{Type: "A", TTL: 1800, Value: "10.0.0.2"},
 	}
 	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"A"})
 	assert.Nil(t, err)
@@ -258,7 +258,7 @@ func TestCnsDnsCname(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-dns-cname.crypto"
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.CNAME, TTL: 1111, Value: "example.com."},
+		{Type: "CNAME", TTL: 1111, Value: "example.com."},
 	}
 	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"CNAME"})
 	assert.Nil(t, err)
@@ -269,8 +269,8 @@ func TestCnsDnsGlobalTtl(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-dns-global-ttl.crypto"
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.A, TTL: 1000, Value: "10.0.0.1"},
-		{Type: dnsrecords.A, TTL: 1000, Value: "10.0.0.2"},
+		{Type: "A", TTL: 1000, Value: "10.0.0.1"},
+		{Type: "A", TTL: 1000, Value: "10.0.0.2"},
 	}
 	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"A"})
 	assert.Nil(t, err)
@@ -282,4 +282,11 @@ func TestCnsIsSupportedDomain(t *testing.T) {
 	assert.True(t, cns.IsSupportedDomain("valid.crypto"))
 	assert.False(t, cns.IsSupportedDomain("invalid.zil"))
 	assert.False(t, cns.IsSupportedDomain("invalid.com"))
+}
+
+func TestCnsUnsupportedDomainError(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotSupported
+	_, err := cns.Data("invalid.zil", []string{"crypto.ETH.address"})
+	assert.ErrorAs(t, err, &expectedError)
 }

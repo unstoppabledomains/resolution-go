@@ -11,7 +11,17 @@ type DomainNotConfigured struct {
 	DomainName string
 }
 
-func (e *DomainNotRegistered) Error() string { return e.DomainName + " is not registered" }
+// DomainNotSupported Error when domain is not supported by the naming service
+type DomainNotSupported struct {
+	DomainName string
+}
+
+func (e *DomainNotRegistered) Error() string {
+	return e.DomainName + " is not registered"
+}
 func (e *DomainNotConfigured) Error() string {
 	return e.DomainName + " does not have configured Resolver"
+}
+func (e *DomainNotSupported) Error() string {
+	return e.DomainName + " is not supported by naming service"
 }
