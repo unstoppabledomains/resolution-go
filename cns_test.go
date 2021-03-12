@@ -9,25 +9,29 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
-var cns, _ = NewCnsWithDefaultBackend()
+var cns, _ = NewCnsBuilder().Build()
 
-func TestNewCnsWithDefaultProvider(t *testing.T) {
+func TestCnsBuilder(t *testing.T) {
 	t.Parallel()
-	_, err := NewCnsWithDefaultBackend()
+	builder := NewCnsBuilder()
+	_, err := builder.Build()
 	assert.Nil(t, err)
 }
 
-func TestNewCns(t *testing.T) {
+func TestCnsBuilderSetBackend(t *testing.T) {
 	t.Parallel()
 	backend, _ := ethclient.Dial("https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
-	_, err := NewCns(backend)
+	builder := NewCnsBuilder()
+	builder.SetContractBackend(backend)
+	cns, err := builder.Build()
 	assert.Nil(t, err)
+	assert.Equal(t, backend, cns.contractBackend)
 }
 
 func TestNewCnsWithSupportedKeys(t *testing.T) {
 	t.Parallel()
-	cns, _ := NewCnsWithDefaultBackend()
-	deprecatedKeyName := cns.supportedKeys["crypto.ETH.address"]
+	cnsService, _ := NewCnsBuilder().Build()
+	deprecatedKeyName := cnsService.supportedKeys["crypto.ETH.address"]
 	assert.Equal(t, "ETH", deprecatedKeyName.DeprecatedKeyName)
 }
 

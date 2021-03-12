@@ -12,9 +12,22 @@ import (
 	"strings"
 )
 
+// Cns Cns
 type Cns struct {
 	proxyReader     *proxyreader.Contract
 	supportedKeys   supportedKeys
+	contractBackend bind.ContractBackend
+}
+
+// CnsBuilder CnsBuilder
+type CnsBuilder interface {
+	// SetContractBackend set Ethereum backend for communication with CNS registry
+	SetContractBackend(backend bind.ContractBackend) CnsBuilder
+	// Build Cns instance
+	Build() (*Cns, error)
+}
+
+type cnsBuilder struct {
 	contractBackend bind.ContractBackend
 }
 
@@ -25,9 +38,27 @@ var cnsZeroAddress = common.HexToAddress("0x0")
 var cnsMainnetProxyReader = common.HexToAddress("0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5")
 var cnsMainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
 
-// NewCns Creates instance of Cns with specific provider
-func NewCns(backend bind.ContractBackend) (*Cns, error) {
-	contract, err := proxyreader.NewContract(cnsMainnetProxyReader, backend)
+// NewCnsBuilder Creates CNS builder
+func NewCnsBuilder() CnsBuilder {
+	return &cnsBuilder{}
+}
+
+// SetContractBackend set Ethereum backend for communication with CNS registry
+func (cb *cnsBuilder) SetContractBackend(backend bind.ContractBackend) CnsBuilder {
+	cb.contractBackend = backend
+	return cb
+}
+
+// Build Cns instance
+func (cb *cnsBuilder) Build() (*Cns, error) {
+	if cb.contractBackend == nil {
+		backend, err := ethclient.Dial(cnsProvider)
+		if err != nil {
+			return nil, err
+		}
+		cb.contractBackend = backend
+	}
+	contract, err := proxyreader.NewContract(cnsMainnetProxyReader, cb.contractBackend)
 	if err != nil {
 		return nil, err
 	}
@@ -35,22 +66,7 @@ func NewCns(backend bind.ContractBackend) (*Cns, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return &Cns{proxyReader: contract, supportedKeys: supportedKeys, contractBackend: backend}, nil
-}
-
-// NewCnsWithDefaultBackend Creates instance of Cns with default provider
-func NewCnsWithDefaultBackend() (*Cns, error) {
-	backend, err := ethclient.Dial(cnsProvider)
-	if err != nil {
-		return nil, err
-	}
-	cns, err := NewCns(backend)
-	if err != nil {
-		return nil, err
-	}
-
-	return cns, nil
+	return &Cns{proxyReader: contract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend}, nil
 }
 
 // Data Retrieve data of domain

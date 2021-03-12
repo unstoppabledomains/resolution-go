@@ -8,10 +8,12 @@ import (
 
 func TestEnforceImplementInterface(t *testing.T) {
 	t.Parallel()
-	zns := NewZnsWithDefaultProvider()
-	cns, _ := NewCnsWithDefaultBackend()
-	assert.Implements(t, (*NamingService)(nil), zns)
-	assert.Implements(t, (*NamingService)(nil), cns)
+	assert.Implements(t, (*NamingService)(nil), &Zns{provider: nil})
+	assert.Implements(t, (*NamingService)(nil), &Cns{
+		proxyReader:     nil,
+		supportedKeys:   nil,
+		contractBackend: nil,
+	})
 }
 
 func TestDetectNamingServiceType(t *testing.T) {

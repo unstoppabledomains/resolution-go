@@ -13,6 +13,18 @@ type Zns struct {
 	provider ZnsProvider
 }
 
+// Zns ZnsBuilder
+type ZnsBuilder interface {
+	// SetProvider set Zilliqa blockchain provider to communicate with ZNS registry
+	SetProvider(provider ZnsProvider) ZnsBuilder
+	// Build Zns instance
+	Build() (*Zns, error)
+}
+
+type znsBuilder struct {
+	provider ZnsProvider
+}
+
 // ZnsProvider ZnsProvider
 type ZnsProvider interface {
 	GetSmartContractSubState(contractAddress string, params ...interface{}) (string, error)
@@ -42,14 +54,24 @@ const znsMainnetRegistry = "9611c53BE6d1b32058b2747bdeCECed7e1216793"
 const znsContractField = "records"
 const znsZeroAddress = "0x0000000000000000000000000000000000000000"
 
-// NewZns Creates Zns instance
-func NewZns(provider ZnsProvider) *Zns {
-	return &Zns{provider: provider}
+// NewCnsBuilder Creates ZNS builder
+func NewZnsBuilder() ZnsBuilder {
+	return &znsBuilder{}
 }
 
-// NewZnsWithDefaultProvider Creates instance of Zns with default provider
-func NewZnsWithDefaultProvider() *Zns {
-	return &Zns{provider: provider.NewProvider(znsDefaultProvider)}
+// SetProvider set Zilliqa blockchain provider to communicate with ZNS registry
+func (zb *znsBuilder) SetProvider(provider ZnsProvider) ZnsBuilder {
+	zb.provider = provider
+	return zb
+}
+
+// Build Zns instance
+func (zb *znsBuilder) Build() (*Zns, error) {
+	if zb.provider == nil {
+		zb.provider = provider.NewProvider(znsDefaultProvider)
+	}
+
+	return &Zns{provider: zb.provider}, nil
 }
 
 // State Retrieve the ZnsDomainState of a domain

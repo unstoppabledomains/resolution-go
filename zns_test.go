@@ -8,19 +8,22 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
-var zns = NewZnsWithDefaultProvider()
+var zns, _ = NewZnsBuilder().Build()
 
-func TestNewZns(t *testing.T) {
+func TestZnsBuilder(t *testing.T) {
 	t.Parallel()
-	znsProvider := provider.NewProvider("https://api.zilliqa.com")
-	zns := NewZns(znsProvider)
-	assert.IsType(t, &Zns{provider: nil}, zns)
+	_, err := NewZnsBuilder().Build()
+	assert.Nil(t, err)
 }
 
-func TestNewZnsWithDefaultProvider(t *testing.T) {
+func TestZnsBuilderSetProvider(t *testing.T) {
 	t.Parallel()
-	zns := NewZnsWithDefaultProvider()
-	assert.IsType(t, &Zns{provider: nil}, zns)
+	znsProvider := provider.NewProvider("https://api.zilliqa.com")
+	builder := NewZnsBuilder()
+	builder.SetProvider(znsProvider)
+	znsService, err := builder.Build()
+	assert.Nil(t, err)
+	assert.Equal(t, znsProvider, znsService.provider)
 }
 
 func TestZnsStateAllRecords(t *testing.T) {
