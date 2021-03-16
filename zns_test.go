@@ -51,14 +51,14 @@ func TestZnsStateAllRecords(t *testing.T) {
 
 func TestZnsStateDomainNotRegistered(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotRegistered
+	var expectedError *DomainNotRegisteredError
 	_, err := zns.State("long-not-registered-name.zil")
 	assert.ErrorAs(t, err, &expectedError)
 }
 
 func TestZnsStateDomainNotConfigured(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotConfigured
+	var expectedError *DomainNotConfiguredError
 	_, err := zns.State("1010.zil")
 	assert.ErrorAs(t, err, &expectedError)
 }
@@ -210,7 +210,7 @@ func TestZnsIsSupportedDomain(t *testing.T) {
 
 func TestZnsUnsupportedDomainError(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotSupported
+	var expectedError *DomainNotSupportedError
 	_, err := zns.State("invalid.crypto")
 	assert.ErrorAs(t, err, &expectedError)
 }

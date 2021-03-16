@@ -8,12 +8,12 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
-// Zns Zns
+// Zns is a naming service handles .zil domains resolution.
 type Zns struct {
 	provider ZnsProvider
 }
 
-// Zns ZnsBuilder
+// ZnsBuilder is a builder to setup and build instance of Cns service.
 type ZnsBuilder interface {
 	// SetProvider set Zilliqa blockchain provider to communicate with ZNS registry
 	SetProvider(provider ZnsProvider) ZnsBuilder
@@ -54,12 +54,12 @@ const znsMainnetRegistry = "9611c53BE6d1b32058b2747bdeCECed7e1216793"
 const znsContractField = "records"
 const znsZeroAddress = "0x0000000000000000000000000000000000000000"
 
-// NewCnsBuilder Creates ZNS builder
+// NewCnsBuilder Creates ZNS builder instance.
 func NewZnsBuilder() ZnsBuilder {
 	return &znsBuilder{}
 }
 
-// SetProvider set Zilliqa blockchain provider to communicate with ZNS registry
+// SetProvider set Zilliqa blockchain provider to communicate with ZNS registry.
 func (zb *znsBuilder) SetProvider(provider ZnsProvider) ZnsBuilder {
 	zb.provider = provider
 	return zb
@@ -74,11 +74,11 @@ func (zb *znsBuilder) Build() (*Zns, error) {
 	return &Zns{provider: zb.provider}, nil
 }
 
-// State Retrieve the ZnsDomainState of a domain
+// State Get raw data attached to domain.
 func (z *Zns) State(domainName string) (*ZnsDomainState, error) {
 	normalizedName := normalizeName(domainName)
 	if !z.IsSupportedDomain(normalizedName) {
-		return nil, &DomainNotSupported{DomainName: normalizedName}
+		return nil, &DomainNotSupportedError{DomainName: normalizedName}
 	}
 	namehash, err := ZnsNameHash(domainName)
 	if err != nil {
@@ -96,14 +96,14 @@ func (z *Zns) State(domainName string) (*ZnsDomainState, error) {
 	}
 	registryValues := registryState.Result[znsContractField][namehash].Arguments
 	if len(registryValues) == 0 {
-		return nil, &DomainNotRegistered{DomainName: domainName}
+		return nil, &DomainNotRegisteredError{DomainName: domainName}
 	}
 	owner, resolver := registryValues[0], registryValues[1]
 	if owner == znsZeroAddress {
-		return nil, &DomainNotRegistered{DomainName: domainName}
+		return nil, &DomainNotRegisteredError{DomainName: domainName}
 	}
 	if resolver == znsZeroAddress {
-		return nil, &DomainNotConfigured{DomainName: domainName}
+		return nil, &DomainNotConfiguredError{DomainName: domainName}
 	}
 
 	response, err = z.provider.GetSmartContractSubState(strings.TrimPrefix(resolver, "0x"), znsContractField, []string{})
@@ -120,7 +120,6 @@ func (z *Zns) State(domainName string) (*ZnsDomainState, error) {
 	return &ZnsDomainState{Owner: owner, Resolver: resolver, Records: records}, nil
 }
 
-// Records Retrieve the records of a domain
 func (z *Zns) Records(domainName string, keys []string) (map[string]string, error) {
 	state, err := z.State(domainName)
 	if err != nil {
@@ -134,7 +133,6 @@ func (z *Zns) Records(domainName string, keys []string) (map[string]string, erro
 	return records, err
 }
 
-// Record Retrieve a single record of a domain
 func (z *Zns) Record(domainName string, key string) (string, error) {
 	records, err := z.Records(domainName, []string{key})
 	if err != nil {
@@ -143,7 +141,6 @@ func (z *Zns) Record(domainName string, key string) (string, error) {
 	return records[key], nil
 }
 
-// Owner Retrieve the owner of a domain
 func (z *Zns) Owner(domainName string) (string, error) {
 	state, err := z.State(domainName)
 	if err != nil {
@@ -153,7 +150,6 @@ func (z *Zns) Owner(domainName string) (string, error) {
 	return state.Owner, err
 }
 
-// Resolver Retrieve the resolver set for a domain
 func (z *Zns) Resolver(domainName string) (string, error) {
 	state, err := z.State(domainName)
 	if err != nil {
@@ -163,7 +159,6 @@ func (z *Zns) Resolver(domainName string) (string, error) {
 	return state.Resolver, err
 }
 
-// Addr Retrieve the value of domain's currency ticker
 func (z *Zns) Addr(domainName string, ticker string) (string, error) {
 	key, err := buildCryptoKey(ticker)
 	if err != nil {
@@ -176,7 +171,6 @@ func (z *Zns) Addr(domainName string, ticker string) (string, error) {
 	return value, nil
 }
 
-// AddrVersion Retrieve the version value of domain's currency ticker - useful for multichain currencies
 func (z *Zns) AddrVersion(domainName string, ticker string, version string) (string, error) {
 	key, err := buildCryptoKeyVersion(ticker, version)
 	if err != nil {
@@ -189,7 +183,6 @@ func (z *Zns) AddrVersion(domainName string, ticker string, version string) (str
 	return value, nil
 }
 
-// Email Retrieve the email of a domain
 func (z *Zns) Email(domainName string) (string, error) {
 	value, err := z.Record(domainName, emailKey)
 	if err != nil {
@@ -199,7 +192,6 @@ func (z *Zns) Email(domainName string) (string, error) {
 	return value, nil
 }
 
-// AllRecords Retrieve the all records of a domain
 func (z *Zns) AllRecords(domainName string) (map[string]string, error) {
 	state, err := z.State(domainName)
 	if err != nil {
@@ -209,7 +201,6 @@ func (z *Zns) AllRecords(domainName string) (map[string]string, error) {
 	return state.Records, err
 }
 
-// IpfsHash Retrieve the ipfs hash of a domain
 func (z *Zns) IpfsHash(domainName string) (string, error) {
 	records, err := z.Records(domainName, ipfsKeys)
 	if err != nil {
@@ -218,7 +209,6 @@ func (z *Zns) IpfsHash(domainName string) (string, error) {
 	return returnFirstNonEmpty(records, ipfsKeys), nil
 }
 
-// HTTPUrl Retrieve the http redirect url of a domain
 func (z *Zns) HTTPUrl(domainName string) (string, error) {
 	records, err := z.Records(domainName, redirectUrlKeys)
 	if err != nil {
@@ -227,7 +217,6 @@ func (z *Zns) HTTPUrl(domainName string) (string, error) {
 	return returnFirstNonEmpty(records, redirectUrlKeys), nil
 }
 
-// DNS Retrieve DNS records of domain
 func (z *Zns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
 	keys, err := dnsTypesToCryptoRecordKeys(types)
 	if err != nil {
@@ -245,7 +234,6 @@ func (z *Zns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 	return dnsRecords, nil
 }
 
-// IsSupportedDomain checks whether domain name is supported by the naming service
 func (z *Zns) IsSupportedDomain(domainName string) bool {
 	return strings.HasSuffix(domainName, ".zil")
 }

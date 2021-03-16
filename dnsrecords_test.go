@@ -23,6 +23,14 @@ func TestEmptyDnsTypesToRecordKeys(t *testing.T) {
 	assert.Equal(t, expectedRecords, records)
 }
 
+func TestDnsTypesToRecordKeysLowercase(t *testing.T) {
+	t.Parallel()
+	expectedRecords := []string{"dns.ttl", "dns.A", "dns.A.ttl"}
+	records, err := dnsTypesToCryptoRecordKeys([]dnsrecords.Type{"a"})
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, records)
+}
+
 func TestCryptoRecordsToDns(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []dnsrecords.Record{

@@ -16,11 +16,12 @@ func dnsTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
 	for _, dnsType := range types {
 		key.Reset()
 		ttlKey.Reset()
-		_, err := fmt.Fprintf(&key, "dns.%v", dnsType)
+		dnsTypeUppercase := strings.ToUpper(string(dnsType))
+		_, err := fmt.Fprintf(&key, "dns.%s", dnsTypeUppercase)
 		if err != nil {
 			return nil, err
 		}
-		_, err = fmt.Fprintf(&ttlKey, "dns.%v.ttl", dnsType)
+		_, err = fmt.Fprintf(&ttlKey, "dns.%s.ttl", dnsTypeUppercase)
 		if err != nil {
 			return nil, err
 		}

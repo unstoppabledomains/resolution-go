@@ -12,14 +12,14 @@ import (
 	"strings"
 )
 
-// Cns Cns
+// Cns is a naming service handles .crypto domains resolution.
 type Cns struct {
 	proxyReader     *proxyreader.Contract
 	supportedKeys   supportedKeys
 	contractBackend bind.ContractBackend
 }
 
-// CnsBuilder CnsBuilder
+// CnsBuilder is a builder to setup and build instance of Cns service.
 type CnsBuilder interface {
 	// SetContractBackend set Ethereum backend for communication with CNS registry
 	SetContractBackend(backend bind.ContractBackend) CnsBuilder
@@ -38,7 +38,7 @@ var cnsZeroAddress = common.HexToAddress("0x0")
 var cnsMainnetProxyReader = common.HexToAddress("0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5")
 var cnsMainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
 
-// NewCnsBuilder Creates CNS builder
+// NewCnsBuilder Creates builder to setup new instance os Cns service.
 func NewCnsBuilder() CnsBuilder {
 	return &cnsBuilder{}
 }
@@ -69,7 +69,7 @@ func (cb *cnsBuilder) Build() (*Cns, error) {
 	return &Cns{proxyReader: contract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend}, nil
 }
 
-// Data Retrieve data of domain
+// Data Get raw data attached to domain
 func (c *Cns) Data(domainName string, keys []string) (*struct {
 	Resolver common.Address
 	Owner    common.Address
@@ -77,7 +77,7 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 }, error) {
 	normalizedName := normalizeName(domainName)
 	if !c.IsSupportedDomain(normalizedName) {
-		return nil, &DomainNotSupported{DomainName: normalizedName}
+		return nil, &DomainNotSupportedError{DomainName: normalizedName}
 	}
 	namehash := kns.NameHash(normalizedName)
 	tokenID := namehash.Big()
@@ -86,16 +86,15 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 		return nil, err
 	}
 	if data.Owner == cnsZeroAddress {
-		return nil, &DomainNotRegistered{DomainName: normalizedName}
+		return nil, &DomainNotRegisteredError{DomainName: normalizedName}
 	}
 	if data.Resolver == cnsZeroAddress {
-		return nil, &DomainNotConfigured{DomainName: normalizedName}
+		return nil, &DomainNotConfiguredError{DomainName: normalizedName}
 	}
 
 	return &data, nil
 }
 
-// Records retrieve records of domain
 func (c *Cns) Records(domainName string, keys []string) (map[string]string, error) {
 	data, err := c.Data(domainName, keys)
 	if err != nil {
@@ -108,7 +107,6 @@ func (c *Cns) Records(domainName string, keys []string) (map[string]string, erro
 	return allRecords, nil
 }
 
-// Record Retrieve single record of domain
 func (c *Cns) Record(domainName string, key string) (string, error) {
 	records, err := c.Records(domainName, []string{key})
 	if err != nil {
@@ -117,7 +115,6 @@ func (c *Cns) Record(domainName string, key string) (string, error) {
 	return records[key], nil
 }
 
-// Addr Retrieve the value of domain's currency ticker
 func (c *Cns) Addr(domainName string, ticker string) (string, error) {
 	key, err := buildCryptoKey(ticker)
 	if err != nil {
@@ -130,7 +127,6 @@ func (c *Cns) Addr(domainName string, ticker string) (string, error) {
 	return value, nil
 }
 
-// AddrVersion Retrieve the version value of domain's currency ticker - useful for multichain currencies
 func (c *Cns) AddrVersion(domainName string, ticker string, version string) (string, error) {
 	key, err := buildCryptoKeyVersion(ticker, version)
 	if err != nil {
@@ -143,7 +139,6 @@ func (c *Cns) AddrVersion(domainName string, ticker string, version string) (str
 	return value, nil
 }
 
-// Email Retrieve the email of domain
 func (c *Cns) Email(domainName string) (string, error) {
 	value, err := c.Record(domainName, emailKey)
 	if err != nil {
@@ -153,7 +148,6 @@ func (c *Cns) Email(domainName string) (string, error) {
 	return value, nil
 }
 
-// Resolver Retrieve the resolver set for a domain
 func (c *Cns) Resolver(domainName string) (string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
@@ -163,7 +157,6 @@ func (c *Cns) Resolver(domainName string) (string, error) {
 	return data.Resolver.String(), nil
 }
 
-// Owner Retrieve the owner of a domain
 func (c *Cns) Owner(domainName string) (string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
@@ -173,7 +166,6 @@ func (c *Cns) Owner(domainName string) (string, error) {
 	return data.Owner.String(), nil
 }
 
-// IpfsHash Retrieve the ipfs hash of a domain
 func (c *Cns) IpfsHash(domainName string) (string, error) {
 	records, err := c.Records(domainName, ipfsKeys)
 	if err != nil {
@@ -182,7 +174,6 @@ func (c *Cns) IpfsHash(domainName string) (string, error) {
 	return returnFirstNonEmpty(records, ipfsKeys), nil
 }
 
-// HTTPUrl Retrieve the http redirect url of a domain
 func (c *Cns) HTTPUrl(domainName string) (string, error) {
 	records, err := c.Records(domainName, redirectUrlKeys)
 	if err != nil {
@@ -191,7 +182,6 @@ func (c *Cns) HTTPUrl(domainName string) (string, error) {
 	return returnFirstNonEmpty(records, redirectUrlKeys), nil
 }
 
-// AllRecords Retrieve all records of a domain
 func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
@@ -250,7 +240,6 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 	return allRecords, nil
 }
 
-// DNS Retrieve the DNS records of a domain
 func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
 	keys, err := dnsTypesToCryptoRecordKeys(types)
 	if err != nil {
@@ -268,7 +257,6 @@ func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 	return dnsRecords, nil
 }
 
-// IsSupportedDomain checks whether domain name is supported by the naming service
 func (c *Cns) IsSupportedDomain(domainName string) bool {
 	return strings.HasSuffix(domainName, ".crypto")
 }

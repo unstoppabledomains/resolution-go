@@ -67,7 +67,7 @@ func TestCnsEmptyDataValues(t *testing.T) {
 
 func TestCnsDomainNotRegistered(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotRegistered
+	var expectedError *DomainNotRegisteredError
 	testDomain := "not-registered-long-domain-name.crypto"
 	_, err := cns.Data(testDomain, []string{"crypto.ETH.address"})
 	assert.ErrorAs(t, err, &expectedError)
@@ -75,7 +75,7 @@ func TestCnsDomainNotRegistered(t *testing.T) {
 
 func TestCnsDomainNotConfigured(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotConfigured
+	var expectedError *DomainNotConfiguredError
 	testDomain := "reseller-test-paul2.crypto"
 	_, err := cns.Data(testDomain, []string{"crypto.ETH.address"})
 	assert.ErrorAs(t, err, &expectedError)
@@ -290,7 +290,7 @@ func TestCnsIsSupportedDomain(t *testing.T) {
 
 func TestCnsUnsupportedDomainError(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotSupported
+	var expectedError *DomainNotSupportedError
 	_, err := cns.Data("invalid.zil", []string{"crypto.ETH.address"})
 	assert.ErrorAs(t, err, &expectedError)
 }
