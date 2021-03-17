@@ -8,19 +8,22 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
-var zns = NewZnsWithDefaultProvider()
+var zns, _ = NewZnsBuilder().Build()
 
-func TestNewZns(t *testing.T) {
+func TestZnsBuilder(t *testing.T) {
 	t.Parallel()
-	znsProvider := provider.NewProvider("https://api.zilliqa.com")
-	zns := NewZns(znsProvider)
-	assert.IsType(t, &Zns{Provider: nil}, zns)
+	_, err := NewZnsBuilder().Build()
+	assert.Nil(t, err)
 }
 
-func TestNewZnsWithDefaultProvider(t *testing.T) {
+func TestZnsBuilderSetProvider(t *testing.T) {
 	t.Parallel()
-	zns := NewZnsWithDefaultProvider()
-	assert.IsType(t, &Zns{Provider: nil}, zns)
+	znsProvider := provider.NewProvider("https://api.zilliqa.com")
+	builder := NewZnsBuilder()
+	builder.SetProvider(znsProvider)
+	znsService, err := builder.Build()
+	assert.Nil(t, err)
+	assert.Equal(t, znsProvider, znsService.provider)
 }
 
 func TestZnsStateAllRecords(t *testing.T) {
@@ -48,14 +51,14 @@ func TestZnsStateAllRecords(t *testing.T) {
 
 func TestZnsStateDomainNotRegistered(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotRegistered
+	var expectedError *DomainNotRegisteredError
 	_, err := zns.State("long-not-registered-name.zil")
 	assert.ErrorAs(t, err, &expectedError)
 }
 
 func TestZnsStateDomainNotConfigured(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotConfigured
+	var expectedError *DomainNotConfiguredError
 	_, err := zns.State("1010.zil")
 	assert.ErrorAs(t, err, &expectedError)
 }
@@ -182,7 +185,6 @@ func TestZnsHTTPUrl(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-// todo Configure DNS records for .zil domain
 func TestZnsDns(t *testing.T) {
 	t.Parallel()
 	testDomain := "ffffffff.zil"
@@ -197,4 +199,18 @@ func TestZnsEmptyDns(t *testing.T) {
 	dnsRecords, err := zns.DNS(testDomain, []dnsrecords.Type{})
 	assert.Nil(t, err)
 	assert.Empty(t, dnsRecords)
+}
+
+func TestZnsIsSupportedDomain(t *testing.T) {
+	t.Parallel()
+	assert.True(t, zns.IsSupportedDomain("valid.zil"))
+	assert.False(t, zns.IsSupportedDomain("valid.crypto"))
+	assert.False(t, zns.IsSupportedDomain("invalid.com"))
+}
+
+func TestZnsUnsupportedDomainError(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotSupportedError
+	_, err := zns.State("invalid.crypto")
+	assert.ErrorAs(t, err, &expectedError)
 }

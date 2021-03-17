@@ -1,17 +1,26 @@
 package resolution
 
-// DomainNotRegistered Error when domain is missing an owner
-
-type DomainNotRegistered struct {
+// DomainNotRegisteredError Error when domain is missing an owner
+type DomainNotRegisteredError struct {
 	DomainName string
 }
 
-// DomainNotConfigured Error when domain does not have a resolver set
-type DomainNotConfigured struct {
+// DomainNotConfiguredError Error when domain does not have a resolver set
+type DomainNotConfiguredError struct {
 	DomainName string
 }
 
-func (e *DomainNotRegistered) Error() string { return e.DomainName + " is not registered" }
-func (e *DomainNotConfigured) Error() string {
+// DomainNotSupportedError Error when domain is not supported by the naming service
+type DomainNotSupportedError struct {
+	DomainName string
+}
+
+func (e *DomainNotRegisteredError) Error() string {
+	return e.DomainName + " is not registered"
+}
+func (e *DomainNotConfiguredError) Error() string {
 	return e.DomainName + " does not have configured Resolver"
+}
+func (e *DomainNotSupportedError) Error() string {
+	return e.DomainName + " is not supported by naming service"
 }

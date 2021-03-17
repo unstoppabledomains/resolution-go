@@ -9,19 +9,19 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
-// DNSTypesToCryptoRecordKeys Converts dns types to crypto record keys
-func DNSTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
+func dnsTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
 	recordKeys := []string{"dns.ttl"}
 	var key strings.Builder
 	var ttlKey strings.Builder
 	for _, dnsType := range types {
 		key.Reset()
 		ttlKey.Reset()
-		_, err := fmt.Fprintf(&key, "dns.%v", dnsType)
+		dnsTypeUppercase := strings.ToUpper(string(dnsType))
+		_, err := fmt.Fprintf(&key, "dns.%s", dnsTypeUppercase)
 		if err != nil {
 			return nil, err
 		}
-		_, err = fmt.Fprintf(&ttlKey, "dns.%v.ttl", dnsType)
+		_, err = fmt.Fprintf(&ttlKey, "dns.%s.ttl", dnsTypeUppercase)
 		if err != nil {
 			return nil, err
 		}
@@ -31,8 +31,7 @@ func DNSTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
 	return recordKeys, nil
 }
 
-// CryptoRecordsToDNS Converts crypto records dns types
-func CryptoRecordsToDNS(cryptoRecords map[string]string) ([]dnsrecords.Record, error) {
+func cryptoRecordsToDNS(cryptoRecords map[string]string) ([]dnsrecords.Record, error) {
 	var globalTTL = dnsrecords.DefaultTTL
 	if cryptoRecords["dns.ttl"] != "" {
 		parsedTTL, err := strconv.ParseUint(cryptoRecords["dns.ttl"], 10, 32)

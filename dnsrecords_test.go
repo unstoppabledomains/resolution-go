@@ -10,7 +10,7 @@ import (
 func TestDnsTypesToRecordKeys(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []string{"dns.ttl", "dns.A", "dns.A.ttl", "dns.AAAA", "dns.AAAA.ttl"}
-	records, err := DNSTypesToCryptoRecordKeys([]dnsrecords.Type{dnsrecords.A, dnsrecords.AAAA})
+	records, err := dnsTypesToCryptoRecordKeys([]dnsrecords.Type{"A", "AAAA"})
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, records)
 }
@@ -18,7 +18,15 @@ func TestDnsTypesToRecordKeys(t *testing.T) {
 func TestEmptyDnsTypesToRecordKeys(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []string{"dns.ttl"}
-	records, err := DNSTypesToCryptoRecordKeys([]dnsrecords.Type{})
+	records, err := dnsTypesToCryptoRecordKeys([]dnsrecords.Type{})
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, records)
+}
+
+func TestDnsTypesToRecordKeysLowercase(t *testing.T) {
+	t.Parallel()
+	expectedRecords := []string{"dns.ttl", "dns.A", "dns.A.ttl"}
+	records, err := dnsTypesToCryptoRecordKeys([]dnsrecords.Type{"a"})
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, records)
 }
@@ -26,14 +34,14 @@ func TestEmptyDnsTypesToRecordKeys(t *testing.T) {
 func TestCryptoRecordsToDns(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.1"},
-		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.2"},
-		{Type: dnsrecords.AAAA, TTL: 1000, Value: "2400:cb00:2049:1::a29f:1804"},
-		{Type: dnsrecords.AAAA, TTL: 1000, Value: "2001:db8::8a2e:370:7334"},
-		{Type: dnsrecords.TXT, TTL: 666, Value: "unstoppable"},
-		{Type: dnsrecords.TXT, TTL: 666, Value: "test"},
+		{Type: "A", TTL: 1800, Value: "10.0.0.1"},
+		{Type: "A", TTL: 1800, Value: "10.0.0.2"},
+		{Type: "AAAA", TTL: 1000, Value: "2400:cb00:2049:1::a29f:1804"},
+		{Type: "AAAA", TTL: 1000, Value: "2001:db8::8a2e:370:7334"},
+		{Type: "TXT", TTL: 666, Value: "unstoppable"},
+		{Type: "TXT", TTL: 666, Value: "test"},
 	}
-	records, err := CryptoRecordsToDNS(map[string]string{
+	records, err := cryptoRecordsToDNS(map[string]string{
 		"dns.A":          "[\"10.0.0.1\",\"10.0.0.2\"]",
 		"dns.AAAA":       "[\"2400:cb00:2049:1::a29f:1804\",\"2001:db8::8a2e:370:7334\"]",
 		"dns.A.ttl":      "1800",
@@ -49,7 +57,7 @@ func TestCryptoRecordsToDns(t *testing.T) {
 
 func TestCryptoRecordsToDnsInvalidKeys(t *testing.T) {
 	t.Parallel()
-	records, err := CryptoRecordsToDNS(map[string]string{
+	records, err := cryptoRecordsToDNS(map[string]string{
 		"crypto.BTC.address":         "bc1q359khn0phg58xgezyqsuuaha28zkwx047c0c3y",
 		"crypto.ETH.address":         "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8",
 		"gundb.public_key.value":     "pqeBHabDQdCHhbdivgNEc74QO-x8CPGXq4PKWgfIzhY.7WJR5cZFuSyh1bFwx0GWzjmrim0T5Y6Bp0SSK0im3nI",
@@ -64,11 +72,11 @@ func TestCryptoRecordsToDnsInvalidKeys(t *testing.T) {
 func TestCryptoRecordsToDnsDefaultTTL(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.A, TTL: dnsrecords.DefaultTTL, Value: "10.0.0.1"},
-		{Type: dnsrecords.AAAA, TTL: dnsrecords.DefaultTTL, Value: "2400:cb00:2049:1::a29f:1804"},
-		{Type: dnsrecords.TXT, TTL: dnsrecords.DefaultTTL, Value: "test"},
+		{Type: "A", TTL: dnsrecords.DefaultTTL, Value: "10.0.0.1"},
+		{Type: "AAAA", TTL: dnsrecords.DefaultTTL, Value: "2400:cb00:2049:1::a29f:1804"},
+		{Type: "TXT", TTL: dnsrecords.DefaultTTL, Value: "test"},
 	}
-	records, err := CryptoRecordsToDNS(map[string]string{
+	records, err := cryptoRecordsToDNS(map[string]string{
 		"dns.A":    "[\"10.0.0.1\"]",
 		"dns.AAAA": "[\"2400:cb00:2049:1::a29f:1804\"]",
 		"dns.TXT":  "[\"test\"]",
@@ -80,10 +88,10 @@ func TestCryptoRecordsToDnsDefaultTTL(t *testing.T) {
 func TestCryptoRecordsToDnsInvalidValue(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.AAAA, TTL: 1000, Value: "2400:cb00:2049:1::a29f:1804"},
-		{Type: dnsrecords.TXT, TTL: 1000, Value: "test"},
+		{Type: "AAAA", TTL: 1000, Value: "2400:cb00:2049:1::a29f:1804"},
+		{Type: "TXT", TTL: 1000, Value: "test"},
 	}
-	records, err := CryptoRecordsToDNS(map[string]string{
+	records, err := cryptoRecordsToDNS(map[string]string{
 		"dns.A":    "invalid value",
 		"dns.AAAA": "[\"2400:cb00:2049:1::a29f:1804\"]",
 		"dns.TXT":  "[\"test\"]",
@@ -96,10 +104,10 @@ func TestCryptoRecordsToDnsInvalidValue(t *testing.T) {
 func TestCryptoRecordsToDnsInvalidGlobalTTL(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.AAAA, TTL: dnsrecords.DefaultTTL, Value: "2400:cb00:2049:1::a29f:1804"},
-		{Type: dnsrecords.TXT, TTL: dnsrecords.DefaultTTL, Value: "test"},
+		{Type: "AAAA", TTL: dnsrecords.DefaultTTL, Value: "2400:cb00:2049:1::a29f:1804"},
+		{Type: "TXT", TTL: dnsrecords.DefaultTTL, Value: "test"},
 	}
-	records, err := CryptoRecordsToDNS(map[string]string{
+	records, err := cryptoRecordsToDNS(map[string]string{
 		"dns.AAAA": "[\"2400:cb00:2049:1::a29f:1804\"]",
 		"dns.TXT":  "[\"test\"]",
 		"dns.ttl":  "invalid ttl",
@@ -111,10 +119,10 @@ func TestCryptoRecordsToDnsInvalidGlobalTTL(t *testing.T) {
 func TestCryptoRecordsToDnsInvalidRecordTTL(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.AAAA, TTL: 500, Value: "2400:cb00:2049:1::a29f:1804"},
-		{Type: dnsrecords.TXT, TTL: 500, Value: "test"},
+		{Type: "AAAA", TTL: 500, Value: "2400:cb00:2049:1::a29f:1804"},
+		{Type: "TXT", TTL: 500, Value: "test"},
 	}
-	records, err := CryptoRecordsToDNS(map[string]string{
+	records, err := cryptoRecordsToDNS(map[string]string{
 		"dns.AAAA":     "[\"2400:cb00:2049:1::a29f:1804\"]",
 		"dns.AAAA.ttl": "invalid ttl",
 		"dns.TXT":      "[\"test\"]",
@@ -127,7 +135,7 @@ func TestCryptoRecordsToDnsInvalidRecordTTL(t *testing.T) {
 
 func TestCryptoRecordsToDnsEmpty(t *testing.T) {
 	t.Parallel()
-	records, err := CryptoRecordsToDNS(map[string]string{})
+	records, err := cryptoRecordsToDNS(map[string]string{})
 	assert.Nil(t, err)
 	assert.Empty(t, records)
 }

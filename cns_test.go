@@ -9,25 +9,29 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
-var cns, _ = NewCnsWithDefaultBackend()
+var cns, _ = NewCnsBuilder().Build()
 
-func TestNewCnsWithDefaultProvider(t *testing.T) {
+func TestCnsBuilder(t *testing.T) {
 	t.Parallel()
-	_, err := NewCnsWithDefaultBackend()
+	builder := NewCnsBuilder()
+	_, err := builder.Build()
 	assert.Nil(t, err)
 }
 
-func TestNewCns(t *testing.T) {
+func TestCnsBuilderSetBackend(t *testing.T) {
 	t.Parallel()
-	backend, _ := ethclient.Dial("https://mainnet.infura.io/v3/f3c9708a98674a9fb0ce475354d1e711")
-	_, err := NewCns(backend)
+	backend, _ := ethclient.Dial("https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
+	builder := NewCnsBuilder()
+	builder.SetContractBackend(backend)
+	cns, err := builder.Build()
 	assert.Nil(t, err)
+	assert.Equal(t, backend, cns.contractBackend)
 }
 
 func TestNewCnsWithSupportedKeys(t *testing.T) {
 	t.Parallel()
-	cns, _ := NewCnsWithDefaultBackend()
-	deprecatedKeyName := cns.SupportedKeys["crypto.ETH.address"]
+	cnsService, _ := NewCnsBuilder().Build()
+	deprecatedKeyName := cnsService.supportedKeys["crypto.ETH.address"]
 	assert.Equal(t, "ETH", deprecatedKeyName.DeprecatedKeyName)
 }
 
@@ -63,7 +67,7 @@ func TestCnsEmptyDataValues(t *testing.T) {
 
 func TestCnsDomainNotRegistered(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotRegistered
+	var expectedError *DomainNotRegisteredError
 	testDomain := "not-registered-long-domain-name.crypto"
 	_, err := cns.Data(testDomain, []string{"crypto.ETH.address"})
 	assert.ErrorAs(t, err, &expectedError)
@@ -71,7 +75,7 @@ func TestCnsDomainNotRegistered(t *testing.T) {
 
 func TestCnsDomainNotConfigured(t *testing.T) {
 	t.Parallel()
-	var expectedError *DomainNotConfigured
+	var expectedError *DomainNotConfiguredError
 	testDomain := "reseller-test-paul2.crypto"
 	_, err := cns.Data(testDomain, []string{"crypto.ETH.address"})
 	assert.ErrorAs(t, err, &expectedError)
@@ -246,8 +250,8 @@ func TestCnsDnsA(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-dns.crypto"
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.1"},
-		{Type: dnsrecords.A, TTL: 1800, Value: "10.0.0.2"},
+		{Type: "A", TTL: 1800, Value: "10.0.0.1"},
+		{Type: "A", TTL: 1800, Value: "10.0.0.2"},
 	}
 	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"A"})
 	assert.Nil(t, err)
@@ -258,7 +262,7 @@ func TestCnsDnsCname(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-dns-cname.crypto"
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.CNAME, TTL: 1111, Value: "example.com."},
+		{Type: "CNAME", TTL: 1111, Value: "example.com."},
 	}
 	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"CNAME"})
 	assert.Nil(t, err)
@@ -269,10 +273,24 @@ func TestCnsDnsGlobalTtl(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-dns-global-ttl.crypto"
 	expectedRecords := []dnsrecords.Record{
-		{Type: dnsrecords.A, TTL: 1000, Value: "10.0.0.1"},
-		{Type: dnsrecords.A, TTL: 1000, Value: "10.0.0.2"},
+		{Type: "A", TTL: 1000, Value: "10.0.0.1"},
+		{Type: "A", TTL: 1000, Value: "10.0.0.2"},
 	}
 	dnsRecords, err := cns.DNS(testDomain, []dnsrecords.Type{"A"})
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, expectedRecords, dnsRecords)
+}
+
+func TestCnsIsSupportedDomain(t *testing.T) {
+	t.Parallel()
+	assert.True(t, cns.IsSupportedDomain("valid.crypto"))
+	assert.False(t, cns.IsSupportedDomain("invalid.zil"))
+	assert.False(t, cns.IsSupportedDomain("invalid.com"))
+}
+
+func TestCnsUnsupportedDomainError(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotSupportedError
+	_, err := cns.Data("invalid.zil", []string{"crypto.ETH.address"})
+	assert.ErrorAs(t, err, &expectedError)
 }
