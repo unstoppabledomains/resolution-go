@@ -1,5 +1,6 @@
 ![Test](https://github.com/unstoppabledomains/resolution-go/workflows/Test/badge.svg?branch=master)
 ![Lint](https://github.com/unstoppabledomains/resolution-go/workflows/Lint/badge.svg?branch=master)
+[![GoDoc](https://godoc.org/github.com/unstoppabledomains/resolution-go?status.svg)](https://pkg.go.dev/github.com/unstoppabledomains/resolution-go)
 [![Unstoppable Domains Documentation](https://img.shields.io/badge/docs-unstoppabledomains.com-blue)](https://docs.unstoppabledomains.com/)
 [![Get help on Discord](https://img.shields.io/badge/Get%20help%20on-Discord-blueviolet)](https://discord.gg/b6ZVxSZ9Hn)
 
@@ -17,7 +18,53 @@ Resoultion-Java supports decentralized domains across three zones:
     - `.zil`
 
 # Usage
-TBD
+```go
+package main
+
+import (
+  "fmt"
+  "github.com/Zilliqa/gozilliqa-sdk/provider"
+  "github.com/ethereum/go-ethereum/ethclient"
+  "github.com/unstoppabledomains/resolution-go"
+  "github.com/unstoppabledomains/resolution-go/namingservice"
+)
+
+func main() {
+  // Resolve .crypto
+  cns, _ := resolution.NewCnsBuilder().Build()
+  ethAddress, _ := cns.Addr("brad.crypto", "ETH")
+  fmt.Println("ETH address for brad.crypto is", ethAddress)
+
+  // Resolve .zil
+  zns, _ := resolution.NewZnsBuilder().Build()
+  btcAddress, _ := zns.Addr("brad.zil", "BTC")
+  fmt.Println("BTC address for brad.zil is", btcAddress)
+
+  // Detect domain naming service
+  namingServices := map[string]resolution.NamingService{namingservice.CNS: cns, namingservice.ZNS: zns}
+  domainToDetect := "ryan.crypto"
+  namingServiceName, _ := resolution.DetectNamingService(domainToDetect)
+  if namingServices[namingServiceName] != nil {
+    resolvedAddress, _ := namingServices[namingServiceName].Addr(domainToDetect, "ETH")
+    fmt.Println("ETH address for", domainToDetect, "is", resolvedAddress)
+  }
+
+  // Set custom Ethereum endpoint for CNS service
+  ethContractBackend, _ := ethclient.Dial("https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
+  cnsWithCustomBackend, _ := resolution.NewCnsBuilder().SetContractBackend(ethContractBackend).Build()
+  allCnsRecords, _ := cnsWithCustomBackend.AllRecords("beresnev.crypto")
+  fmt.Println("Records for beresnev.crypto", allCnsRecords)
+
+  // Set custom Zilliqa endpoint for ZNS service
+  zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
+  znsWithCustomProvider, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
+  allZnsRecords, _ := znsWithCustomProvider.AllRecords("brad.zil")
+  fmt.Println("Records for brad.zil", allZnsRecords)
+}
+```
+
+# Network support
+Library supports Ethereum mainnet and Zilliqa mainnet only.
 
 # Contributions
 
