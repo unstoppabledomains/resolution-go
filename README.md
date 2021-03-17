@@ -1,3 +1,4 @@
+![CI](https://github.com/unstoppabledomains/resolution-go/workflows/CI/badge.svg?branch=master)
 [![Unstoppable Domains Documentation](https://img.shields.io/badge/docs-unstoppabledomains.com-blue)](https://docs.unstoppabledomains.com/)
 [![Get help on Discord](https://img.shields.io/badge/Get%20help%20on-Discord-blueviolet)](https://discord.gg/b6ZVxSZ9Hn)
 
