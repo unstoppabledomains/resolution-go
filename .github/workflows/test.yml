@@ -23,8 +23,6 @@ jobs:
           # In order:
           # * Module download cache
           # * Build cache (Linux)
-          # * Build cache (Mac)
-          # * Build cache (Windows)
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
