@@ -11,7 +11,7 @@ resolution-go is a library for interacting with blockchain domain names. It can 
 
 resolution-go is primarily built and maintained by [Unstoppable Domains](https://unstoppabledomains.com/).
 
-Resoultion-go decentralized domains across two zones:
+resolution-go decentralized domains across two zones:
 
 - Crypto Name Service (CNS)
     - `.crypto`
