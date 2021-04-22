@@ -37,7 +37,7 @@ func TestNewCnsWithSupportedKeys(t *testing.T) {
 
 func TestCnsDataValue(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	expectedRecord := "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8"
 	data, err := cns.Data(testDomain, []string{"crypto.ETH.address"})
 	assert.Nil(t, err)
@@ -46,9 +46,9 @@ func TestCnsDataValue(t *testing.T) {
 
 func TestCnsData(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	expectedRecord := "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8"
-	expectedOwner := common.HexToAddress("0x8aaD44321A86b170879d7A244c1e8d360c99DdA8")
+	expectedOwner := common.HexToAddress("0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2")
 	expectedResolver := common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
 	data, err := cns.Data(testDomain, []string{"crypto.ETH.address"})
 	assert.Nil(t, err)
@@ -59,7 +59,7 @@ func TestCnsData(t *testing.T) {
 
 func TestCnsEmptyDataValues(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	data, _ := cns.Data(testDomain, []string{"empty record"})
 	assert.Equal(t, data.Values[0], "")
 	assert.Len(t, data.Values, 1)
@@ -83,7 +83,7 @@ func TestCnsDomainNotConfigured(t *testing.T) {
 
 func TestCnsRecords(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	expectedRecords := map[string]string{"crypto.ETH.address": "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8", "crypto.BTC.address": "bc1q359khn0phg58xgezyqsuuaha28zkwx047c0c3y"}
 	records, err := cns.Records(testDomain, []string{"crypto.ETH.address", "crypto.BTC.address"})
 	assert.Nil(t, err)
@@ -92,7 +92,7 @@ func TestCnsRecords(t *testing.T) {
 
 func TestCnsNoRecords(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	records, err := cns.Records(testDomain, []string{})
 	assert.Nil(t, err)
 	assert.Empty(t, records)
@@ -100,7 +100,7 @@ func TestCnsNoRecords(t *testing.T) {
 
 func TestCnsEmptyRecords(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	expectedRecords := map[string]string{"record-not-exist": "", "crypto.ETH.address": "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8", "crypto.BTC.address": "bc1q359khn0phg58xgezyqsuuaha28zkwx047c0c3y"}
 	records, err := cns.Records(testDomain, []string{"record-not-exist", "crypto.ETH.address", "crypto.BTC.address"})
 	assert.Nil(t, err)
@@ -109,7 +109,7 @@ func TestCnsEmptyRecords(t *testing.T) {
 
 func TestCnsRecord(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	expectedRecord := "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8"
 	record, err := cns.Record(testDomain, "crypto.ETH.address")
 	assert.Nil(t, err)
@@ -118,7 +118,7 @@ func TestCnsRecord(t *testing.T) {
 
 func TestCnsEmptyRecord(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	record, err := cns.Record(testDomain, "record-not-exist")
 	assert.Nil(t, err)
 	assert.Empty(t, record)
@@ -126,7 +126,7 @@ func TestCnsEmptyRecord(t *testing.T) {
 
 func TestCnsAddr(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	expectedRecord := "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8"
 	record, err := cns.Addr(testDomain, "ETH")
 	assert.Nil(t, err)
@@ -135,7 +135,7 @@ func TestCnsAddr(t *testing.T) {
 
 func TestCnsAddrLowerCaseTicker(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	expectedRecord := "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8"
 	record, err := cns.Addr(testDomain, "eth")
 	assert.Nil(t, err)
@@ -216,12 +216,10 @@ func TestCnsHttpUrlLegacy(t *testing.T) {
 
 func TestCnsAllRecords(t *testing.T) {
 	t.Parallel()
-	testDomain := "brad.crypto"
+	testDomain := "udtestdev-test.crypto"
 	expectedRecords := map[string]string{
 		"crypto.BTC.address":         "bc1q359khn0phg58xgezyqsuuaha28zkwx047c0c3y",
 		"crypto.ETH.address":         "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8",
-		"gundb.public_key.value":     "pqeBHabDQdCHhbdivgNEc74QO-x8CPGXq4PKWgfIzhY.7WJR5cZFuSyh1bFwx0GWzjmrim0T5Y6Bp0SSK0im3nI",
-		"gundb.username.value":       "0x8912623832e174f2eb1f59cc3b587444d619376ad5bf10070e937e0dc22b9ffb2e3ae059e6ebf729f87746b2f71e5d88ec99c1fb3c7c49b8617e2520d474c48e1c",
 		"ipfs.html.value":            "Qme54oEzRkgooJbCDr78vzKAWcv6DDEZqRhhDyDtzgrZP6",
 		"ipfs.redirect_domain.value": "https://abbfe6z95qov3d40hf6j30g7auo7afhp.mypinata.cloud/ipfs/Qme54oEzRkgooJbCDr78vzKAWcv6DDEZqRhhDyDtzgrZP6",
 	}
