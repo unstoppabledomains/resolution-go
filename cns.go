@@ -58,7 +58,7 @@ func (cb *cnsBuilder) Build() (*Cns, error) {
 		}
 		cb.contractBackend = backend
 	}
-	contract, err := proxyreader.NewContract(cnsMainnetProxyReader, cb.contractBackend)
+	proxyReaderContract, err := proxyreader.NewContract(cnsMainnetProxyReader, cb.contractBackend)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (cb *cnsBuilder) Build() (*Cns, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Cns{proxyReader: contract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend}, nil
+	return &Cns{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend}, nil
 }
 
 // Data Get raw data attached to domain
@@ -259,4 +259,19 @@ func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 
 func (c *Cns) IsSupportedDomain(domainName string) bool {
 	return strings.HasSuffix(domainName, ".crypto")
+}
+
+func (c *Cns) TokenURI(domainName string) (string, error) {
+	normalizedName := normalizeName(domainName)
+	if !c.IsSupportedDomain(normalizedName) {
+		return "", &DomainNotSupportedError{DomainName: normalizedName}
+	}
+	namehash := kns.NameHash(normalizedName)
+	tokenId := namehash.Big()
+	tokenUri, err := c.proxyReader.TokenURI(&bind.CallOpts{Pending: false}, tokenId)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenUri, nil
 }

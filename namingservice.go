@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// Unstoppable supports multiple naming services (.zil and .crypto).
-// Each naming service implements shared interface and returns similar record types.
+// NamingService Unstoppable supports multiple naming services (.zil and .crypto).
+// NamingService Each naming service implements shared interface and returns similar record types.
 type NamingService interface {
 	// Records Retrieve records of domain.
 	// Keys must be provided in raw format according to specification.
@@ -61,6 +61,9 @@ type NamingService interface {
 
 	// IsSupportedDomain checks whether domain name is supported by the naming service.
 	IsSupportedDomain(domainName string) bool
+
+	// TokenURI returns ERC721 metadata token URI
+	TokenURI(domainName string) (string, error)
 }
 
 var supportedNamingServices = map[string]string{

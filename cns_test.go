@@ -292,3 +292,18 @@ func TestCnsUnsupportedDomainError(t *testing.T) {
 	_, err := cns.Data("invalid.zil", []string{"crypto.ETH.address"})
 	assert.ErrorAs(t, err, &expectedError)
 }
+
+func TestCnsTokenURI(t *testing.T) {
+	t.Parallel()
+	tokenURI, err := cns.TokenURI("brad.crypto")
+	expectedTokenURI := "https://metadata.unstoppabledomains.com/metadata/brad.crypto"
+	assert.Nil(t, err)
+	assert.Equal(t, expectedTokenURI, tokenURI)
+}
+
+func TestCnsTokenUriNotSupportedDomain(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotSupportedError
+	_, err := cns.TokenURI("invalid.zil")
+	assert.ErrorAs(t, err, &expectedError)
+}

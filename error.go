@@ -15,6 +15,10 @@ type DomainNotSupportedError struct {
 	DomainName string
 }
 
+type MethodIsNotSupportedError struct {
+	NamingServiceName string
+}
+
 func (e *DomainNotRegisteredError) Error() string {
 	return e.DomainName + " is not registered"
 }
@@ -23,4 +27,8 @@ func (e *DomainNotConfiguredError) Error() string {
 }
 func (e *DomainNotSupportedError) Error() string {
 	return e.DomainName + " is not supported by naming service"
+}
+
+func (e *MethodIsNotSupportedError) Error() string {
+	return "Method is not supported in " + e.NamingServiceName + " naming service"
 }
