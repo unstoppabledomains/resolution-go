@@ -1,6 +1,7 @@
 package resolution
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -16,6 +17,10 @@ func TestCnsBuilder(t *testing.T) {
 	builder := NewCnsBuilder()
 	_, err := builder.Build()
 	assert.Nil(t, err)
+	assert.NotNil(t, cns.contractBackend)
+	assert.NotNil(t, cns.metadataClient)
+	assert.NotNil(t, cns.supportedKeys)
+	assert.NotNil(t, cns.proxyReader)
 }
 
 func TestCnsBuilderSetBackend(t *testing.T) {
@@ -26,6 +31,16 @@ func TestCnsBuilderSetBackend(t *testing.T) {
 	cns, err := builder.Build()
 	assert.Nil(t, err)
 	assert.Equal(t, backend, cns.contractBackend)
+}
+
+func TestCnsBuilderSetMetadataClient(t *testing.T) {
+	t.Parallel()
+	client := &http.Client{}
+	builder := NewCnsBuilder()
+	builder.SetMetadataClient(client)
+	cns, err := builder.Build()
+	assert.Nil(t, err)
+	assert.Equal(t, client, cns.metadataClient)
 }
 
 func TestNewCnsWithSupportedKeys(t *testing.T) {
@@ -295,15 +310,52 @@ func TestCnsUnsupportedDomainError(t *testing.T) {
 
 func TestCnsTokenURI(t *testing.T) {
 	t.Parallel()
-	tokenURI, err := cns.TokenURI("brad.crypto")
-	expectedTokenURI := "https://metadata.unstoppabledomains.com/metadata/brad.crypto"
+	tokenURI, err := cns.TokenURI("udtestdev-test.crypto")
+	expectedTokenURI := "https://metadata.unstoppabledomains.com/metadata/udtestdev-test.crypto"
 	assert.Nil(t, err)
 	assert.Equal(t, expectedTokenURI, tokenURI)
+}
+
+func TestCnsTokenURIDomainIsNotRegistered(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotRegisteredError
+	_, err := cns.TokenURI("unregistered-domain-name.crypto")
+	assert.ErrorAs(t, err, &expectedError)
 }
 
 func TestCnsTokenUriNotSupportedDomain(t *testing.T) {
 	t.Parallel()
 	var expectedError *DomainNotSupportedError
 	_, err := cns.TokenURI("invalid.zil")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestCnsTokenURIMetadata(t *testing.T) {
+	t.Parallel()
+	expectedMetadata := TokenMetadata{
+		Name:        "udtestdev-test.crypto",
+		Description: "A .crypto blockchain domain. Use it to resolve your cryptocurrency addresses and decentralized websites.\nhttps://gateway.pinata.cloud/ipfs/Qme54oEzRkgooJbCDr78vzKAWcv6DDEZqRhhDyDtzgrZP6",
+		ExternalUrl: "https://unstoppabledomains.com/search?searchTerm=udtestdev-test.crypto",
+		Image:       "https://storage.googleapis.com/dot-crypto-metadata-api/unstoppabledomains_crypto.png",
+		Attributes: []TokenMetadataAttribute{
+			{
+				TraitType: "domain",
+				Value:     "udtestdev-test.crypto",
+			},
+		},
+	}
+	metadata, err := cns.TokenURIMetadata("udtestdev-test.crypto")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedMetadata.Name, metadata.Name)
+	assert.Equal(t, expectedMetadata.Description, metadata.Description)
+	assert.Equal(t, expectedMetadata.ExternalUrl, metadata.ExternalUrl)
+	assert.Equal(t, expectedMetadata.Image, metadata.Image)
+	assert.Contains(t, metadata.Attributes, expectedMetadata.Attributes[0])
+}
+
+func TestCnsTokenURIMetadataNotSupportedDomain(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotRegisteredError
+	_, err := cns.TokenURIMetadata("unregistered-domain-name.crypto")
 	assert.ErrorAs(t, err, &expectedError)
 }

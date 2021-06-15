@@ -64,6 +64,9 @@ type NamingService interface {
 
 	// TokenURI returns ERC721 metadata token URI
 	TokenURI(domainName string) (string, error)
+
+	// TokenURIMetadata returns ERC721 metadata
+	TokenURIMetadata(domainName string) (TokenMetadata, error)
 }
 
 var supportedNamingServices = map[string]string{
