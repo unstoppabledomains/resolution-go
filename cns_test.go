@@ -283,7 +283,12 @@ func TestCnsIsSupportedDomain(t *testing.T) {
 	t.Parallel()
 	assert.True(t, cns.IsSupportedDomain("valid.crypto"))
 	assert.False(t, cns.IsSupportedDomain("invalid.zil"))
-	assert.False(t, cns.IsSupportedDomain("invalid.com"))
+	assert.True(t, cns.IsSupportedDomain("invalid.com"))
+	assert.True(t, cns.IsSupportedDomain("radomin-domain.com"))
+	assert.True(t, cns.IsSupportedDomain("some-domain.net"))
+	assert.True(t, cns.IsSupportedDomain("some-domain.wiowejfo.qwefwef"))
+	assert.True(t, cns.IsSupportedDomain("some-domain.wiowejfo.qwd"))
+	assert.False(t, cns.IsSupportedDomain("some-domain.wiowejfo.zil"))
 }
 
 func TestCnsUnsupportedDomainError(t *testing.T) {

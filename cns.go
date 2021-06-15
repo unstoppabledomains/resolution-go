@@ -1,6 +1,9 @@
 package resolution
 
 import (
+	"math/big"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -8,8 +11,6 @@ import (
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/proxyreader"
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
-	"math/big"
-	"strings"
 )
 
 // Cns is a naming service handles .crypto domains resolution.
@@ -258,5 +259,5 @@ func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 }
 
 func (c *Cns) IsSupportedDomain(domainName string) bool {
-	return strings.HasSuffix(domainName, ".crypto")
+	return !strings.HasSuffix(domainName, ".zil")
 }
