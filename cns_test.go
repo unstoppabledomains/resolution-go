@@ -1,6 +1,9 @@
 package resolution
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
@@ -9,6 +12,25 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
+
+type MockedMetadataClient struct {
+	Response *http.Response
+	Err      error
+}
+
+func (m *MockedMetadataClient) SetResponse(resp *http.Response) *MockedMetadataClient {
+	m.Response = resp
+	return m
+}
+
+func (m *MockedMetadataClient) SetError(err error) *MockedMetadataClient {
+	m.Err = err
+	return m
+}
+
+func (m *MockedMetadataClient) Get(_ string) (resp *http.Response, err error) {
+	return m.Response, m.Err
+}
 
 var cns, _ = NewCnsBuilder().Build()
 
@@ -357,5 +379,47 @@ func TestCnsTokenURIMetadataNotSupportedDomain(t *testing.T) {
 	t.Parallel()
 	var expectedError *DomainNotRegisteredError
 	_, err := cns.TokenURIMetadata("unregistered-domain-name.crypto")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestCnsUnhash(t *testing.T) {
+	t.Parallel()
+	expectedDomainName := "ryan.crypto"
+	domainName, err := cns.Unhash("0x691f36df38168d9297e784f45a87257a70c58c4040d469c6d0b91d253a837e32")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedDomainName, domainName)
+}
+
+func TestCnsUnhashWithout0xPrefix(t *testing.T) {
+	t.Parallel()
+	expectedDomainName := "ryan.crypto"
+	domainName, err := cns.Unhash("691f36df38168d9297e784f45a87257a70c58c4040d469c6d0b91d253a837e32")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedDomainName, domainName)
+}
+
+func TestCnsUnhashInvalidDomain(t *testing.T) {
+	t.Parallel()
+	var expectedError *InvalidDomainNameReturnedError
+	body, _ := json.Marshal(TokenMetadata{
+		Name:            "brad.crypto",
+		Description:     "",
+		Image:           "",
+		ExternalUrl:     "",
+		ExternalLink:    "",
+		ImageData:       "",
+		BackgroundColor: "",
+		AnimationUrl:    "",
+		YoutubeUrl:      "",
+		Attributes:      nil,
+	})
+	var mockedClient MockedMetadataClient
+	mockedClient.SetResponse(&http.Response{
+		Body: ioutil.NopCloser(bytes.NewBuffer(body)),
+	})
+	mockedClient.SetError(nil)
+	cnsWithMockedMetadataClient, _ := NewCnsBuilder().SetMetadataClient(&mockedClient).Build()
+	domainName, err := cnsWithMockedMetadataClient.Unhash("691f36df38168d9297e784f45a87257a70c58c4040d469c6d0b91d253a837e32")
+	assert.Empty(t, domainName)
 	assert.ErrorAs(t, err, &expectedError)
 }

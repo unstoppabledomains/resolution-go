@@ -288,12 +288,8 @@ func (c *Cns) TokenURI(domainName string) (string, error) {
 		return "", &DomainNotSupportedError{DomainName: normalizedName}
 	}
 	namehash := kns.NameHash(normalizedName)
-	tokenId := namehash.Big()
-	tokenUri, err := c.proxyReader.TokenURI(&bind.CallOpts{Pending: false}, tokenId)
+	tokenUri, err := c.tokenUriByNamehash(namehash)
 	if err != nil {
-		if err.Error() == vm.ErrExecutionReverted.Error() {
-			return "", &DomainNotRegisteredError{DomainName: normalizedName}
-		}
 		return "", err
 	}
 
@@ -305,6 +301,49 @@ func (c *Cns) TokenURIMetadata(domainName string) (TokenMetadata, error) {
 	if err != nil {
 		return TokenMetadata{}, err
 	}
+	metadata, err := c.tokenMetadataByUri(tokenUri)
+	if err != nil {
+		return TokenMetadata{}, err
+	}
+	return metadata, nil
+}
+
+func (c *Cns) Unhash(domainHash string) (string, error) {
+	namehash := common.HexToHash(domainHash)
+	tokenUri, err := c.tokenUriByNamehash(namehash)
+	if err != nil {
+		return "", err
+	}
+	metadata, err := c.tokenMetadataByUri(tokenUri)
+	if err != nil {
+		return "", err
+	}
+	domainName := normalizeName(metadata.Name)
+	expectedNamehash := kns.NameHash(domainName)
+	if namehash != expectedNamehash {
+		return "", &InvalidDomainNameReturnedError{
+			DomainName: domainName,
+			Namehash:   domainHash,
+		}
+	}
+
+	return domainName, nil
+}
+
+func (c *Cns) tokenUriByNamehash(namehash common.Hash) (string, error) {
+	tokenId := namehash.Big()
+	tokenUri, err := c.proxyReader.TokenURI(&bind.CallOpts{Pending: false}, tokenId)
+	if err != nil {
+		if err.Error() == vm.ErrExecutionReverted.Error() {
+			return "", &DomainNotRegisteredError{Namehash: namehash.String()}
+		}
+		return "", err
+	}
+
+	return tokenUri, nil
+}
+
+func (c *Cns) tokenMetadataByUri(tokenUri string) (TokenMetadata, error) {
 	metadataResponse, err := c.metadataClient.Get(tokenUri)
 	if err != nil {
 		return TokenMetadata{}, err

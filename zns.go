@@ -246,3 +246,7 @@ func (z *Zns) TokenURI(_ string) (string, error) {
 func (z *Zns) TokenURIMetadata(_ string) (TokenMetadata, error) {
 	return TokenMetadata{}, &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
 }
+
+func (z *Zns) Unhash(_ string) (string, error) {
+	return "", &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
+}
