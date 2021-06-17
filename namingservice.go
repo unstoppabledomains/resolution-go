@@ -1,9 +1,10 @@
 package resolution
 
 import (
+	"strings"
+
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/namingservice"
-	"strings"
 )
 
 // Unstoppable supports multiple naming services (.zil and .crypto).
@@ -63,22 +64,19 @@ type NamingService interface {
 	IsSupportedDomain(domainName string) bool
 }
 
-var supportedNamingServices = map[string]string{
-	"crypto": namingservice.CNS,
-	"zil":    namingservice.ZNS,
-}
-
 // DetectNamingService helper to detect naming service type for provided domain.
 // Returns ZNS or CNS for valid domain and error if domain is not valid or not supported by resolution-go library.
 func DetectNamingService(domainName string) (string, error) {
 	chunks := strings.Split(domainName, ".")
-	if len(chunks) == 0 {
+	if len(chunks) < 2 {
 		return "", &DomainNotSupportedError{DomainName: domainName}
 	}
 	extension := chunks[len(chunks)-1]
-	service := supportedNamingServices[extension]
-	if service == "" {
+	if len(extension) == 0 {
 		return "", &DomainNotSupportedError{DomainName: domainName}
 	}
-	return service, nil
+	if extension == "zil" {
+		return namingservice.ZNS, nil
+	}
+	return namingservice.CNS, nil
 }
