@@ -1,6 +1,7 @@
 package resolution
 
 import (
+	"math/big"
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,7 +11,6 @@ import (
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/proxyreader"
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
-	"math/big"
 	"net/http"
 	"strings"
 )
@@ -279,7 +279,7 @@ func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 }
 
 func (c *Cns) IsSupportedDomain(domainName string) bool {
-	return strings.HasSuffix(domainName, ".crypto")
+	return !strings.HasSuffix(domainName, ".zil")
 }
 
 func (c *Cns) TokenURI(domainName string) (string, error) {
