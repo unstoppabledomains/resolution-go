@@ -1,6 +1,10 @@
 package resolution
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -9,6 +13,25 @@ import (
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
 
+type MockedMetadataClient struct {
+	Response *http.Response
+	Err      error
+}
+
+func (m *MockedMetadataClient) SetResponse(resp *http.Response) *MockedMetadataClient {
+	m.Response = resp
+	return m
+}
+
+func (m *MockedMetadataClient) SetError(err error) *MockedMetadataClient {
+	m.Err = err
+	return m
+}
+
+func (m *MockedMetadataClient) Get(_ string) (resp *http.Response, err error) {
+	return m.Response, m.Err
+}
+
 var cns, _ = NewCnsBuilder().Build()
 
 func TestCnsBuilder(t *testing.T) {
@@ -16,6 +39,10 @@ func TestCnsBuilder(t *testing.T) {
 	builder := NewCnsBuilder()
 	_, err := builder.Build()
 	assert.Nil(t, err)
+	assert.NotNil(t, cns.contractBackend)
+	assert.NotNil(t, cns.metadataClient)
+	assert.NotNil(t, cns.supportedKeys)
+	assert.NotNil(t, cns.proxyReader)
 }
 
 func TestCnsBuilderSetBackend(t *testing.T) {
@@ -26,6 +53,16 @@ func TestCnsBuilderSetBackend(t *testing.T) {
 	cns, err := builder.Build()
 	assert.Nil(t, err)
 	assert.Equal(t, backend, cns.contractBackend)
+}
+
+func TestCnsBuilderSetMetadataClient(t *testing.T) {
+	t.Parallel()
+	client := &http.Client{}
+	builder := NewCnsBuilder()
+	builder.SetMetadataClient(client)
+	cns, err := builder.Build()
+	assert.Nil(t, err)
+	assert.Equal(t, client, cns.metadataClient)
 }
 
 func TestNewCnsWithSupportedKeys(t *testing.T) {
@@ -290,5 +327,99 @@ func TestCnsUnsupportedDomainError(t *testing.T) {
 	t.Parallel()
 	var expectedError *DomainNotSupportedError
 	_, err := cns.Data("invalid.zil", []string{"crypto.ETH.address"})
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestCnsTokenURI(t *testing.T) {
+	t.Parallel()
+	tokenURI, err := cns.TokenURI("udtestdev-test.crypto")
+	expectedTokenURI := "https://metadata.unstoppabledomains.com/metadata/udtestdev-test.crypto"
+	assert.Nil(t, err)
+	assert.Equal(t, expectedTokenURI, tokenURI)
+}
+
+func TestCnsTokenURIDomainIsNotRegistered(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotRegisteredError
+	_, err := cns.TokenURI("unregistered-domain-name.crypto")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestCnsTokenUriNotSupportedDomain(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotSupportedError
+	_, err := cns.TokenURI("invalid.zil")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestCnsTokenURIMetadata(t *testing.T) {
+	t.Parallel()
+	expectedMetadata := TokenMetadata{
+		Name:        "udtestdev-test.crypto",
+		Description: "A .crypto blockchain domain. Use it to resolve your cryptocurrency addresses and decentralized websites.\nhttps://gateway.pinata.cloud/ipfs/Qme54oEzRkgooJbCDr78vzKAWcv6DDEZqRhhDyDtzgrZP6",
+		ExternalUrl: "https://unstoppabledomains.com/search?searchTerm=udtestdev-test.crypto",
+		Image:       "https://storage.googleapis.com/dot-crypto-metadata-api/unstoppabledomains_crypto.png",
+		Attributes: []TokenMetadataAttribute{
+			{
+				TraitType: "domain",
+				Value:     "udtestdev-test.crypto",
+			},
+		},
+	}
+	metadata, err := cns.TokenURIMetadata("udtestdev-test.crypto")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedMetadata.Name, metadata.Name)
+	assert.Equal(t, expectedMetadata.Description, metadata.Description)
+	assert.Equal(t, expectedMetadata.ExternalUrl, metadata.ExternalUrl)
+	assert.Equal(t, expectedMetadata.Image, metadata.Image)
+	assert.Contains(t, metadata.Attributes, expectedMetadata.Attributes[0])
+}
+
+func TestCnsTokenURIMetadataNotSupportedDomain(t *testing.T) {
+	t.Parallel()
+	var expectedError *DomainNotRegisteredError
+	_, err := cns.TokenURIMetadata("unregistered-domain-name.crypto")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestCnsUnhash(t *testing.T) {
+	t.Parallel()
+	expectedDomainName := "ryan.crypto"
+	domainName, err := cns.Unhash("0x691f36df38168d9297e784f45a87257a70c58c4040d469c6d0b91d253a837e32")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedDomainName, domainName)
+}
+
+func TestCnsUnhashWithout0xPrefix(t *testing.T) {
+	t.Parallel()
+	expectedDomainName := "ryan.crypto"
+	domainName, err := cns.Unhash("691f36df38168d9297e784f45a87257a70c58c4040d469c6d0b91d253a837e32")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedDomainName, domainName)
+}
+
+func TestCnsUnhashInvalidDomain(t *testing.T) {
+	t.Parallel()
+	var expectedError *InvalidDomainNameReturnedError
+	body, _ := json.Marshal(TokenMetadata{
+		Name:            "brad.crypto",
+		Description:     "",
+		Image:           "",
+		ExternalUrl:     "",
+		ExternalLink:    "",
+		ImageData:       "",
+		BackgroundColor: "",
+		AnimationUrl:    "",
+		YoutubeUrl:      "",
+		Attributes:      nil,
+	})
+	var mockedClient MockedMetadataClient
+	mockedClient.SetResponse(&http.Response{
+		Body: ioutil.NopCloser(bytes.NewBuffer(body)),
+	})
+	mockedClient.SetError(nil)
+	cnsWithMockedMetadataClient, _ := NewCnsBuilder().SetMetadataClient(&mockedClient).Build()
+	domainName, err := cnsWithMockedMetadataClient.Unhash("691f36df38168d9297e784f45a87257a70c58c4040d469c6d0b91d253a837e32")
+	assert.Empty(t, domainName)
 	assert.ErrorAs(t, err, &expectedError)
 }
