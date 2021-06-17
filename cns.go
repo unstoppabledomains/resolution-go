@@ -2,15 +2,17 @@ package resolution
 
 import (
 	"math/big"
-	"strings"
-
+	"encoding/json"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/ethclient"
 	kns "github.com/jgimeno/go-namehash"
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/proxyreader"
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
+	"net/http"
+	"strings"
 )
 
 // Cns is a naming service handles .crypto domains resolution.
@@ -18,18 +20,28 @@ type Cns struct {
 	proxyReader     *proxyreader.Contract
 	supportedKeys   supportedKeys
 	contractBackend bind.ContractBackend
+	metadataClient  MetadataClient
 }
 
 // CnsBuilder is a builder to setup and build instance of Cns service.
 type CnsBuilder interface {
 	// SetContractBackend set Ethereum backend for communication with CNS registry
 	SetContractBackend(backend bind.ContractBackend) CnsBuilder
+
+	// SetMetadataClient set http backend for communication with ERC721 metadata server
+	SetMetadataClient(backend MetadataClient) CnsBuilder
+
 	// Build Cns instance
 	Build() (*Cns, error)
 }
 
 type cnsBuilder struct {
 	contractBackend bind.ContractBackend
+	metadataClient  MetadataClient
+}
+
+type MetadataClient interface {
+	Get(url string) (resp *http.Response, err error)
 }
 
 const cnsProvider = "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
@@ -50,6 +62,11 @@ func (cb *cnsBuilder) SetContractBackend(backend bind.ContractBackend) CnsBuilde
 	return cb
 }
 
+func (cb *cnsBuilder) SetMetadataClient(client MetadataClient) CnsBuilder {
+	cb.metadataClient = client
+	return cb
+}
+
 // Build Cns instance
 func (cb *cnsBuilder) Build() (*Cns, error) {
 	if cb.contractBackend == nil {
@@ -59,7 +76,10 @@ func (cb *cnsBuilder) Build() (*Cns, error) {
 		}
 		cb.contractBackend = backend
 	}
-	contract, err := proxyreader.NewContract(cnsMainnetProxyReader, cb.contractBackend)
+	if cb.metadataClient == nil {
+		cb.metadataClient = &http.Client{}
+	}
+	proxyReaderContract, err := proxyreader.NewContract(cnsMainnetProxyReader, cb.contractBackend)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +87,7 @@ func (cb *cnsBuilder) Build() (*Cns, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Cns{proxyReader: contract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend}, nil
+	return &Cns{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend, metadataClient: cb.metadataClient}, nil
 }
 
 // Data Get raw data attached to domain
@@ -260,4 +280,80 @@ func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 
 func (c *Cns) IsSupportedDomain(domainName string) bool {
 	return !strings.HasSuffix(domainName, ".zil")
+}
+
+func (c *Cns) TokenURI(domainName string) (string, error) {
+	normalizedName := normalizeName(domainName)
+	if !c.IsSupportedDomain(normalizedName) {
+		return "", &DomainNotSupportedError{DomainName: normalizedName}
+	}
+	namehash := kns.NameHash(normalizedName)
+	tokenUri, err := c.tokenUriByNamehash(namehash)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenUri, nil
+}
+
+func (c *Cns) TokenURIMetadata(domainName string) (TokenMetadata, error) {
+	tokenUri, err := c.TokenURI(domainName)
+	if err != nil {
+		return TokenMetadata{}, err
+	}
+	metadata, err := c.tokenMetadataByUri(tokenUri)
+	if err != nil {
+		return TokenMetadata{}, err
+	}
+	return metadata, nil
+}
+
+func (c *Cns) Unhash(domainHash string) (string, error) {
+	namehash := common.HexToHash(domainHash)
+	tokenUri, err := c.tokenUriByNamehash(namehash)
+	if err != nil {
+		return "", err
+	}
+	metadata, err := c.tokenMetadataByUri(tokenUri)
+	if err != nil {
+		return "", err
+	}
+	domainName := normalizeName(metadata.Name)
+	expectedNamehash := kns.NameHash(domainName)
+	if namehash != expectedNamehash {
+		return "", &InvalidDomainNameReturnedError{
+			DomainName: domainName,
+			Namehash:   domainHash,
+		}
+	}
+
+	return domainName, nil
+}
+
+func (c *Cns) tokenUriByNamehash(namehash common.Hash) (string, error) {
+	tokenId := namehash.Big()
+	tokenUri, err := c.proxyReader.TokenURI(&bind.CallOpts{Pending: false}, tokenId)
+	if err != nil {
+		if err.Error() == vm.ErrExecutionReverted.Error() {
+			return "", &DomainNotRegisteredError{Namehash: namehash.String()}
+		}
+		return "", err
+	}
+
+	return tokenUri, nil
+}
+
+func (c *Cns) tokenMetadataByUri(tokenUri string) (TokenMetadata, error) {
+	metadataResponse, err := c.metadataClient.Get(tokenUri)
+	if err != nil {
+		return TokenMetadata{}, err
+	}
+	defer metadataResponse.Body.Close()
+	var returnedMetadata TokenMetadata
+	err = json.NewDecoder(metadataResponse.Body).Decode(&returnedMetadata)
+	if err != nil {
+		return TokenMetadata{}, err
+	}
+
+	return returnedMetadata, nil
 }
