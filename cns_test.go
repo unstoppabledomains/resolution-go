@@ -318,14 +318,21 @@ func TestCnsDnsGlobalTtl(t *testing.T) {
 
 func TestCnsIsSupportedDomain(t *testing.T) {
 	t.Parallel()
-	assert.True(t, cns.IsSupportedDomain("valid.crypto"))
-	assert.False(t, cns.IsSupportedDomain("invalid.zil"))
-	assert.True(t, cns.IsSupportedDomain("invalid.com"))
-	assert.True(t, cns.IsSupportedDomain("radomin-domain.com"))
-	assert.True(t, cns.IsSupportedDomain("some-domain.net"))
-	assert.True(t, cns.IsSupportedDomain("some-domain.wiowejfo.qwefwef"))
-	assert.True(t, cns.IsSupportedDomain("some-domain.wiowejfo.qwd"))
-	assert.False(t, cns.IsSupportedDomain("some-domain.wiowejfo.zil"))
+
+	isSupportedDomain := func(domain string) bool {
+
+		isSupported, _ := cns.IsSupportedDomain(domain)
+		return isSupported
+	}
+
+	assert.True(t, isSupportedDomain("valid.crypto"))
+	assert.False(t, isSupportedDomain("invalid.zil"))
+	assert.True(t, isSupportedDomain("invalid.com"))
+	assert.True(t, isSupportedDomain("radomin-domain.com"))
+	assert.True(t, isSupportedDomain("some-domain.net"))
+	assert.True(t, isSupportedDomain("some-domain.wiowejfo.qwefwef"))
+	assert.True(t, isSupportedDomain("some-domain.wiowejfo.qwd"))
+	assert.False(t, isSupportedDomain("some-domain.wiowejfo.zil"))
 }
 
 func TestCnsUnsupportedDomainError(t *testing.T) {

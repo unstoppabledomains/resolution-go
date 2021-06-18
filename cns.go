@@ -1,8 +1,11 @@
 package resolution
 
 import (
-	"math/big"
 	"encoding/json"
+	"math/big"
+	"net/http"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -11,8 +14,6 @@ import (
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/proxyreader"
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
-	"net/http"
-	"strings"
 )
 
 // Cns is a naming service handles .crypto domains resolution.
@@ -97,9 +98,6 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 	Values   []string
 }, error) {
 	normalizedName := normalizeName(domainName)
-	if !c.IsSupportedDomain(normalizedName) {
-		return nil, &DomainNotSupportedError{DomainName: normalizedName}
-	}
 	namehash := kns.NameHash(normalizedName)
 	tokenID := namehash.Big()
 	data, err := c.proxyReader.GetData(&bind.CallOpts{Pending: false}, keys, tokenID)
@@ -278,15 +276,26 @@ func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 	return dnsRecords, nil
 }
 
-func (c *Cns) IsSupportedDomain(domainName string) bool {
-	return !strings.HasSuffix(domainName, ".zil")
+func (c *Cns) IsSupportedDomain(domainName string) (bool, error) {
+	chunks := strings.Split(domainName, ".")
+	if len(chunks) < 2 {
+		return false, nil
+	}
+	extension := chunks[len(chunks)-1]
+	if extension == "zil" {
+		return false, nil
+	}
+	namehash := kns.NameHash(extension)
+	tokenID := namehash.Big()
+	data, err := c.proxyReader.Exists(&bind.CallOpts{Pending: false}, tokenID)
+	if err != nil {
+		return false, err
+	}
+	return data, nil
 }
 
 func (c *Cns) TokenURI(domainName string) (string, error) {
 	normalizedName := normalizeName(domainName)
-	if !c.IsSupportedDomain(normalizedName) {
-		return "", &DomainNotSupportedError{DomainName: normalizedName}
-	}
 	namehash := kns.NameHash(normalizedName)
 	tokenUri, err := c.tokenUriByNamehash(namehash)
 	if err != nil {
