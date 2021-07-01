@@ -233,30 +233,6 @@ func (_Contract *ContractCallerSession) VERSION() (string, error) {
 	return _Contract.Contract.VERSION(&_Contract.CallOpts)
 }
 
-// Exists is a free data retrieval call binding the contract method 0x4f558e79.
-//
-// Solidity: function exists(uint256 tokenId) external view override returns (bool)
-func (_Contract *ContractCaller) Exists(opts *bind.CallOpts, tokenId *big.Int) (bool, error) {
-	var out []interface{}
-	err := _Contract.contract.Call(opts, &out, "exists", tokenId)
-
-	if err != nil {
-		return false, err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// Exists is a free data retrieval call binding the contract method 0x4f558e79.
-//
-// Solidity: function exists(uint256 tokenId) external view override returns (bool)
-func (_Contract *ContractSession) Exists(tokenId *big.Int) (bool, error) {
-	return _Contract.Contract.Exists(&_Contract.CallOpts, tokenId)
-}
-
 // BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
 //
 // Solidity: function balanceOf(address owner) view returns(uint256)

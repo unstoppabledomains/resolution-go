@@ -61,7 +61,7 @@ type NamingService interface {
 	DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error)
 
 	// IsSupportedDomain checks whether domain name is supported by the naming service.
-	IsSupportedDomain(domainName string) bool
+	IsSupportedDomain(domainName string) (bool, error)
 
 	// TokenURI returns ERC721 metadata token URI
 	TokenURI(domainName string) (string, error)
