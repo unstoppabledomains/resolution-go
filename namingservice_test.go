@@ -10,7 +10,7 @@ import (
 func TestEnforceImplementInterface(t *testing.T) {
 	t.Parallel()
 	assert.Implements(t, (*NamingService)(nil), &Zns{provider: nil})
-	assert.Implements(t, (*NamingService)(nil), &Cns{
+	assert.Implements(t, (*NamingService)(nil), &Uns{
 		proxyReader:     nil,
 		supportedKeys:   nil,
 		contractBackend: nil,
