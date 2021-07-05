@@ -351,8 +351,6 @@ func TestUnsUnsupportedDomainError(t *testing.T) {
 	var expectedError *DomainNotSupportedError
 	_, err := uns.Data("invalid.zil", []string{"crypto.ETH.address"})
 	assert.ErrorAs(t, err, &expectedError)
-	_, err = uns.Data("invalid.wallet", []string{"crypto.ETH.address"})
-	assert.ErrorAs(t, err, &expectedError)
 }
 
 func TestUnsTokenURI(t *testing.T) {
