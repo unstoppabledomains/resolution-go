@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/uns/contracts/registry"
 )
 
 type MockedMetadataClient struct {
@@ -125,14 +126,6 @@ func TestUnsRecords(t *testing.T) {
 	records, err := uns.Records(testDomain, []string{"crypto.ETH.address", "crypto.BTC.address"})
 	assert.Nil(t, err)
 	assert.Equal(t, records, expectedRecords)
-}
-
-func TestUnsNoRecords(t *testing.T) {
-	t.Parallel()
-	testDomain := "udtestdev-test.crypto"
-	records, err := uns.Records(testDomain, []string{})
-	assert.Nil(t, err)
-	assert.Empty(t, records)
 }
 
 func TestUnsEmptyRecords(t *testing.T) {
@@ -251,7 +244,7 @@ func TestUnsHttpUrlLegacy(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestUnsAllRecords(t *testing.T) {
+func TestDotCryptoAllRecords(t *testing.T) {
 	t.Parallel()
 	testDomain := "testing.crypto"
 	expectedRecords := map[string]string{"crypto.ETH.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.EOS.address": "karaarishmen", "crypto.USDT.version.ERC20.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.OMNI.address": "1KvzMF2Vjy14d6JGY7dG7vjT5kfpmzSQXM", "crypto.USDT.version.TRON.address": "TRMJfXXbmwb3WFSRKbeRgKsYoD8o1a9xxV", "dns.A": "[\"10.0.0.1\", \"10.0.0.3\"]", "dns.A.ttl": "98", "dns.AAAA": "[]", "ipfs.html.value": "QmRi3PBpUGFnYrCKUoWhntRLfA9PeRhepfFu4Lz21mGd3X", "whois.email.value": "testing@example.com"}
@@ -260,7 +253,27 @@ func TestUnsAllRecords(t *testing.T) {
 	assert.Equal(t, expectedRecords, allRecords)
 }
 
-func TestUnsAllRecordsStandardKeys(t *testing.T) {
+func TestUnsGetAllKeysFromContractEvents(t *testing.T) {
+	t.Parallel()
+
+	expectedRecords := []string([]string{"crypto.ETH.address", "crypto.BTC.address"})
+	registryContract, err := registry.NewContract(common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086"), uns.contractBackend)
+	assert.Nil(t, err)
+	allKeys, err := uns.getAllKeysFromContractEvents(registryContract, 8775208, "udtestdev-my-new-tls.wallet")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, allKeys)
+}
+
+func TestUnsAllRecords(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-my-new-tls.wallet"
+	expectedRecords := map[string]string{"crypto.BTC.address": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", "crypto.ETH.address": "0x6EC0DEeD30605Bcd19342f3c30201DB263291589"}
+	allRecords, err := uns.AllRecords(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, allRecords)
+}
+
+func TestCnsAllRecordsStandardKeys(t *testing.T) {
 	t.Parallel()
 	testDomain := "monmouthcounty.crypto"
 	expectedRecords := map[string]string{
@@ -271,6 +284,16 @@ func TestUnsAllRecordsStandardKeys(t *testing.T) {
 		"ipfs.html.value":            "QmYqX8D8SkaF5YcpaWMyi5xM43UEteFiSNKYsjLcdvCWud",
 		"ipfs.redirect_domain.value": "https://abbfe6z95qov3d40hf6j30g7auo7afhp.mypinata.cloud/ipfs/QmYqX8D8SkaF5YcpaWMyi5xM43UEteFiSNKYsjLcdvCWud",
 	}
+	allRecords, err := uns.AllRecords(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, allRecords)
+}
+
+func TestUnsAllRecordsStandardKeys(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-my-new-tls.wallet"
+
+	expectedRecords := map[string]string{"crypto.BTC.address": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", "crypto.ETH.address": "0x6EC0DEeD30605Bcd19342f3c30201DB263291589"}
 	allRecords, err := uns.AllRecords(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, allRecords)

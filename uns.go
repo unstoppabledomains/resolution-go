@@ -8,11 +8,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/ethclient"
 	kns "github.com/jgimeno/go-namehash"
-	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/uns/contracts/proxyreader"
 	"github.com/unstoppabledomains/resolution-go/uns/contracts/registry"
@@ -45,25 +43,6 @@ type unsBuilder struct {
 
 type MetadataClient interface {
 	Get(url string) (resp *http.Response, err error)
-}
-
-type ContractResetRecordsIterator struct {
-	Event *struct {
-		TokenId *big.Int
-		Raw     types.Log
-	}
-	Next  func(c ContractResetRecordsIterator) bool
-	Error func(c ContractResetRecordsIterator) error
-}
-
-type ContractNewKeyIterator struct {
-	Event *struct {
-		TokenId *big.Int
-		Raw     types.Log
-		Key     string
-	}
-	Next  func(c ContractNewKeyIterator) bool
-	Error func(c ContractNewKeyIterator) error
 }
 
 const unsProvider = "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
@@ -223,16 +202,11 @@ func (c *Uns) HTTPUrl(domainName string) (string, error) {
 	return returnFirstNonEmpty(records, redirectUrlKeys), nil
 }
 
-func (c *Uns) GetAllKeysFromContractEvents(contract interface {
-}, eventsStartingBlock uint64, domainName string) ([]string, error) {
-	contractWithEvents := contract.(interface {
-		FilterResetRecords(opts *bind.FilterOpts, tokenId []*big.Int) (*resolver.ContractResetRecordsIterator, error)
-		FilterNewKey(opts *bind.FilterOpts, tokenId []*big.Int, keyIndex []string) (*resolver.ContractNewKeyIterator, error)
-	})
+func (c *Uns) getAllKeysFromContractEvents(contract *registry.Contract, eventsStartingBlock uint64, domainName string) ([]string, error) {
 	var allKeys []string
 	normalizedName := normalizeName(domainName)
 	namehash := kns.NameHash(normalizedName)
-	resetRecordsIterator, err := contractWithEvents.FilterResetRecords(&bind.FilterOpts{Start: eventsStartingBlock}, []*big.Int{namehash.Big()})
+	resetRecordsIterator, err := contract.FilterResetRecords(&bind.FilterOpts{Start: eventsStartingBlock}, []*big.Int{namehash.Big()})
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +217,7 @@ func (c *Uns) GetAllKeysFromContractEvents(contract interface {
 		}
 		newKeyEventsStartingBlock = resetRecordsIterator.Event.Raw.BlockNumber
 	}
-	newKeyIterator, err := contractWithEvents.FilterNewKey(&bind.FilterOpts{Start: newKeyEventsStartingBlock}, []*big.Int{namehash.Big()}, []string{})
+	newKeyIterator, err := contract.FilterNewKey(&bind.FilterOpts{Start: newKeyEventsStartingBlock}, []*big.Int{namehash.Big()}, []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -268,29 +242,14 @@ func (c *Uns) AllRecords(domainName string) (map[string]string, error) {
 	}
 	var allKeys []string
 	if data.Resolver == cnsMainnetDefaultResolver || data.Resolver == unsMainnetProxyReader {
-		if data.Resolver == unsMainnetProxyReader {
-			contract, err := registry.NewContract(data.Resolver, c.contractBackend)
-			if err != nil {
-				return nil, err
-			}
-			allKeys, err = c.GetAllKeysFromContractEvents(contract, unsEventsStartingBlock, domainName)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			contract, err := resolver.NewContract(data.Resolver, c.contractBackend)
-			if err != nil {
-				return nil, err
-			}
-			allKeys, err = c.GetAllKeysFromContractEvents(contract, cnsEventsStartingBlock, domainName)
-			if err != nil {
-				return nil, err
-			}
-		}
+		contract, err := registry.NewContract(data.Resolver, c.contractBackend)
 		if err != nil {
 			return nil, err
 		}
-
+		allKeys, err = c.getAllKeysFromContractEvents(contract, unsEventsStartingBlock, domainName)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		for key := range c.supportedKeys {
 			allKeys = append(allKeys, key)
