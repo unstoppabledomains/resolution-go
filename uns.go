@@ -1,41 +1,42 @@
 package resolution
 
 import (
-	"math/big"
 	"encoding/json"
+	"math/big"
+	"net/http"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/ethclient"
 	kns "github.com/jgimeno/go-namehash"
-	"github.com/unstoppabledomains/resolution-go/cns/contracts/proxyreader"
-	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
-	"net/http"
-	"strings"
+	"github.com/unstoppabledomains/resolution-go/uns/contracts/proxyreader"
+	"github.com/unstoppabledomains/resolution-go/uns/contracts/registry"
 )
 
-// Cns is a naming service handles .crypto domains resolution.
-type Cns struct {
+// Uns is a naming service handles Unstoppable domains resolution.
+type Uns struct {
 	proxyReader     *proxyreader.Contract
 	supportedKeys   supportedKeys
 	contractBackend bind.ContractBackend
 	metadataClient  MetadataClient
 }
 
-// CnsBuilder is a builder to setup and build instance of Cns service.
-type CnsBuilder interface {
+// UnsBuilder is a builder to setup and build instance of Uns service.
+type UnsBuilder interface {
 	// SetContractBackend set Ethereum backend for communication with CNS registry
-	SetContractBackend(backend bind.ContractBackend) CnsBuilder
+	SetContractBackend(backend bind.ContractBackend) UnsBuilder
 
 	// SetMetadataClient set http backend for communication with ERC721 metadata server
-	SetMetadataClient(backend MetadataClient) CnsBuilder
+	SetMetadataClient(backend MetadataClient) UnsBuilder
 
-	// Build Cns instance
-	Build() (*Cns, error)
+	// Build Uns instance
+	Build() (*Uns, error)
 }
 
-type cnsBuilder struct {
+type unsBuilder struct {
 	contractBackend bind.ContractBackend
 	metadataClient  MetadataClient
 }
@@ -44,33 +45,34 @@ type MetadataClient interface {
 	Get(url string) (resp *http.Response, err error)
 }
 
-const cnsProvider = "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
+const unsProvider = "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
 const cnsEventsStartingBlock uint64 = 9923764
+const unsEventsStartingBlock uint64 = 99999999
 
-var cnsZeroAddress = common.HexToAddress("0x0")
-var cnsMainnetProxyReader = common.HexToAddress("0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5")
+var unsZeroAddress = common.HexToAddress("0x0")
+var unsMainnetProxyReader = common.HexToAddress("0x299974AeD8911bcbd2C61262605b89F591a53E83")
 var cnsMainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
 
-// NewCnsBuilder Creates builder to setup new instance os Cns service.
-func NewCnsBuilder() CnsBuilder {
-	return &cnsBuilder{}
+// NewUnsBuilder Creates builder to setup new instance of Uns service.
+func NewUnsBuilder() UnsBuilder {
+	return &unsBuilder{}
 }
 
-// SetContractBackend set Ethereum backend for communication with CNS registry
-func (cb *cnsBuilder) SetContractBackend(backend bind.ContractBackend) CnsBuilder {
+// SetContractBackend set Ethereum backend for communication with UNS registry
+func (cb *unsBuilder) SetContractBackend(backend bind.ContractBackend) UnsBuilder {
 	cb.contractBackend = backend
 	return cb
 }
 
-func (cb *cnsBuilder) SetMetadataClient(client MetadataClient) CnsBuilder {
+func (cb *unsBuilder) SetMetadataClient(client MetadataClient) UnsBuilder {
 	cb.metadataClient = client
 	return cb
 }
 
-// Build Cns instance
-func (cb *cnsBuilder) Build() (*Cns, error) {
+// Build Uns instance
+func (cb *unsBuilder) Build() (*Uns, error) {
 	if cb.contractBackend == nil {
-		backend, err := ethclient.Dial(cnsProvider)
+		backend, err := ethclient.Dial(unsProvider)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +81,7 @@ func (cb *cnsBuilder) Build() (*Cns, error) {
 	if cb.metadataClient == nil {
 		cb.metadataClient = &http.Client{}
 	}
-	proxyReaderContract, err := proxyreader.NewContract(cnsMainnetProxyReader, cb.contractBackend)
+	proxyReaderContract, err := proxyreader.NewContract(unsMainnetProxyReader, cb.contractBackend)
 	if err != nil {
 		return nil, err
 	}
@@ -87,11 +89,11 @@ func (cb *cnsBuilder) Build() (*Cns, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Cns{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend, metadataClient: cb.metadataClient}, nil
+	return &Uns{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend, metadataClient: cb.metadataClient}, nil
 }
 
 // Data Get raw data attached to domain
-func (c *Cns) Data(domainName string, keys []string) (*struct {
+func (c *Uns) Data(domainName string, keys []string) (*struct {
 	Resolver common.Address
 	Owner    common.Address
 	Values   []string
@@ -106,17 +108,17 @@ func (c *Cns) Data(domainName string, keys []string) (*struct {
 	if err != nil {
 		return nil, err
 	}
-	if data.Owner == cnsZeroAddress {
+	if data.Owner == unsZeroAddress {
 		return nil, &DomainNotRegisteredError{DomainName: normalizedName}
 	}
-	if data.Resolver == cnsZeroAddress {
+	if data.Resolver == unsZeroAddress {
 		return nil, &DomainNotConfiguredError{DomainName: normalizedName}
 	}
 
 	return &data, nil
 }
 
-func (c *Cns) Records(domainName string, keys []string) (map[string]string, error) {
+func (c *Uns) Records(domainName string, keys []string) (map[string]string, error) {
 	data, err := c.Data(domainName, keys)
 	if err != nil {
 		return nil, err
@@ -128,7 +130,7 @@ func (c *Cns) Records(domainName string, keys []string) (map[string]string, erro
 	return allRecords, nil
 }
 
-func (c *Cns) Record(domainName string, key string) (string, error) {
+func (c *Uns) Record(domainName string, key string) (string, error) {
 	records, err := c.Records(domainName, []string{key})
 	if err != nil {
 		return "", err
@@ -136,7 +138,7 @@ func (c *Cns) Record(domainName string, key string) (string, error) {
 	return records[key], nil
 }
 
-func (c *Cns) Addr(domainName string, ticker string) (string, error) {
+func (c *Uns) Addr(domainName string, ticker string) (string, error) {
 	key, err := buildCryptoKey(ticker)
 	if err != nil {
 		return "", err
@@ -148,7 +150,7 @@ func (c *Cns) Addr(domainName string, ticker string) (string, error) {
 	return value, nil
 }
 
-func (c *Cns) AddrVersion(domainName string, ticker string, version string) (string, error) {
+func (c *Uns) AddrVersion(domainName string, ticker string, version string) (string, error) {
 	key, err := buildCryptoKeyVersion(ticker, version)
 	if err != nil {
 		return "", err
@@ -160,7 +162,7 @@ func (c *Cns) AddrVersion(domainName string, ticker string, version string) (str
 	return value, nil
 }
 
-func (c *Cns) Email(domainName string) (string, error) {
+func (c *Uns) Email(domainName string) (string, error) {
 	value, err := c.Record(domainName, emailKey)
 	if err != nil {
 		return "", err
@@ -169,7 +171,7 @@ func (c *Cns) Email(domainName string) (string, error) {
 	return value, nil
 }
 
-func (c *Cns) Resolver(domainName string) (string, error) {
+func (c *Uns) Resolver(domainName string) (string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
 		return "", err
@@ -178,7 +180,7 @@ func (c *Cns) Resolver(domainName string) (string, error) {
 	return data.Resolver.String(), nil
 }
 
-func (c *Cns) Owner(domainName string) (string, error) {
+func (c *Uns) Owner(domainName string) (string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
 		return "", err
@@ -187,7 +189,7 @@ func (c *Cns) Owner(domainName string) (string, error) {
 	return data.Owner.String(), nil
 }
 
-func (c *Cns) IpfsHash(domainName string) (string, error) {
+func (c *Uns) IpfsHash(domainName string) (string, error) {
 	records, err := c.Records(domainName, ipfsKeys)
 	if err != nil {
 		return "", err
@@ -195,7 +197,7 @@ func (c *Cns) IpfsHash(domainName string) (string, error) {
 	return returnFirstNonEmpty(records, ipfsKeys), nil
 }
 
-func (c *Cns) HTTPUrl(domainName string) (string, error) {
+func (c *Uns) HTTPUrl(domainName string) (string, error) {
 	records, err := c.Records(domainName, redirectUrlKeys)
 	if err != nil {
 		return "", err
@@ -203,44 +205,53 @@ func (c *Cns) HTTPUrl(domainName string) (string, error) {
 	return returnFirstNonEmpty(records, redirectUrlKeys), nil
 }
 
-func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
+func (c *Uns) getAllKeysFromContractEvents(contract *registry.Contract, eventsStartingBlock uint64, domainName string) ([]string, error) {
+	var allKeys []string
+	normalizedName := normalizeName(domainName)
+	namehash := kns.NameHash(normalizedName)
+	resetRecordsIterator, err := contract.FilterResetRecords(&bind.FilterOpts{Start: eventsStartingBlock}, []*big.Int{namehash.Big()})
+	if err != nil {
+		return nil, err
+	}
+	newKeyEventsStartingBlock := eventsStartingBlock
+	for resetRecordsIterator.Next() {
+		if resetRecordsIterator.Error() != nil {
+			return nil, err
+		}
+		newKeyEventsStartingBlock = resetRecordsIterator.Event.Raw.BlockNumber
+	}
+	newKeyIterator, err := contract.FilterNewKey(&bind.FilterOpts{Start: newKeyEventsStartingBlock}, []*big.Int{namehash.Big()}, []string{})
+	if err != nil {
+		return nil, err
+	}
+	for newKeyIterator.Next() {
+		if newKeyIterator.Error() != nil {
+			return nil, err
+		}
+		allKeys = append(allKeys, newKeyIterator.Event.Key)
+	}
+	if len(allKeys) == 0 {
+		for key := range c.supportedKeys {
+			allKeys = append(allKeys, key)
+		}
+	}
+	return allKeys, err
+}
+
+func (c *Uns) AllRecords(domainName string) (map[string]string, error) {
 	data, err := c.Data(domainName, []string{})
 	if err != nil {
 		return nil, err
 	}
 	var allKeys []string
-	if data.Resolver == cnsMainnetDefaultResolver {
-		resolverContract, err := resolver.NewContract(data.Resolver, c.contractBackend)
+	if data.Resolver == cnsMainnetDefaultResolver || data.Resolver == unsMainnetProxyReader {
+		contract, err := registry.NewContract(data.Resolver, c.contractBackend)
 		if err != nil {
 			return nil, err
 		}
-		normalizedName := normalizeName(domainName)
-		namehash := kns.NameHash(normalizedName)
-		resetRecordsIterator, err := resolverContract.FilterResetRecords(&bind.FilterOpts{Start: cnsEventsStartingBlock}, []*big.Int{namehash.Big()})
+		allKeys, err = c.getAllKeysFromContractEvents(contract, unsEventsStartingBlock, domainName)
 		if err != nil {
 			return nil, err
-		}
-		newKeyEventsStartingBlock := cnsEventsStartingBlock
-		for resetRecordsIterator.Next() {
-			if resetRecordsIterator.Error() != nil {
-				return nil, err
-			}
-			newKeyEventsStartingBlock = resetRecordsIterator.Event.Raw.BlockNumber
-		}
-		newKeyIterator, err := resolverContract.FilterNewKey(&bind.FilterOpts{Start: newKeyEventsStartingBlock}, []*big.Int{namehash.Big()}, []string{})
-		if err != nil {
-			return nil, err
-		}
-		for newKeyIterator.Next() {
-			if newKeyIterator.Error() != nil {
-				return nil, err
-			}
-			allKeys = append(allKeys, newKeyIterator.Event.Key)
-		}
-		if len(allKeys) == 0 {
-			for key := range c.supportedKeys {
-				allKeys = append(allKeys, key)
-			}
 		}
 	} else {
 		for key := range c.supportedKeys {
@@ -261,7 +272,7 @@ func (c *Cns) AllRecords(domainName string) (map[string]string, error) {
 	return allRecords, nil
 }
 
-func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
+func (c *Uns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
 	keys, err := dnsTypesToCryptoRecordKeys(types)
 	if err != nil {
 		return nil, err
@@ -278,11 +289,11 @@ func (c *Cns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 	return dnsRecords, nil
 }
 
-func (c *Cns) IsSupportedDomain(domainName string) bool {
+func (c *Uns) IsSupportedDomain(domainName string) bool {
 	return !strings.HasSuffix(domainName, ".zil")
 }
 
-func (c *Cns) TokenURI(domainName string) (string, error) {
+func (c *Uns) TokenURI(domainName string) (string, error) {
 	normalizedName := normalizeName(domainName)
 	if !c.IsSupportedDomain(normalizedName) {
 		return "", &DomainNotSupportedError{DomainName: normalizedName}
@@ -296,7 +307,7 @@ func (c *Cns) TokenURI(domainName string) (string, error) {
 	return tokenUri, nil
 }
 
-func (c *Cns) TokenURIMetadata(domainName string) (TokenMetadata, error) {
+func (c *Uns) TokenURIMetadata(domainName string) (TokenMetadata, error) {
 	tokenUri, err := c.TokenURI(domainName)
 	if err != nil {
 		return TokenMetadata{}, err
@@ -308,7 +319,7 @@ func (c *Cns) TokenURIMetadata(domainName string) (TokenMetadata, error) {
 	return metadata, nil
 }
 
-func (c *Cns) Unhash(domainHash string) (string, error) {
+func (c *Uns) Unhash(domainHash string) (string, error) {
 	namehash := common.HexToHash(domainHash)
 	tokenUri, err := c.tokenUriByNamehash(namehash)
 	if err != nil {
@@ -330,7 +341,7 @@ func (c *Cns) Unhash(domainHash string) (string, error) {
 	return domainName, nil
 }
 
-func (c *Cns) tokenUriByNamehash(namehash common.Hash) (string, error) {
+func (c *Uns) tokenUriByNamehash(namehash common.Hash) (string, error) {
 	tokenId := namehash.Big()
 	tokenUri, err := c.proxyReader.TokenURI(&bind.CallOpts{Pending: false}, tokenId)
 	if err != nil {
@@ -343,7 +354,7 @@ func (c *Cns) tokenUriByNamehash(namehash common.Hash) (string, error) {
 	return tokenUri, nil
 }
 
-func (c *Cns) tokenMetadataByUri(tokenUri string) (TokenMetadata, error) {
+func (c *Uns) tokenMetadataByUri(tokenUri string) (TokenMetadata, error) {
 	metadataResponse, err := c.metadataClient.Get(tokenUri)
 	if err != nil {
 		return TokenMetadata{}, err

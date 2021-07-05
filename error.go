@@ -28,7 +28,7 @@ type InvalidDomainNameReturnedError struct {
 }
 
 func (e *DomainNotRegisteredError) Error() string {
-	return "Domain is is not registered. Domain name: " + e.DomainName + ". Namehash: " + e.Namehash
+	return "Domain is not registered. Domain name: " + e.DomainName + ". Namehash: " + e.Namehash
 }
 func (e *DomainNotConfiguredError) Error() string {
 	return e.DomainName + " does not have configured Resolver"
