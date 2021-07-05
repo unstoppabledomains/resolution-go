@@ -89,7 +89,7 @@ type NamingService interface {
 }
 
 // DetectNamingService helper to detect naming service type for provided domain.
-// Returns ZNS or CNS for valid domain and error if domain is not valid or not supported by resolution-go library.
+// Returns ZNS or UNS for valid domain and error if domain is not valid or not supported by resolution-go library.
 func DetectNamingService(domainName string) (string, error) {
 	chunks := strings.Split(domainName, ".")
 	if len(chunks) < 2 {
@@ -102,5 +102,5 @@ func DetectNamingService(domainName string) (string, error) {
 	if extension == "zil" {
 		return namingservice.ZNS, nil
 	}
-	return namingservice.CNS, nil
+	return namingservice.UNS, nil
 }

@@ -448,8 +448,8 @@ func TestUnsUnhashInvalidDomain(t *testing.T) {
 		Body: ioutil.NopCloser(bytes.NewBuffer(body)),
 	})
 	mockedClient.SetError(nil)
-	cnsWithMockedMetadataClient, _ := NewUnsBuilder().SetMetadataClient(&mockedClient).Build()
-	domainName, err := cnsWithMockedMetadataClient.Unhash("756e4e998dbffd803c21d23b06cd855cdc7a4b57706c95964a37e24b47c10fc9")
+	unsWithMockedMetadataClient, _ := NewUnsBuilder().SetMetadataClient(&mockedClient).Build()
+	domainName, err := unsWithMockedMetadataClient.Unhash("756e4e998dbffd803c21d23b06cd855cdc7a4b57706c95964a37e24b47c10fc9")
 	assert.Empty(t, domainName)
 	assert.ErrorAs(t, err, &expectedError)
 }

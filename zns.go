@@ -15,7 +15,7 @@ type Zns struct {
 	provider ZnsProvider
 }
 
-// ZnsBuilder is a builder to setup and build instance of Cns service.
+// ZnsBuilder is a builder to setup and build instance of Zns service.
 type ZnsBuilder interface {
 	// SetProvider set Zilliqa blockchain provider to communicate with ZNS registry
 	SetProvider(provider ZnsProvider) ZnsBuilder
