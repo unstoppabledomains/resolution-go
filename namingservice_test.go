@@ -31,6 +31,10 @@ func TestDetectNamingServiceType(t *testing.T) {
 	serviceType, err = DetectNamingService("test.asdasdas")
 	assert.Nil(t, err)
 	assert.Equal(t, namingservice.UNS, serviceType)
+
+	serviceType, err = DetectNamingService("test.wallet")
+	assert.Nil(t, err)
+	assert.Equal(t, namingservice.UNS, serviceType)
 }
 
 func TestDetectNamingServiceTypeInvalidDomain(t *testing.T) {

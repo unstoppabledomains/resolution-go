@@ -11,9 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/ethclient"
 	kns "github.com/jgimeno/go-namehash"
+	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/uns/contracts/proxyreader"
-	"github.com/unstoppabledomains/resolution-go/uns/contracts/registry"
 )
 
 // Uns is a naming service handles Unstoppable domains resolution.
@@ -47,7 +47,6 @@ type MetadataClient interface {
 
 const unsProvider = "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
 const cnsEventsStartingBlock uint64 = 9923764
-const unsEventsStartingBlock uint64 = 99999999
 
 var unsZeroAddress = common.HexToAddress("0x0")
 var unsMainnetProxyReader = common.HexToAddress("0x299974AeD8911bcbd2C61262605b89F591a53E83")
@@ -202,7 +201,7 @@ func (c *Uns) HTTPUrl(domainName string) (string, error) {
 	return returnFirstNonEmpty(records, redirectUrlKeys), nil
 }
 
-func (c *Uns) getAllKeysFromContractEvents(contract *registry.Contract, eventsStartingBlock uint64, domainName string) ([]string, error) {
+func (c *Uns) getAllKeysFromContractEvents(contract *resolver.Contract, eventsStartingBlock uint64, domainName string) ([]string, error) {
 	var allKeys []string
 	normalizedName := normalizeName(domainName)
 	namehash := kns.NameHash(normalizedName)
@@ -242,11 +241,11 @@ func (c *Uns) AllRecords(domainName string) (map[string]string, error) {
 	}
 	var allKeys []string
 	if data.Resolver == cnsMainnetDefaultResolver || data.Resolver == unsMainnetProxyReader {
-		contract, err := registry.NewContract(data.Resolver, c.contractBackend)
+		contract, err := resolver.NewContract(data.Resolver, c.contractBackend)
 		if err != nil {
 			return nil, err
 		}
-		allKeys, err = c.getAllKeysFromContractEvents(contract, unsEventsStartingBlock, domainName)
+		allKeys, err = c.getAllKeysFromContractEvents(contract, cnsEventsStartingBlock, domainName)
 		if err != nil {
 			return nil, err
 		}

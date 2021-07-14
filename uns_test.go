@@ -3,6 +3,7 @@ package resolution
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -11,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
-	"github.com/unstoppabledomains/resolution-go/uns/contracts/registry"
 )
 
 type MockedMetadataClient struct {
@@ -255,9 +255,8 @@ func TestDotCryptoAllRecords(t *testing.T) {
 
 func TestUnsGetAllKeysFromContractEvents(t *testing.T) {
 	t.Parallel()
-
-	expectedRecords := []string([]string{"crypto.ETH.address", "crypto.BTC.address"})
-	registryContract, err := registry.NewContract(common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086"), uns.contractBackend)
+	expectedRecords := []string{"crypto.ETH.address", "crypto.BTC.address"}
+	registryContract, err := resolver.NewContract(common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086"), uns.contractBackend)
 	assert.Nil(t, err)
 	allKeys, err := uns.getAllKeysFromContractEvents(registryContract, 8775208, "udtestdev-my-new-tls.wallet")
 	assert.Nil(t, err)
