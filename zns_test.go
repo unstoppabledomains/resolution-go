@@ -203,14 +203,41 @@ func TestZnsEmptyDns(t *testing.T) {
 
 func TestZnsIsSupportedDomain(t *testing.T) {
 	t.Parallel()
-	assert.True(t, zns.IsSupportedDomain("valid.zil"))
-	assert.False(t, zns.IsSupportedDomain("valid.crypto"))
-	assert.False(t, zns.IsSupportedDomain("invalid.com"))
+
+	isSupportedDomain := func(domain string) bool {
+		isSupported, _ := zns.IsSupportedDomain(domain)
+		return isSupported
+	}
+
+	assert.True(t, isSupportedDomain("valid.zil"))
+	assert.False(t, isSupportedDomain("valid.crypto"))
+	assert.False(t, isSupportedDomain("invalid.com"))
 }
 
 func TestZnsUnsupportedDomainError(t *testing.T) {
 	t.Parallel()
 	var expectedError *DomainNotSupportedError
 	_, err := zns.State("invalid.crypto")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestZnsTokenUriIsNotSupported(t *testing.T) {
+	t.Parallel()
+	var expectedError *MethodIsNotSupportedError
+	_, err := zns.TokenURI("brad.zil")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestZnsTokenUriMetadataIsNotSupported(t *testing.T) {
+	t.Parallel()
+	var expectedError *MethodIsNotSupportedError
+	_, err := zns.TokenURIMetadata("brad.zil")
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestZnsUnhashIsNotSupported(t *testing.T) {
+	t.Parallel()
+	var expectedError *MethodIsNotSupportedError
+	_, err := zns.Unhash("brad.zil")
 	assert.ErrorAs(t, err, &expectedError)
 }
