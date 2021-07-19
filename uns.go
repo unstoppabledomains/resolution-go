@@ -14,6 +14,7 @@ import (
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/uns/contracts/proxyreader"
+	"github.com/unstoppabledomains/resolution-go/uns/contracts/registry"
 )
 
 // Uns is a naming service handles Unstoppable domains resolution.
@@ -26,7 +27,7 @@ type Uns struct {
 
 // UnsBuilder is a builder to setup and build instance of Uns service.
 type UnsBuilder interface {
-	// SetContractBackend set Ethereum backend for communication with CNS registry
+	// SetContractBackend set Ethereum backend for communication with UNS registry
 	SetContractBackend(backend bind.ContractBackend) UnsBuilder
 
 	// SetMetadataClient set http backend for communication with ERC721 metadata server
@@ -46,11 +47,14 @@ type MetadataClient interface {
 }
 
 const unsProvider = "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
-const cnsEventsStartingBlock uint64 = 9923764
+const unsEventsStartingBlock uint64 = 8775208
+const cnsEventsStartingBlock uint64 = 7484092
 
 var unsZeroAddress = common.HexToAddress("0x0")
 var unsMainnetProxyReader = common.HexToAddress("0x299974AeD8911bcbd2C61262605b89F591a53E83")
-var cnsMainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
+var unsMainnetRegistry = common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086")
+var cnsMainnetRegistry = common.HexToAddress("0xAad76bea7CFEc82927239415BB18D2e93518ecBB")
+var cnsMainnetDefaultResolver = common.HexToAddress("0x95AE1515367aa64C462c71e87157771165B1287A")
 
 // NewUnsBuilder Creates builder to setup new instance of Uns service.
 func NewUnsBuilder() UnsBuilder {
@@ -81,6 +85,9 @@ func (cb *unsBuilder) Build() (*Uns, error) {
 		cb.metadataClient = &http.Client{}
 	}
 	proxyReaderContract, err := proxyreader.NewContract(unsMainnetProxyReader, cb.contractBackend)
+	if err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +252,11 @@ func (c *Uns) AllRecords(domainName string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		allKeys, err = c.getAllKeysFromContractEvents(contract, cnsEventsStartingBlock, domainName)
+		eventsStartingBlock := cnsEventsStartingBlock
+		if data.Resolver == unsMainnetProxyReader {
+			eventsStartingBlock = unsEventsStartingBlock
+		}
+		allKeys, err = c.getAllKeysFromContractEvents(contract, eventsStartingBlock, domainName)
 		if err != nil {
 			return nil, err
 		}
@@ -328,23 +339,28 @@ func (c *Uns) TokenURIMetadata(domainName string) (TokenMetadata, error) {
 
 func (c *Uns) Unhash(domainHash string) (string, error) {
 	namehash := common.HexToHash(domainHash)
-	tokenUri, err := c.tokenUriByNamehash(namehash)
-	if err != nil {
-		return "", err
-	}
-	metadata, err := c.tokenMetadataByUri(tokenUri)
-	if err != nil {
-		return "", err
-	}
-	domainName := normalizeName(metadata.Name)
-	expectedNamehash := kns.NameHash(domainName)
-	if namehash != expectedNamehash {
-		return "", &InvalidDomainNameReturnedError{
-			DomainName: domainName,
-			Namehash:   domainHash,
-		}
-	}
 
+	domainName, _ := c.hashToNameFromNewURIEvents(namehash, cnsMainnetRegistry, cnsEventsStartingBlock)
+	if domainName == "" {
+		domainName, _ = c.hashToNameFromNewURIEvents(namehash, unsMainnetRegistry, unsEventsStartingBlock)
+	}
+	return domainName, nil
+}
+
+func (c *Uns) hashToNameFromNewURIEvents(namehash common.Hash, registryAddress common.Address, eventsStartingBlock uint64) (string, error) {
+	registryContract, err := registry.NewContract(registryAddress, c.contractBackend)
+	if err != nil {
+		return "", err
+	}
+	newUriIterator, err := registryContract.FilterNewURI(&bind.FilterOpts{Start: eventsStartingBlock}, []*big.Int{namehash.Big()})
+
+	domainName := ""
+	for newUriIterator.Next() {
+		if newUriIterator.Error() != nil {
+			return "", err
+		}
+		domainName = newUriIterator.Event.Uri
+	}
 	return domainName, nil
 }
 
