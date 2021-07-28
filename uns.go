@@ -340,10 +340,12 @@ func (c *Uns) TokenURIMetadata(domainName string) (TokenMetadata, error) {
 func (c *Uns) Unhash(domainHash string) (string, error) {
 	namehash := common.HexToHash(domainHash)
 
-	domainName, _ := c.hashToNameFromNewURIEvents(namehash, cnsMainnetRegistry, cnsEventsStartingBlock)
-	if domainName == "" {
-		domainName, _ = c.hashToNameFromNewURIEvents(namehash, unsMainnetRegistry, unsEventsStartingBlock)
+	registryAddress, err := c.proxyReader.RegistryOf(&bind.CallOpts{}, namehash.Big())
+	if err != nil {
+		return "", err
 	}
+	domainName, _ := c.hashToNameFromNewURIEvents(namehash, registryAddress, cnsEventsStartingBlock)
+
 	return domainName, nil
 }
 
