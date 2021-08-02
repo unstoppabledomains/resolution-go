@@ -19,10 +19,14 @@ import (
 
 // Uns is a naming service handles Unstoppable domains resolution.
 type Uns struct {
-	proxyReader     *proxyreader.Contract
-	supportedKeys   supportedKeys
-	contractBackend bind.ContractBackend
-	metadataClient  MetadataClient
+	cnsDefaultResolver     common.Address
+	unsRegistry            common.Address
+	cnsStartingEventsBlock uint64
+	unsStartingEventsBlock uint64
+	proxyReader            *proxyreader.Contract
+	supportedKeys          supportedKeys
+	contractBackend        bind.ContractBackend
+	metadataClient         MetadataClient
 }
 
 // UnsBuilder is a builder to setup and build instance of Uns service.
@@ -34,7 +38,7 @@ type UnsBuilder interface {
 	SetMetadataClient(backend MetadataClient) UnsBuilder
 
 	// Build Uns instance
-	Build() (*Uns, error)
+	Build(testnet bool) (*Uns, error)
 }
 
 type unsBuilder struct {
@@ -46,15 +50,22 @@ type MetadataClient interface {
 	Get(url string) (resp *http.Response, err error)
 }
 
-const unsProvider = "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
-const unsEventsStartingBlock uint64 = 8775208
-const cnsEventsStartingBlock uint64 = 7484092
+const unsMainnetProvider = "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
+const unsTestnetProvider = "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
+
+const cnsMainnetEventsStartingBlock uint64 = 9923764
+const cnsTestnetEventsStartingBlock uint64 = 7484112
+const unsTestnetEventsStartingBlock uint64 = 8775208
+const unsMainnetEventsStartingBlock uint64 = 12779230
 
 var unsZeroAddress = common.HexToAddress("0x0")
-var unsMainnetProxyReader = common.HexToAddress("0x299974AeD8911bcbd2C61262605b89F591a53E83")
-var unsMainnetRegistry = common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086")
-var cnsMainnetRegistry = common.HexToAddress("0xAad76bea7CFEc82927239415BB18D2e93518ecBB")
-var cnsMainnetDefaultResolver = common.HexToAddress("0x95AE1515367aa64C462c71e87157771165B1287A")
+
+var unsMainnetRegistry = common.HexToAddress("0x049aba7510f45BA5b64ea9E658E342F904DB358D")
+var unsTestnetRegistry = common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086")
+var unsMainnetProxyReader = common.HexToAddress("0xfEe4D4F0aDFF8D84c12170306507554bC7045878")
+var unsTestnetProxyReader = common.HexToAddress("0x299974AeD8911bcbd2C61262605b89F591a53E83")
+var cnsMainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
+var cnsTestnetDefaultResolver = common.HexToAddress("0x95AE1515367aa64C462c71e87157771165B1287A")
 
 // NewUnsBuilder Creates builder to setup new instance of Uns service.
 func NewUnsBuilder() UnsBuilder {
@@ -73,9 +84,23 @@ func (cb *unsBuilder) SetMetadataClient(client MetadataClient) UnsBuilder {
 }
 
 // Build Uns instance
-func (cb *unsBuilder) Build() (*Uns, error) {
+func (cb *unsBuilder) Build(testnet bool) (*Uns, error) {
+	provider := unsMainnetProvider
+	unsProxyReader := unsMainnetProxyReader
+	cnsDefaultResolver := cnsMainnetDefaultResolver
+	unsRegistry := unsMainnetRegistry
+	cnsStartingEventsBlock := cnsMainnetEventsStartingBlock
+	unsStartingEventsBlock := unsMainnetEventsStartingBlock
+	if testnet {
+		provider = unsTestnetProvider
+		unsProxyReader = unsTestnetProxyReader
+		cnsDefaultResolver = cnsTestnetDefaultResolver
+		unsRegistry = unsTestnetRegistry
+		cnsStartingEventsBlock = cnsTestnetEventsStartingBlock
+		unsStartingEventsBlock = unsTestnetEventsStartingBlock
+	}
 	if cb.contractBackend == nil {
-		backend, err := ethclient.Dial(unsProvider)
+		backend, err := ethclient.Dial(provider)
 		if err != nil {
 			return nil, err
 		}
@@ -84,7 +109,7 @@ func (cb *unsBuilder) Build() (*Uns, error) {
 	if cb.metadataClient == nil {
 		cb.metadataClient = &http.Client{}
 	}
-	proxyReaderContract, err := proxyreader.NewContract(unsMainnetProxyReader, cb.contractBackend)
+	proxyReaderContract, err := proxyreader.NewContract(unsProxyReader, cb.contractBackend)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +120,7 @@ func (cb *unsBuilder) Build() (*Uns, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Uns{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend, metadataClient: cb.metadataClient}, nil
+	return &Uns{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: cb.contractBackend, metadataClient: cb.metadataClient, cnsDefaultResolver: cnsDefaultResolver, unsRegistry: unsRegistry, unsStartingEventsBlock: unsStartingEventsBlock, cnsStartingEventsBlock: cnsStartingEventsBlock}, nil
 }
 
 // Data Get raw data attached to domain
@@ -247,14 +272,14 @@ func (c *Uns) AllRecords(domainName string) (map[string]string, error) {
 		return nil, err
 	}
 	var allKeys []string
-	if data.Resolver == cnsMainnetDefaultResolver || data.Resolver == unsMainnetProxyReader {
+	if data.Resolver == c.cnsDefaultResolver || data.Resolver == c.unsRegistry {
 		contract, err := resolver.NewContract(data.Resolver, c.contractBackend)
 		if err != nil {
 			return nil, err
 		}
-		eventsStartingBlock := cnsEventsStartingBlock
-		if data.Resolver == unsMainnetProxyReader {
-			eventsStartingBlock = unsEventsStartingBlock
+		eventsStartingBlock := c.cnsStartingEventsBlock
+		if data.Resolver == c.unsRegistry {
+			eventsStartingBlock = c.unsStartingEventsBlock
 		}
 		allKeys, err = c.getAllKeysFromContractEvents(contract, eventsStartingBlock, domainName)
 		if err != nil {
@@ -344,7 +369,11 @@ func (c *Uns) Unhash(domainHash string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	domainName, _ := c.hashToNameFromNewURIEvents(namehash, registryAddress, cnsEventsStartingBlock)
+	eventsStartingBlock := c.cnsStartingEventsBlock
+	if registryAddress == c.unsRegistry {
+		eventsStartingBlock = c.unsStartingEventsBlock
+	}
+	domainName, _ := c.hashToNameFromNewURIEvents(namehash, registryAddress, eventsStartingBlock)
 
 	return domainName, nil
 }
