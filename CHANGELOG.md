@@ -1,4 +1,4 @@
-## 2.0.0
+## 2.0.0-beta
 
 - Added UNS support
 - CNS and UNS testnet
