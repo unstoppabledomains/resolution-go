@@ -1,12 +1,10 @@
 package resolution
 
 import (
-	"bytes"
-	"encoding/json"
-	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
-	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -370,7 +368,7 @@ func TestUnsDomainNotRegisteredError(t *testing.T) {
 func TestUnsTokenURI(t *testing.T) {
 	t.Parallel()
 	tokenURI, err := uns.TokenURI("udtestdev-test.crypto")
-	expectedTokenURI := "https://staging-dot-dot-crypto-metadata.appspot.com/metadata/udtestdev-test.crypto"
+	expectedTokenURI := "https://metadata.staging.unstoppabledomains.com/metadata/udtestdev-test.crypto"
 	assert.Nil(t, err)
 	assert.Equal(t, expectedTokenURI, tokenURI)
 }
@@ -419,7 +417,7 @@ func TestUnsTokenURIMetadataNotSupportedDomain(t *testing.T) {
 	assert.ErrorAs(t, err, &expectedError)
 }
 
-func TestUnsUnhash(t *testing.T) {
+func TestUnsUnhashDotCrypto(t *testing.T) {
 	t.Parallel()
 	expectedDomainName := "testing.crypto"
 	domainName, err := uns.Unhash("0xd52e0f8bfe7e039fddb362c7e00f3628e2dca805f191d8bef74a07ca0e848245")
@@ -427,36 +425,25 @@ func TestUnsUnhash(t *testing.T) {
 	assert.Equal(t, expectedDomainName, domainName)
 }
 
-func TestUnsUnhashWithout0xPrefix(t *testing.T) {
+func TestUnsUnhashWithout0xPrefixDotCrypto(t *testing.T) {
 	t.Parallel()
 	expectedDomainName := "testing.crypto"
 	domainName, err := uns.Unhash("d52e0f8bfe7e039fddb362c7e00f3628e2dca805f191d8bef74a07ca0e848245")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedDomainName, domainName)
 }
-
-func TestUnsUnhashInvalidDomain(t *testing.T) {
+func TestUnsUnhashDotWallet(t *testing.T) {
 	t.Parallel()
-	var expectedError *InvalidDomainNameReturnedError
-	body, _ := json.Marshal(TokenMetadata{
-		Name:            "testing.crypto",
-		Description:     "",
-		Image:           "",
-		ExternalUrl:     "",
-		ExternalLink:    "",
-		ImageData:       "",
-		BackgroundColor: "",
-		AnimationUrl:    "",
-		YoutubeUrl:      "",
-		Attributes:      nil,
-	})
-	var mockedClient MockedMetadataClient
-	mockedClient.SetResponse(&http.Response{
-		Body: ioutil.NopCloser(bytes.NewBuffer(body)),
-	})
-	mockedClient.SetError(nil)
-	unsWithMockedMetadataClient, _ := NewUnsBuilder().SetMetadataClient(&mockedClient).Build()
-	domainName, err := unsWithMockedMetadataClient.Unhash("756e4e998dbffd803c21d23b06cd855cdc7a4b57706c95964a37e24b47c10fc9")
-	assert.Empty(t, domainName)
-	assert.ErrorAs(t, err, &expectedError)
+	expectedDomainName := "udtestdev-my-new-tls.wallet"
+	domainName, err := uns.Unhash("0x1586d090e1b5781399f988e4b4f5639f4c2775ef5ec093d1279bb95b9bceb1a0")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedDomainName, domainName)
+}
+
+func TestUnsUnhashWithout0xPrefixDotWallet(t *testing.T) {
+	t.Parallel()
+	expectedDomainName := "udtestdev-my-new-tls.wallet"
+	domainName, err := uns.Unhash("1586d090e1b5781399f988e4b4f5639f4c2775ef5ec093d1279bb95b9bceb1a0")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedDomainName, domainName)
 }
