@@ -31,12 +31,12 @@ func (m *MockedMetadataClient) Get(_ string) (resp *http.Response, err error) {
 	return m.Response, m.Err
 }
 
-var uns, _ = NewUnsBuilder().Build(true)
+var uns, _ = NewUnsBuilder().SetEthereumNetwork("rinkeby").Build()
 
 func TestUnsBuilder(t *testing.T) {
 	t.Parallel()
-	builder := NewUnsBuilder()
-	_, err := builder.Build(true)
+	builder := NewUnsBuilder().SetEthereumNetwork("rinkeby")
+	_, err := builder.Build()
 	assert.Nil(t, err)
 	assert.NotNil(t, uns.contractBackend)
 	assert.NotNil(t, uns.metadataClient)
@@ -49,7 +49,7 @@ func TestUnsBuilderSetBackend(t *testing.T) {
 	backend, _ := ethclient.Dial("https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
 	builder := NewUnsBuilder()
 	builder.SetContractBackend(backend)
-	uns, err := builder.Build(true)
+	uns, err := builder.Build()
 	assert.Nil(t, err)
 	assert.Equal(t, backend, uns.contractBackend)
 }
@@ -59,14 +59,14 @@ func TestUnsBuilderSetMetadataClient(t *testing.T) {
 	client := &http.Client{}
 	builder := NewUnsBuilder()
 	builder.SetMetadataClient(client)
-	uns, err := builder.Build(true)
+	uns, err := builder.Build()
 	assert.Nil(t, err)
 	assert.Equal(t, client, uns.metadataClient)
 }
 
 func TestNewUnsWithSupportedKeys(t *testing.T) {
 	t.Parallel()
-	unsService, _ := NewUnsBuilder().Build(true)
+	unsService, _ := NewUnsBuilder().Build()
 	deprecatedKeyName := unsService.supportedKeys["crypto.ETH.address"]
 	assert.Equal(t, "ETH", deprecatedKeyName.DeprecatedKeyName)
 }

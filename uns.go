@@ -37,13 +37,17 @@ type UnsBuilder interface {
 	// SetMetadataClient set http backend for communication with ERC721 metadata server
 	SetMetadataClient(backend MetadataClient) UnsBuilder
 
+	// SetEthereumNetwork set Ethereum network for communication with UNS registry
+	SetEthereumNetwork(network string) UnsBuilder
+
 	// Build Uns instance
-	Build(testnet bool) (*Uns, error)
+	Build() (*Uns, error)
 }
 
 type unsBuilder struct {
 	contractBackend bind.ContractBackend
 	metadataClient  MetadataClient
+	network         string
 }
 
 type MetadataClient interface {
@@ -83,15 +87,20 @@ func (cb *unsBuilder) SetMetadataClient(client MetadataClient) UnsBuilder {
 	return cb
 }
 
+func (cb *unsBuilder) SetEthereumNetwork(network string) UnsBuilder {
+	cb.network = network
+	return cb
+}
+
 // Build Uns instance
-func (cb *unsBuilder) Build(testnet bool) (*Uns, error) {
+func (cb *unsBuilder) Build() (*Uns, error) {
 	provider := unsMainnetProvider
 	unsProxyReader := unsMainnetProxyReader
 	cnsDefaultResolver := cnsMainnetDefaultResolver
 	unsRegistry := unsMainnetRegistry
 	cnsStartingEventsBlock := cnsMainnetEventsStartingBlock
 	unsStartingEventsBlock := unsMainnetEventsStartingBlock
-	if testnet {
+	if cb.network == "rinkeby" {
 		provider = unsTestnetProvider
 		unsProxyReader = unsTestnetProxyReader
 		cnsDefaultResolver = cnsTestnetDefaultResolver
