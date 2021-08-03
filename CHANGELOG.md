@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.1.1
 
 - Add UNS support
 - Replaces resolution.NewCnsBuilder() with resolution.NewUnsBuilder()
