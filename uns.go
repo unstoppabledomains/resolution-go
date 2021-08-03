@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math/big"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -57,19 +58,7 @@ type MetadataClient interface {
 const unsMainnetProvider = "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
 const unsTestnetProvider = "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
 
-const cnsMainnetEventsStartingBlock uint64 = 9923764
-const cnsTestnetEventsStartingBlock uint64 = 7484112
-const unsTestnetEventsStartingBlock uint64 = 8775208
-const unsMainnetEventsStartingBlock uint64 = 12779230
-
 var unsZeroAddress = common.HexToAddress("0x0")
-
-var unsMainnetRegistry = common.HexToAddress("0x049aba7510f45BA5b64ea9E658E342F904DB358D")
-var unsTestnetRegistry = common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086")
-var unsMainnetProxyReader = common.HexToAddress("0xfEe4D4F0aDFF8D84c12170306507554bC7045878")
-var unsTestnetProxyReader = common.HexToAddress("0x299974AeD8911bcbd2C61262605b89F591a53E83")
-var cnsMainnetDefaultResolver = common.HexToAddress("0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842")
-var cnsTestnetDefaultResolver = common.HexToAddress("0x95AE1515367aa64C462c71e87157771165B1287A")
 
 // NewUnsBuilder Creates builder to setup new instance of Uns service.
 func NewUnsBuilder() UnsBuilder {
@@ -95,18 +84,22 @@ func (cb *unsBuilder) SetEthereumNetwork(network string) UnsBuilder {
 // Build Uns instance
 func (cb *unsBuilder) Build() (*Uns, error) {
 	provider := unsMainnetProvider
-	unsProxyReader := unsMainnetProxyReader
-	cnsDefaultResolver := cnsMainnetDefaultResolver
-	unsRegistry := unsMainnetRegistry
-	cnsStartingEventsBlock := cnsMainnetEventsStartingBlock
-	unsStartingEventsBlock := unsMainnetEventsStartingBlock
+	mainnetContracts, rinkebyContracts, err := newContracts()
+	if err != nil {
+		return nil, err
+	}
+	unsProxyReader := common.HexToAddress(mainnetContracts["ProxyReader"].Address)
+	cnsDefaultResolver := common.HexToAddress(mainnetContracts["Resolver"].Address)
+	unsRegistry := common.HexToAddress(mainnetContracts["UNSRegistry"].Address)
+	unsStartingEventsBlock, _ := strconv.ParseUint(mainnetContracts["UNSRegistry"].DeploymentBlock[2:], 16, 32)
+	cnsStartingEventsBlock, _ := strconv.ParseUint(mainnetContracts["Resolver"].DeploymentBlock[2:], 16, 32)
 	if cb.network == "rinkeby" {
 		provider = unsTestnetProvider
-		unsProxyReader = unsTestnetProxyReader
-		cnsDefaultResolver = cnsTestnetDefaultResolver
-		unsRegistry = unsTestnetRegistry
-		cnsStartingEventsBlock = cnsTestnetEventsStartingBlock
-		unsStartingEventsBlock = unsTestnetEventsStartingBlock
+		unsProxyReader = common.HexToAddress(rinkebyContracts["ProxyReader"].Address)
+		cnsDefaultResolver = common.HexToAddress(rinkebyContracts["Resolver"].Address)
+		unsRegistry = common.HexToAddress(rinkebyContracts["UNSRegistry"].Address)
+		unsStartingEventsBlock, _ = strconv.ParseUint(rinkebyContracts["UNSRegistry"].DeploymentBlock[2:], 16, 32)
+		cnsStartingEventsBlock, _ = strconv.ParseUint(rinkebyContracts["Resolver"].DeploymentBlock[2:], 16, 32)
 	}
 	if cb.contractBackend == nil {
 		backend, err := ethclient.Dial(provider)
