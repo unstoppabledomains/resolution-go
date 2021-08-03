@@ -1,10 +1,11 @@
 ## 1.1.0
 
-- Added UNS support
-- CNS and UNS testnet
-- Added Unhash method
-- Added TokenURIMetadata getter
-- isSupportedDomain to make network call
+- Add UNS support
+- Replaces resolution.NewCnsBuilder() with resolution.NewUnsBuilder()
+- Add UNS testnet support with UnsBuilder.SetEthereumNetwork() method
+- Add Unhash method
+- Add TokenURIMetadata getter
+- isSupportedDomain() now makes network call
 
 ## 1.0.0
 
