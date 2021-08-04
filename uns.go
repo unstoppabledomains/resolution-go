@@ -380,6 +380,12 @@ func (c *Uns) Unhash(domainHash string) (string, error) {
 	return domainName, nil
 }
 
+func (c *Uns) Namehash(domainName string) (string, error) {
+	namehash := kns.NameHash(domainName)
+
+	return namehash.String(), nil
+}
+
 func (c *Uns) hashToNameFromNewURIEvents(namehash common.Hash, registryAddress common.Address, eventsStartingBlock uint64) (string, error) {
 	registryContract, err := registry.NewContract(registryAddress, c.contractBackend)
 	if err != nil {

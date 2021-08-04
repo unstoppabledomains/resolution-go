@@ -439,6 +439,27 @@ func TestUnsUnhashDotWallet(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedDomainName, domainName)
 }
+func TestUnsNamehash(t *testing.T) {
+	t.Parallel()
+	domainName := "udtestdev-my-new-tls.wallet"
+	expectedNamehash := "0x1586d090e1b5781399f988e4b4f5639f4c2775ef5ec093d1279bb95b9bceb1a0"
+	namehash, err := uns.Namehash(domainName)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedNamehash, namehash)
+
+	domainName = "udtestdev-my-new-tls.test.wallet"
+	expectedNamehash = "0x126aa8f6239a84fe8bcfd7129b96176fa7ddd8c652e1c5bb30fe50ec595fd7a1"
+	namehash, err = uns.Namehash(domainName)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedNamehash, namehash)
+
+	domainName = "wallet"
+	expectedNamehash = "0x1e3f482b3363eb4710dae2cb2183128e272eafbe137f686851c1caea32502230"
+	namehash, err = uns.Namehash(domainName)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedNamehash, namehash)
+
+}
 
 func TestUnsUnhashWithout0xPrefixDotWallet(t *testing.T) {
 	t.Parallel()

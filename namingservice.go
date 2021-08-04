@@ -86,6 +86,9 @@ type NamingService interface {
 	// domainName, err := NamingService.Unhash(domainHash)
 	//
 	Unhash(domainHash string) (string, error)
+
+	// Namehash returns a namehash of a domain following the EIP-137 standard
+	Namehash(domainName string) (string, error)
 }
 
 // DetectNamingService helper to detect naming service type for provided domain.

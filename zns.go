@@ -252,6 +252,15 @@ func (z *Zns) TokenURIMetadata(_ string) (TokenMetadata, error) {
 	return TokenMetadata{}, &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
 }
 
+func (z *Zns) Namehash(domainName string) (string, error) {
+	namehash, err := ZnsNameHash(domainName)
+
+	if err != nil {
+		return "", err
+	}
+	return namehash, nil
+}
+
 func (z *Zns) Unhash(_ string) (string, error) {
 	return "", &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
 }
