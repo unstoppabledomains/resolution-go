@@ -1,3 +1,7 @@
+## 1.1.2
+
+- Add Namehash method
+
 ## 1.1.1
 
 - Add UNS support
