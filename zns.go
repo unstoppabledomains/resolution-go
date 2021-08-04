@@ -12,19 +12,23 @@ import (
 
 // Zns is a naming service handles .zil domains resolution.
 type Zns struct {
-	provider ZnsProvider
+	provider    ZnsProvider
+	znsRegistry string
 }
 
 // ZnsBuilder is a builder to setup and build instance of Zns service.
 type ZnsBuilder interface {
 	// SetProvider set Zilliqa blockchain provider to communicate with ZNS registry
 	SetProvider(provider ZnsProvider) ZnsBuilder
+	// SetProvider set Zilliqa network to communicate with ZNS registry
+	SetNetwork(network string) ZnsBuilder
 	// Build Zns instance
 	Build() (*Zns, error)
 }
 
 type znsBuilder struct {
 	provider ZnsProvider
+	network  string
 }
 
 // ZnsProvider ZnsProvider
@@ -53,12 +57,13 @@ type resolverSubState struct {
 
 const znsDefaultProvider = "https://api.zilliqa.com"
 const znsMainnetRegistry = "9611c53BE6d1b32058b2747bdeCECed7e1216793"
+const znsTestnetRegistry = "b925add1d5eaf13f40efd43451bf97a22ab3d727"
 const znsContractField = "records"
 const znsZeroAddress = "0x0000000000000000000000000000000000000000"
 
 // NewZnsBuilder Creates ZNS builder instance.
 func NewZnsBuilder() ZnsBuilder {
-	return &znsBuilder{}
+	return &znsBuilder{network: "mainnet"}
 }
 
 // SetProvider set Zilliqa blockchain provider to communicate with ZNS registry.
@@ -67,13 +72,22 @@ func (zb *znsBuilder) SetProvider(provider ZnsProvider) ZnsBuilder {
 	return zb
 }
 
+// SetNetwork set Zilliqa blockchain network to communicate with ZNS registry.
+func (zb *znsBuilder) SetNetwork(network string) ZnsBuilder {
+	zb.network = network
+	return zb
+}
+
 // Build Zns instance
 func (zb *znsBuilder) Build() (*Zns, error) {
 	if zb.provider == nil {
 		zb.provider = provider.NewProvider(znsDefaultProvider)
 	}
-
-	return &Zns{provider: zb.provider}, nil
+	znsRegistry := znsMainnetRegistry
+	if zb.network == "testnet" {
+		znsRegistry = znsTestnetRegistry
+	}
+	return &Zns{provider: zb.provider, znsRegistry: znsRegistry}, nil
 }
 
 // State Get raw data attached to domain.
@@ -90,7 +104,7 @@ func (z *Zns) State(domainName string) (*ZnsDomainState, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := z.provider.GetSmartContractSubState(znsMainnetRegistry, znsContractField, []string{namehash})
+	response, err := z.provider.GetSmartContractSubState(z.znsRegistry, znsContractField, []string{namehash})
 	if err != nil {
 		return nil, err
 	}
