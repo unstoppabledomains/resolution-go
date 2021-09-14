@@ -7,7 +7,6 @@ import (
 	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 )
@@ -31,43 +30,12 @@ func (m *MockedMetadataClient) Get(_ string) (resp *http.Response, err error) {
 	return m.Response, m.Err
 }
 
-var uns, _ = NewUnsBuilder().SetEthereumNetwork("rinkeby").Build()
-
-func TestUnsBuilder(t *testing.T) {
-	t.Parallel()
-	builder := NewUnsBuilder().SetEthereumNetwork("rinkeby")
-	_, err := builder.Build()
-	assert.Nil(t, err)
-	assert.NotNil(t, uns.contractBackend)
-	assert.NotNil(t, uns.metadataClient)
-	assert.NotNil(t, uns.supportedKeys)
-	assert.NotNil(t, uns.proxyReader)
-}
-
-func TestUnsBuilderSetBackend(t *testing.T) {
-	t.Parallel()
-	backend, _ := ethclient.Dial("https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
-	builder := NewUnsBuilder()
-	builder.SetContractBackend(backend)
-	uns, err := builder.Build()
-	assert.Nil(t, err)
-	assert.Equal(t, backend, uns.contractBackend)
-}
-
-func TestUnsBuilderSetMetadataClient(t *testing.T) {
-	t.Parallel()
-	client := &http.Client{}
-	builder := NewUnsBuilder()
-	builder.SetMetadataClient(client)
-	uns, err := builder.Build()
-	assert.Nil(t, err)
-	assert.Equal(t, client, uns.metadataClient)
-}
+var uns, _ = NewUnsBuilder().SetEthereumNetwork("rinkeby").SetL2EthereumNetwork("mumbai").Build()
 
 func TestNewUnsWithSupportedKeys(t *testing.T) {
 	t.Parallel()
-	unsService, _ := NewUnsBuilder().Build()
-	deprecatedKeyName := unsService.supportedKeys["crypto.ETH.address"]
+	unsService, _ := NewUnsBuilder().SetEthereumNetwork("rinkeby").SetL2EthereumNetwork("mumbai").Build()
+	deprecatedKeyName := unsService.l1Service.supportedKeys["crypto.ETH.address"]
 	assert.Equal(t, "ETH", deprecatedKeyName.DeprecatedKeyName)
 }
 
@@ -76,6 +44,15 @@ func TestUnsDataValue(t *testing.T) {
 	testDomain := "testing.crypto"
 	expectedRecord := "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2"
 	data, err := uns.Data(testDomain, []string{"crypto.ETH.address"})
+	assert.Nil(t, err)
+	assert.Equal(t, data.Values[0], expectedRecord)
+}
+
+func TestUnsL2DataValue(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecord := "0x6A1fd9a073256f14659fe59613bbf169Ed27CdcC"
+	data, err := uns.Data(testDomain, []string{"crypto.LINK.address"})
 	assert.Nil(t, err)
 	assert.Equal(t, data.Values[0], expectedRecord)
 }
@@ -93,9 +70,30 @@ func TestUnsData(t *testing.T) {
 	assert.Equal(t, expectedResolver, data.Resolver)
 }
 
+func TestUnsL2Data(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecord := "0x6A1fd9a073256f14659fe59613bbf169Ed27CdcC"
+	expectedOwner := common.HexToAddress("0x499dd6d875787869670900a2130223d85d4f6aa7")
+	expectedResolver := common.HexToAddress("0xecb7AaC995C284970A347342F5d04dB81fdB436F")
+	data, err := uns.Data(testDomain, []string{"crypto.LINK.address"})
+	assert.Nil(t, err)
+	assert.Equal(t, data.Values[0], expectedRecord)
+	assert.Equal(t, expectedOwner, data.Owner)
+	assert.Equal(t, expectedResolver, data.Resolver)
+}
+
 func TestUnsEmptyDataValues(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-test.crypto"
+	data, _ := uns.Data(testDomain, []string{"empty record"})
+	assert.Equal(t, data.Values[0], "")
+	assert.Len(t, data.Values, 1)
+}
+
+func TestUnsL2EmptyDataValues(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
 	data, _ := uns.Data(testDomain, []string{"empty record"})
 	assert.Equal(t, data.Values[0], "")
 	assert.Len(t, data.Values, 1)
@@ -126,6 +124,15 @@ func TestUnsRecords(t *testing.T) {
 	assert.Equal(t, records, expectedRecords)
 }
 
+func TestUnsL2Records(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecords := map[string]string{"crypto.LINK.address": "0x6A1fd9a073256f14659fe59613bbf169Ed27CdcC", "crypto.BTC.address": ""}
+	records, err := uns.Records(testDomain, []string{"crypto.LINK.address", "crypto.BTC.address"})
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, records)
+}
+
 func TestUnsEmptyRecords(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-test.crypto"
@@ -144,6 +151,15 @@ func TestUnsRecord(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
+func TestUnsL2Record(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecord := "0x6A1fd9a073256f14659fe59613bbf169Ed27CdcC"
+	record, err := uns.Record(testDomain, "crypto.LINK.address")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
 func TestUnsEmptyRecord(t *testing.T) {
 	t.Parallel()
 	testDomain := "testing.crypto"
@@ -157,6 +173,15 @@ func TestUnsAddr(t *testing.T) {
 	testDomain := "testing.crypto"
 	expectedRecord := "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2"
 	record, err := uns.Addr(testDomain, "ETH")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestUnsL2Addr(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecord := "0x6A1fd9a073256f14659fe59613bbf169Ed27CdcC"
+	record, err := uns.Addr(testDomain, "LINK")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
 }
@@ -179,10 +204,28 @@ func TestUnsEmail(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
+func TestUnsL2Email(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecord := "l2email@l2mail.mail"
+	record, err := uns.Email(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
 func TestUnsResolver(t *testing.T) {
 	t.Parallel()
 	testDomain := "testing.crypto"
 	expectedRecord := "0x95AE1515367aa64C462c71e87157771165B1287A"
+	record, err := uns.Resolver(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestUnsL2Resolver(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecord := "0xecb7AaC995C284970A347342F5d04dB81fdB436F"
 	record, err := uns.Resolver(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
@@ -197,6 +240,15 @@ func TestUnsOwner(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
+func TestUnsL2Owner(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecord := "0xecb7AaC995C284970A347342F5d04dB81fdB436F"
+	record, err := uns.Resolver(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
 func TestUnsAddrVersion(t *testing.T) {
 	t.Parallel()
 	testDomain := "testing.crypto"
@@ -206,19 +258,28 @@ func TestUnsAddrVersion(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
+func TestUnsL2AddrVersion(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-morerecords2231.wallet"
+	expectedRecord := "0x499dD6D875787869670900a2130223D85d4F6Aa7"
+	record, err := uns.AddrVersion(testDomain, "USDT", "ERC20")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
 func TestUnsIpfs(t *testing.T) {
 	t.Parallel()
 	testDomain := "testing.crypto"
-	expectedRecord := "QmRi3PBpUGFnYrCKUoWhntRLfA9PeRhepfFu4Lz21mGd3X"
+	expectedRecord := "QmZ13Z6wRdtDm5c1vee9J5q7gWg6Mnq6SXiqau7Fa4CNrc"
 	record, err := uns.IpfsHash(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestUnsIpfsLegacy(t *testing.T) {
+func TestUnsL2Ipfs(t *testing.T) {
 	t.Parallel()
-	testDomain := "testing.crypto"
-	expectedRecord := "QmRi3PBpUGFnYrCKUoWhntRLfA9PeRhepfFu4Lz21mGd3X"
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecord := "QmfRXG3CcM1eWiCUA89uzimCvQUnw4HzTKLo6hRZ47PYsN"
 	record, err := uns.IpfsHash(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
@@ -228,6 +289,15 @@ func TestUnsHTTPUrl(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-redirect.crypto"
 	expectedRecord := "https://example.com/home.html"
+	record, err := uns.HTTPUrl(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestUnsL2HTTPUrl(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-morerecords2231.wallet"
+	expectedRecord := "https://L2.example.com/home.html"
 	record, err := uns.HTTPUrl(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
@@ -245,7 +315,7 @@ func TestUnsHttpUrlLegacy(t *testing.T) {
 func TestDotCryptoAllRecords(t *testing.T) {
 	t.Parallel()
 	testDomain := "testing.crypto"
-	expectedRecords := map[string]string{"crypto.ETH.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.EOS.address": "karaarishmen", "crypto.USDT.version.ERC20.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.OMNI.address": "1KvzMF2Vjy14d6JGY7dG7vjT5kfpmzSQXM", "crypto.USDT.version.TRON.address": "TRMJfXXbmwb3WFSRKbeRgKsYoD8o1a9xxV", "dns.A": "[\"10.0.0.1\", \"10.0.0.3\"]", "dns.A.ttl": "98", "dns.AAAA": "[]", "ipfs.html.value": "QmRi3PBpUGFnYrCKUoWhntRLfA9PeRhepfFu4Lz21mGd3X", "whois.email.value": "testing@example.com"}
+	expectedRecords := map[string]string{"crypto.ETH.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.EOS.address": "karaarishmen", "crypto.USDT.version.ERC20.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.OMNI.address": "1KvzMF2Vjy14d6JGY7dG7vjT5kfpmzSQXM", "crypto.USDT.version.TRON.address": "TRMJfXXbmwb3WFSRKbeRgKsYoD8o1a9xxV", "dns.A": "[\"10.0.0.1\", \"10.0.0.3\"]", "dns.A.ttl": "98", "dns.AAAA": "[]", "ipfs.html.value": "QmZ13Z6wRdtDm5c1vee9J5q7gWg6Mnq6SXiqau7Fa4CNrc", "whois.email.value": "testing@example.com"}
 	allRecords, err := uns.AllRecords(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, allRecords)
@@ -254,9 +324,9 @@ func TestDotCryptoAllRecords(t *testing.T) {
 func TestUnsGetAllKeysFromContractEvents(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []string{"crypto.ETH.address", "crypto.BTC.address"}
-	registryContract, err := resolver.NewContract(common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086"), uns.contractBackend)
+	registryContract, err := resolver.NewContract(common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086"), uns.l1Service.contractBackend)
 	assert.Nil(t, err)
-	allKeys, err := uns.getAllKeysFromContractEvents(registryContract, 8775208, "udtestdev-my-new-tls.wallet")
+	allKeys, err := uns.l1Service.getAllKeysFromContractEvents(registryContract, 8775208, "udtestdev-my-new-tls.wallet")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, allKeys)
 }
@@ -265,6 +335,15 @@ func TestUnsAllRecords(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-my-new-tls.wallet"
 	expectedRecords := map[string]string{"crypto.BTC.address": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", "crypto.ETH.address": "0x6EC0DEeD30605Bcd19342f3c30201DB263291589"}
+	allRecords, err := uns.AllRecords(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecords, allRecords)
+}
+
+func TestUnsL2AllRecords(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+	expectedRecords := map[string]string{"crypto.LINK.address": "0x6A1fd9a073256f14659fe59613bbf169Ed27CdcC", "dweb.ipfs.hash": "QmfRXG3CcM1eWiCUA89uzimCvQUnw4HzTKLo6hRZ47PYsN", "whois.email.value": "l2email@l2mail.mail"}
 	allRecords, err := uns.AllRecords(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, allRecords)
@@ -392,7 +471,7 @@ func TestUnsTokenURIMetadata(t *testing.T) {
 	expectedMetadata := TokenMetadata{
 		Name:        "udtestdev-test.crypto",
 		Description: "A CNS or UNS blockchain domain. Use it to resolve your cryptocurrency addresses and decentralized websites.",
-		ExternalUrl: "",
+		ExternalUrl: "https://unstoppabledomains.com/search?searchTerm=udtestdev-test.crypto",
 		Image:       "https://storage.googleapis.com/dot-crypto-metadata-api/unstoppabledomains_crypto.png",
 		Attributes: []TokenMetadataAttribute{
 			{
@@ -432,6 +511,7 @@ func TestUnsUnhashWithout0xPrefixDotCrypto(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedDomainName, domainName)
 }
+
 func TestUnsUnhashDotWallet(t *testing.T) {
 	t.Parallel()
 	expectedDomainName := "udtestdev-my-new-tls.wallet"
@@ -439,6 +519,15 @@ func TestUnsUnhashDotWallet(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedDomainName, domainName)
 }
+
+func TestUnsL2UnhashDotWallet(t *testing.T) {
+	t.Parallel()
+	expectedDomainName := "udtestdev-test-l2-domain-784391.wallet"
+	domainName, err := uns.Unhash("0x40920d1d24c83454d9d64e6666927f3abb97b3fd67c7e1bf43de5c2f4297f3b8")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedDomainName, domainName)
+}
+
 func TestUnsNamehash(t *testing.T) {
 	t.Parallel()
 	domainName := "udtestdev-my-new-tls.wallet"
@@ -458,7 +547,6 @@ func TestUnsNamehash(t *testing.T) {
 	namehash, err = uns.Namehash(domainName)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedNamehash, namehash)
-
 }
 
 func TestUnsUnhashWithout0xPrefixDotWallet(t *testing.T) {
