@@ -31,7 +31,7 @@ func TestCallsBothMethods(t *testing.T) {
 	l1Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 	l2Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 
-	ResolveGeneric(GenericFunctions{l1Test.mock, l2Test.mock})
+	_, _ = ResolveGeneric(GenericFunctions{l1Test.mock, l2Test.mock})
 
 	assert.True(t, l1Test.called)
 	assert.True(t, l2Test.called)
