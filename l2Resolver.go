@@ -1,11 +1,5 @@
 package resolution
 
-func checkResultError(err error) bool {
-	_, notRegistered := err.(*DomainNotRegisteredError)
-	_, notConfigured := err.(*DomainNotConfiguredError)
-	return err != nil && (notRegistered || notConfigured)
-}
-
 type GenericFunctions struct {
 	L1Function func() (interface{}, error)
 	L2Function func() (interface{}, error)
@@ -30,7 +24,8 @@ func ResolveGeneric(functions GenericFunctions) (interface{}, error) {
 
 	result := <-c2
 	if result.err != nil {
-		if checkResultError(result.err) {
+		_, notRegistered := result.err.(*DomainNotRegisteredError)
+		if notRegistered {
 			result = <-c1
 		} else {
 			return nil, result.err

@@ -75,7 +75,7 @@ func TestUnsL2Data(t *testing.T) {
 	testDomain := "udtestdev-test-l2-domain-784391.wallet"
 	expectedRecord := "0x6A1fd9a073256f14659fe59613bbf169Ed27CdcC"
 	expectedOwner := common.HexToAddress("0x499dd6d875787869670900a2130223d85d4f6aa7")
-	expectedResolver := common.HexToAddress("0xecb7AaC995C284970A347342F5d04dB81fdB436F")
+	expectedResolver := common.HexToAddress("0x2a93C52E7B6E7054870758e15A1446E769EdfB93")
 	data, err := uns.Data(testDomain, []string{"crypto.LINK.address"})
 	assert.Nil(t, err)
 	assert.Equal(t, data.Values[0], expectedRecord)
@@ -225,7 +225,7 @@ func TestUnsResolver(t *testing.T) {
 func TestUnsL2Resolver(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-test-l2-domain-784391.wallet"
-	expectedRecord := "0xecb7AaC995C284970A347342F5d04dB81fdB436F"
+	expectedRecord := "0x2a93C52E7B6E7054870758e15A1446E769EdfB93"
 	record, err := uns.Resolver(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
@@ -243,7 +243,7 @@ func TestUnsOwner(t *testing.T) {
 func TestUnsL2Owner(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-test-l2-domain-784391.wallet"
-	expectedRecord := "0xecb7AaC995C284970A347342F5d04dB81fdB436F"
+	expectedRecord := "0x2a93C52E7B6E7054870758e15A1446E769EdfB93"
 	record, err := uns.Resolver(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
@@ -472,7 +472,7 @@ func TestUnsTokenURIMetadata(t *testing.T) {
 		Name:        "udtestdev-test.crypto",
 		Description: "A CNS or UNS blockchain domain. Use it to resolve your cryptocurrency addresses and decentralized websites.",
 		ExternalUrl: "https://unstoppabledomains.com/search?searchTerm=udtestdev-test.crypto",
-		Image:       "https://storage.googleapis.com/dot-crypto-metadata-api/unstoppabledomains_crypto.png",
+		Image:       "https://storage.googleapis.com/dot-crypto-metadata-api/images/unstoppabledomains.svg",
 		Attributes: []TokenMetadataAttribute{
 			{
 				TraitType: "domain",
@@ -492,7 +492,7 @@ func TestUnsTokenURIMetadata(t *testing.T) {
 func TestUnsTokenURIMetadataNotSupportedDomain(t *testing.T) {
 	t.Parallel()
 	var expectedError *DomainNotRegisteredError
-	_, err := uns.TokenURIMetadata("unregistered-domain-name.crypto")
+	_, err := uns.TokenURIMetadata("very-unregistered-domain-name.crypto")
 	assert.ErrorAs(t, err, &expectedError)
 }
 

@@ -333,7 +333,7 @@ func (c *UnsService) tokenUriByNamehash(namehash common.Hash) (string, error) {
 	tokenId := namehash.Big()
 	tokenUri, err := c.proxyReader.TokenURI(&bind.CallOpts{Pending: false}, tokenId)
 	if err != nil {
-		if err.Error() == vm.ErrExecutionReverted.Error() {
+		if strings.HasPrefix(err.Error(), vm.ErrExecutionReverted.Error()) {
 			return "", &DomainNotRegisteredError{Namehash: namehash.String()}
 		}
 		return "", err
