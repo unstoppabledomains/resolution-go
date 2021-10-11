@@ -12,22 +12,54 @@ type contracts map[string]struct {
 	DeploymentBlock string
 }
 
-func newContracts() (contracts, contracts, error) {
-	var mainnetContractsObject struct {
+const (
+	Mainnet string = "mainnet"
+	Rinkeby string = "rinkeby"
+	Polygon string = "polygon"
+	Mumbai  string = "mumbai"
+)
+
+const (
+	Layer1 string = "Layer 1"
+	Layer2 string = "Layer 2"
+)
+
+type NetworkContracts map[string]contracts
+
+var NetworkProviders = map[string]string{
+	Mainnet: "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	Rinkeby: "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	Polygon: "https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	Mumbai:  "https://matic-testnet-archive-rpc.bwarelabs.com/",
+}
+
+func parseContracts(data []byte) (contracts, error) {
+	var contractsObject struct {
 		Contracts contracts
 	}
-	var rinkebyContractsObject struct {
-		Contracts contracts
-	}
-	err := json.Unmarshal(unsMainnetConfigJSON, &mainnetContractsObject)
+	err := json.Unmarshal(data, &contractsObject)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	err = json.Unmarshal(unsRinkebyConfigJSON, &rinkebyContractsObject)
+	return contractsObject.Contracts, nil
+}
+
+func newContracts() (NetworkContracts, error) {
+	networks := make(NetworkContracts)
+	var err error
+	networks[Mainnet], err = parseContracts(unsMainnetConfigJSON)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return mainnetContractsObject.Contracts, rinkebyContractsObject.Contracts, nil
+	networks[Rinkeby], err = parseContracts(unsRinkebyConfigJSON)
+	if err != nil {
+		return nil, err
+	}
+	networks[Mumbai], err = parseContracts(unsMumbaiConfigJSON)
+	if err != nil {
+		return nil, err
+	}
+	return networks, nil
 }
 
 var unsMainnetConfigJSON = []byte(`
@@ -191,6 +223,89 @@ var unsRinkebyConfigJSON = []byte(`
             "address": "0x84214215904cDEbA9044ECf95F3eBF009185AAf4",
             "legacyAddresses": [],
             "deploymentBlock": "0x740d93",
+            "deprecated": true
+        }
+    }
+}`)
+
+var unsMumbaiConfigJSON = []byte(`
+{
+    "version": "0.1.0",
+    "contracts": {
+        "UNSRegistry": {
+            "address": "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x01213f43",
+            "implementation": "0x6EBa8D5fD76a7C2A760BE0fB993F18FB54920010",
+            "forwarder": "0x2a93C52E7B6E7054870758e15A1446E769EdfB93"
+        },
+        "CNSRegistry": {
+            "address": "0x0000000000000000000000000000000000000000",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x0",
+            "forwarder": "0x0000000000000000000000000000000000000000"
+        },
+        "MintingManager": {
+            "address": "0x428189346bb3CC52f031A1092fd47C919AC30A9f",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x01213f4a",
+            "implementation": "0x4f4c3a4B75346A546d309934726e7FfbdA13262D",
+            "forwarder": "0xEf3a491A8750BEC2Dff5339CF6Df94436d432C4d"
+        },
+        "ProxyAdmin": {
+            "address": "0x460d63117c7Ab1624b7474C45BF46eC6702f57ce",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x01213b22"
+        },
+        "SignatureController": {
+            "address": "0x0000000000000000000000000000000000000000",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x0"
+        },
+        "MintingController": {
+            "address": "0x0000000000000000000000000000000000000000",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x0",
+            "deprecated": true
+        },
+        "WhitelistedMinter": {
+            "address": "0x0000000000000000000000000000000000000000",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x0",
+            "deprecated": true
+        },
+        "URIPrefixController": {
+            "address": "0x0000000000000000000000000000000000000000",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x0",
+            "deprecated": true
+        },
+        "DomainZoneController": {
+            "address": "0x0000000000000000000000000000000000000000",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x0",
+            "deprecated": true
+        },
+        "Resolver": {
+            "address": "0x0000000000000000000000000000000000000000",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x0",
+            "forwarder": "0x0000000000000000000000000000000000000000"
+        },
+        "ProxyReader": {
+            "address": "0x332A8191905fA8E6eeA7350B5799F225B8ed30a9",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x01213f87"
+        },
+        "TwitterValidationOperator": {
+            "address": "0x0000000000000000000000000000000000000000",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x0"
+        },
+        "FreeMinter": {
+            "address": "0x0000000000000000000000000000000000000000",
+            "legacyAddresses": [],
+            "deploymentBlock": "0x0",
             "deprecated": true
         }
     }
