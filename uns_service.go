@@ -36,7 +36,7 @@ type MetadataClient interface {
 var unsZeroAddress = common.HexToAddress("0x0")
 
 // Data Get raw data attached to domain
-func (c *UnsService) Data(domainName string, keys []string) (*struct {
+func (c *UnsService) data(domainName string, keys []string) (*struct {
 	Resolver common.Address
 	Owner    common.Address
 	Values   []string
@@ -58,8 +58,8 @@ func (c *UnsService) Data(domainName string, keys []string) (*struct {
 	return &data, nil
 }
 
-func (c *UnsService) Records(domainName string, keys []string) (map[string]string, error) {
-	data, err := c.Data(domainName, keys)
+func (c *UnsService) records(domainName string, keys []string) (map[string]string, error) {
+	data, err := c.data(domainName, keys)
 	if err != nil {
 		return nil, err
 	}
@@ -70,40 +70,40 @@ func (c *UnsService) Records(domainName string, keys []string) (map[string]strin
 	return allRecords, nil
 }
 
-func (c *UnsService) Record(domainName string, key string) (string, error) {
-	records, err := c.Records(domainName, []string{key})
+func (c *UnsService) record(domainName string, key string) (string, error) {
+	records, err := c.records(domainName, []string{key})
 	if err != nil {
 		return "", err
 	}
 	return records[key], nil
 }
 
-func (c *UnsService) Addr(domainName string, ticker string) (string, error) {
+func (c *UnsService) addr(domainName string, ticker string) (string, error) {
 	key, err := buildCryptoKey(ticker)
 	if err != nil {
 		return "", err
 	}
-	value, err := c.Record(domainName, key)
+	value, err := c.record(domainName, key)
 	if err != nil {
 		return "", err
 	}
 	return value, nil
 }
 
-func (c *UnsService) AddrVersion(domainName string, ticker string, version string) (string, error) {
+func (c *UnsService) addrVersion(domainName string, ticker string, version string) (string, error) {
 	key, err := buildCryptoKeyVersion(ticker, version)
 	if err != nil {
 		return "", err
 	}
-	value, err := c.Record(domainName, key)
+	value, err := c.record(domainName, key)
 	if err != nil {
 		return "", err
 	}
 	return value, nil
 }
 
-func (c *UnsService) Email(domainName string) (string, error) {
-	value, err := c.Record(domainName, emailKey)
+func (c *UnsService) email(domainName string) (string, error) {
+	value, err := c.record(domainName, emailKey)
 	if err != nil {
 		return "", err
 	}
@@ -111,8 +111,8 @@ func (c *UnsService) Email(domainName string) (string, error) {
 	return value, nil
 }
 
-func (c *UnsService) Resolver(domainName string) (string, error) {
-	data, err := c.Data(domainName, []string{})
+func (c *UnsService) resolver(domainName string) (string, error) {
+	data, err := c.data(domainName, []string{})
 	if err != nil {
 		return "", err
 	}
@@ -120,8 +120,8 @@ func (c *UnsService) Resolver(domainName string) (string, error) {
 	return data.Resolver.String(), nil
 }
 
-func (c *UnsService) Owner(domainName string) (string, error) {
-	data, err := c.Data(domainName, []string{})
+func (c *UnsService) owner(domainName string) (string, error) {
+	data, err := c.data(domainName, []string{})
 	if err != nil {
 		return "", err
 	}
@@ -129,16 +129,16 @@ func (c *UnsService) Owner(domainName string) (string, error) {
 	return data.Owner.String(), nil
 }
 
-func (c *UnsService) IpfsHash(domainName string) (string, error) {
-	records, err := c.Records(domainName, ipfsKeys)
+func (c *UnsService) ipfsHash(domainName string) (string, error) {
+	records, err := c.records(domainName, ipfsKeys)
 	if err != nil {
 		return "", err
 	}
 	return returnFirstNonEmpty(records, ipfsKeys), nil
 }
 
-func (c *UnsService) HTTPUrl(domainName string) (string, error) {
-	records, err := c.Records(domainName, redirectUrlKeys)
+func (c *UnsService) httpUrl(domainName string) (string, error) {
+	records, err := c.records(domainName, redirectUrlKeys)
 	if err != nil {
 		return "", err
 	}
@@ -178,8 +178,8 @@ func (c *UnsService) getAllKeysFromContractEvents(contract *resolver.Contract, e
 	return allKeys, err
 }
 
-func (c *UnsService) AllRecords(domainName string) (map[string]string, error) {
-	data, err := c.Data(domainName, []string{})
+func (c *UnsService) allRecords(domainName string) (map[string]string, error) {
+	data, err := c.data(domainName, []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (c *UnsService) AllRecords(domainName string) (map[string]string, error) {
 			allKeys = append(allKeys, key)
 		}
 	}
-	recordsData, err := c.Data(domainName, allKeys)
+	recordsData, err := c.data(domainName, allKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +221,7 @@ func (c *UnsService) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecor
 	if err != nil {
 		return nil, err
 	}
-	records, err := c.Records(domainName, keys)
+	records, err := c.records(domainName, keys)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +233,7 @@ func (c *UnsService) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecor
 	return dnsRecords, nil
 }
 
-func (c *UnsService) IsSupportedDomain(domainName string) (bool, error) {
+func (c *UnsService) isSupportedDomain(domainName string) (bool, error) {
 	chunks := strings.Split(domainName, ".")
 	if len(chunks) < 2 {
 		return false, nil
@@ -251,7 +251,7 @@ func (c *UnsService) IsSupportedDomain(domainName string) (bool, error) {
 	return data, nil
 }
 
-func (c *UnsService) TokenURI(domainName string) (string, error) {
+func (c *UnsService) tokenURI(domainName string) (string, error) {
 	normalizedName := normalizeName(domainName)
 	namehash := kns.NameHash(normalizedName)
 	tokenUri, err := c.tokenUriByNamehash(namehash)
@@ -262,8 +262,8 @@ func (c *UnsService) TokenURI(domainName string) (string, error) {
 	return tokenUri, nil
 }
 
-func (c *UnsService) TokenURIMetadata(domainName string) (TokenMetadata, error) {
-	tokenUri, err := c.TokenURI(domainName)
+func (c *UnsService) tokenURIMetadata(domainName string) (TokenMetadata, error) {
+	tokenUri, err := c.tokenURI(domainName)
 	if err != nil {
 		return TokenMetadata{}, err
 	}
@@ -274,7 +274,7 @@ func (c *UnsService) TokenURIMetadata(domainName string) (TokenMetadata, error) 
 	return metadata, nil
 }
 
-func (c *UnsService) Unhash(domainHash string) (string, error) {
+func (c *UnsService) unhash(domainHash string) (string, error) {
 	namehash := common.HexToHash(domainHash)
 
 	registryAddress, err := c.proxyReader.RegistryOf(&bind.CallOpts{}, namehash.Big())
@@ -291,7 +291,7 @@ func (c *UnsService) Unhash(domainHash string) (string, error) {
 		return "", &DomainNotRegisteredError{Namehash: namehash.String()}
 	}
 
-	check, err := c.Namehash(domainName)
+	check, err := c.namehash(domainName)
 	if err != nil {
 		return "", err
 	}
@@ -303,7 +303,7 @@ func (c *UnsService) Unhash(domainHash string) (string, error) {
 	return domainName, nil
 }
 
-func (c *UnsService) Namehash(domainName string) (string, error) {
+func (c *UnsService) namehash(domainName string) (string, error) {
 	namehash := kns.NameHash(domainName)
 	return namehash.String(), nil
 }

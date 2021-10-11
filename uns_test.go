@@ -270,7 +270,7 @@ func TestUnsL2AddrVersion(t *testing.T) {
 func TestUnsIpfs(t *testing.T) {
 	t.Parallel()
 	testDomain := "testing.crypto"
-	expectedRecord := "QmZ13Z6wRdtDm5c1vee9J5q7gWg6Mnq6SXiqau7Fa4CNrc"
+	expectedRecord := "QmS23QDsc3Y26rUfME32Q7jawTrCH8bTrZ7iW8EGLJYMvD"
 	record, err := uns.IpfsHash(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
@@ -315,7 +315,7 @@ func TestUnsHttpUrlLegacy(t *testing.T) {
 func TestDotCryptoAllRecords(t *testing.T) {
 	t.Parallel()
 	testDomain := "testing.crypto"
-	expectedRecords := map[string]string{"crypto.ETH.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.EOS.address": "karaarishmen", "crypto.USDT.version.ERC20.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.OMNI.address": "1KvzMF2Vjy14d6JGY7dG7vjT5kfpmzSQXM", "crypto.USDT.version.TRON.address": "TRMJfXXbmwb3WFSRKbeRgKsYoD8o1a9xxV", "dns.A": "[\"10.0.0.1\", \"10.0.0.3\"]", "dns.A.ttl": "98", "dns.AAAA": "[]", "ipfs.html.value": "QmZ13Z6wRdtDm5c1vee9J5q7gWg6Mnq6SXiqau7Fa4CNrc", "whois.email.value": "testing@example.com"}
+	expectedRecords := map[string]string{"crypto.ETH.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.EOS.address": "karaarishmen", "crypto.USDT.version.ERC20.address": "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2", "crypto.USDT.version.OMNI.address": "1KvzMF2Vjy14d6JGY7dG7vjT5kfpmzSQXM", "crypto.USDT.version.TRON.address": "TRMJfXXbmwb3WFSRKbeRgKsYoD8o1a9xxV", "dns.A": "[\"10.0.0.1\", \"10.0.0.3\"]", "dns.A.ttl": "98", "dns.AAAA": "[]", "ipfs.html.value": "QmS23QDsc3Y26rUfME32Q7jawTrCH8bTrZ7iW8EGLJYMvD", "whois.email.value": "testing@example.com"}
 	allRecords, err := uns.AllRecords(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, allRecords)

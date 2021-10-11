@@ -1,11 +1,11 @@
 package resolution
 
-type GenericFunctions struct {
+type genericFunctions struct {
 	L1Function func() (interface{}, error)
 	L2Function func() (interface{}, error)
 }
 
-func ResolveGeneric(functions GenericFunctions) (interface{}, error) {
+func resolveGeneric(functions genericFunctions) (interface{}, error) {
 	type chanStruct struct {
 		result interface{}
 		err    error
@@ -36,12 +36,12 @@ func ResolveGeneric(functions GenericFunctions) (interface{}, error) {
 }
 
 type stringMapFunction func() (map[string]string, error)
-type StringMapResolverParams struct {
+type stringMapResolverParams struct {
 	L1Function stringMapFunction
 	L2Function stringMapFunction
 }
 
-func ResolveStringMap(functions StringMapResolverParams) (map[string]string, error) {
+func resolveStringMap(functions stringMapResolverParams) (map[string]string, error) {
 	convertToGenericFunction := func(f stringMapFunction) func() (interface{}, error) {
 		return func() (interface{}, error) {
 			res, err := f()
@@ -49,7 +49,7 @@ func ResolveStringMap(functions StringMapResolverParams) (map[string]string, err
 		}
 	}
 
-	res, err := ResolveGeneric(GenericFunctions{
+	res, err := resolveGeneric(genericFunctions{
 		L1Function: convertToGenericFunction(functions.L1Function),
 		L2Function: convertToGenericFunction(functions.L2Function),
 	})
@@ -62,12 +62,12 @@ func ResolveStringMap(functions StringMapResolverParams) (map[string]string, err
 }
 
 type stringFunction func() (string, error)
-type StringResolverParams struct {
+type stringResolverParams struct {
 	L1Function stringFunction
 	L2Function stringFunction
 }
 
-func ResolveString(functions StringResolverParams) (string, error) {
+func resolveString(functions stringResolverParams) (string, error) {
 	convertToGenericFunction := func(f stringFunction) func() (interface{}, error) {
 		return func() (interface{}, error) {
 			res, err := f()
@@ -75,7 +75,7 @@ func ResolveString(functions StringResolverParams) (string, error) {
 		}
 	}
 
-	res, err := ResolveGeneric(GenericFunctions{
+	res, err := resolveGeneric(genericFunctions{
 		L1Function: convertToGenericFunction(functions.L1Function),
 		L2Function: convertToGenericFunction(functions.L2Function),
 	})

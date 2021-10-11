@@ -31,7 +31,7 @@ func TestCallsBothMethods(t *testing.T) {
 	l1Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 	l2Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 
-	_, _ = ResolveGeneric(GenericFunctions{l1Test.mock, l2Test.mock})
+	_, _ = resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
 
 	assert.True(t, l1Test.called)
 	assert.True(t, l2Test.called)
@@ -42,7 +42,7 @@ func TestReturnsResultFromL2(t *testing.T) {
 	l1Test := makeMock("L1 result", nil)
 	l2Test := makeMock("L2 result", nil)
 
-	result, _ := ResolveGeneric(GenericFunctions{l1Test.mock, l2Test.mock})
+	result, _ := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
 	stringResult, ok := result.(string)
 
 	assert.True(t, l2Test.called)
@@ -56,7 +56,7 @@ func TestThrowsNetErrorsFromL2(t *testing.T) {
 	l1Test := makeMock(nil, nil)
 	l2Test := makeMock(nil, errors.New("unexpected network error"))
 
-	_, err := ResolveGeneric(GenericFunctions{l1Test.mock, l2Test.mock})
+	_, err := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
 
 	assert.True(t, l2Test.called)
 	assert.Equal(t, err.Error(), expectedError.Error())
@@ -67,7 +67,7 @@ func TestReturnsResultFromL1(t *testing.T) {
 	l1Test := makeMock("L1 result", nil)
 	l2Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 
-	result, _ := ResolveGeneric(GenericFunctions{l1Test.mock, l2Test.mock})
+	result, _ := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
 	stringResult, ok := result.(string)
 
 	assert.True(t, l2Test.called)
@@ -82,7 +82,7 @@ func TestThrowsNetErrorsFromL1(t *testing.T) {
 	l1Test := makeMock(nil, errors.New("unexpected network error"))
 	l2Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 
-	_, err := ResolveGeneric(GenericFunctions{l1Test.mock, l2Test.mock})
+	_, err := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
 
 	assert.True(t, l2Test.called)
 	assert.Equal(t, err.Error(), expectedError.Error())
