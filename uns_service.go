@@ -2,8 +2,6 @@ package resolution
 
 import (
 	"encoding/json"
-	"fmt"
-	"math/big"
 	"net/http"
 	"strings"
 
