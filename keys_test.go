@@ -12,7 +12,7 @@ func TestNewSupportedKeys(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "ETH", keys["crypto.ETH.address"].DeprecatedKeyName)
 	assert.Equal(t, "BTC", keys["crypto.BTC.address"].DeprecatedKeyName)
-	assert.Equal(t, "MDX_HECO", keys["crypto.MDX.version.HECO.address"].DeprecatedKeyName)
+	assert.Equal(t, "MDX_HRC20", keys["crypto.MDX.version.HRC20.address"].DeprecatedKeyName)
 }
 
 func TestReturnFirstNonEmptyReturnFirst(t *testing.T) {
