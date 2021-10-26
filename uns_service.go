@@ -2,6 +2,7 @@ package resolution
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/big"
 	"net/http"
 	"strings"
@@ -12,7 +13,6 @@ import (
 	kns "github.com/jgimeno/go-namehash"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/uns/contracts/proxyreader"
-	"github.com/unstoppabledomains/resolution-go/uns/contracts/registry"
 )
 
 // Uns is a naming service handles Unstoppable domains resolution.
@@ -182,16 +182,17 @@ func (c *UnsService) isSupportedDomain(domainName string) (bool, error) {
 func (c *UnsService) tokenURI(domainName string) (string, error) {
 	normalizedName := normalizeName(domainName)
 	namehash := kns.NameHash(normalizedName)
-	tokenUri, err := c.tokenUriByNamehash(namehash)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenUri, nil
+	return c.tokenUriByNamehash(namehash)
 }
 
 func (c *UnsService) tokenURIMetadata(domainName string) (TokenMetadata, error) {
-	tokenUri, err := c.tokenURI(domainName)
+	normalizedName := normalizeName(domainName)
+	namehash := kns.NameHash(normalizedName)
+	return c.tokenURIMetadataByNamehash(namehash)
+}
+
+func (c *UnsService) tokenURIMetadataByNamehash(namehash common.Hash) (TokenMetadata, error) {
+	tokenUri, err := c.tokenUriByNamehash(namehash)
 	if err != nil {
 		return TokenMetadata{}, err
 	}
@@ -205,16 +206,13 @@ func (c *UnsService) tokenURIMetadata(domainName string) (TokenMetadata, error) 
 func (c *UnsService) unhash(domainHash string) (string, error) {
 	namehash := common.HexToHash(domainHash)
 
-	registryAddress, err := c.proxyReader.RegistryOf(&bind.CallOpts{}, namehash.Big())
+	metadata, err := c.tokenURIMetadataByNamehash(namehash)
+
 	if err != nil {
 		return "", err
 	}
-	eventsStartingBlock := c.cnsStartingEventsBlock
-	if registryAddress == c.unsRegistry {
-		eventsStartingBlock = c.unsStartingEventsBlock
-	}
-	domainName, _ := c.hashToNameFromNewURIEvents(namehash, registryAddress, eventsStartingBlock)
 
+	domainName := metadata.Name
 	if domainName == "" {
 		return "", &DomainNotRegisteredError{Namehash: namehash.String()}
 	}
@@ -234,27 +232,6 @@ func (c *UnsService) unhash(domainHash string) (string, error) {
 func (c *UnsService) namehash(domainName string) (string, error) {
 	namehash := kns.NameHash(domainName)
 	return namehash.String(), nil
-}
-
-func (c *UnsService) hashToNameFromNewURIEvents(namehash common.Hash, registryAddress common.Address, eventsStartingBlock uint64) (string, error) {
-	registryContract, err := registry.NewContract(registryAddress, c.contractBackend)
-	if err != nil {
-		return "", err
-	}
-	newUriIterator, err := registryContract.FilterNewURI(&bind.FilterOpts{Start: eventsStartingBlock}, []*big.Int{namehash.Big()})
-	if err != nil {
-		return "", err
-	}
-
-	domainName := ""
-	for newUriIterator.Next() {
-		if newUriIterator.Error() != nil {
-			return "", err
-		}
-		domainName = newUriIterator.Event.Uri
-	}
-
-	return domainName, nil
 }
 
 func (c *UnsService) tokenUriByNamehash(namehash common.Hash) (string, error) {
