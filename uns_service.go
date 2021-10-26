@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	kns "github.com/jgimeno/go-namehash"
-	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/uns/contracts/proxyreader"
 	"github.com/unstoppabledomains/resolution-go/uns/contracts/registry"
@@ -143,77 +142,6 @@ func (c *UnsService) httpUrl(domainName string) (string, error) {
 		return "", err
 	}
 	return returnFirstNonEmpty(records, redirectUrlKeys), nil
-}
-
-func (c *UnsService) getAllKeysFromContractEvents(contract *resolver.Contract, eventsStartingBlock uint64, domainName string) ([]string, error) {
-	var allKeys []string
-	normalizedName := normalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
-	resetRecordsIterator, err := contract.FilterResetRecords(&bind.FilterOpts{Start: eventsStartingBlock}, []*big.Int{namehash.Big()})
-	if err != nil {
-		return nil, err
-	}
-	newKeyEventsStartingBlock := eventsStartingBlock
-	for resetRecordsIterator.Next() {
-		if resetRecordsIterator.Error() != nil {
-			return nil, err
-		}
-		newKeyEventsStartingBlock = resetRecordsIterator.Event.Raw.BlockNumber
-	}
-	newKeyIterator, err := contract.FilterNewKey(&bind.FilterOpts{Start: newKeyEventsStartingBlock}, []*big.Int{namehash.Big()}, []string{})
-	if err != nil {
-		return nil, err
-	}
-	for newKeyIterator.Next() {
-		if newKeyIterator.Error() != nil {
-			return nil, err
-		}
-		allKeys = append(allKeys, newKeyIterator.Event.Key)
-	}
-	if len(allKeys) == 0 {
-		for key := range c.supportedKeys {
-			allKeys = append(allKeys, key)
-		}
-	}
-	return allKeys, err
-}
-
-func (c *UnsService) allRecords(domainName string) (map[string]string, error) {
-	data, err := c.data(domainName, []string{})
-	if err != nil {
-		return nil, err
-	}
-	var allKeys []string
-	if data.Resolver == c.cnsDefaultResolver || data.Resolver == c.unsRegistry {
-		contract, err := resolver.NewContract(data.Resolver, c.contractBackend)
-		if err != nil {
-			return nil, err
-		}
-		eventsStartingBlock := c.cnsStartingEventsBlock
-		if data.Resolver == c.unsRegistry {
-			eventsStartingBlock = c.unsStartingEventsBlock
-		}
-		allKeys, err = c.getAllKeysFromContractEvents(contract, eventsStartingBlock, domainName)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		for key := range c.supportedKeys {
-			allKeys = append(allKeys, key)
-		}
-	}
-	recordsData, err := c.data(domainName, allKeys)
-	if err != nil {
-		return nil, err
-	}
-	allRecords := make(map[string]string)
-	for index, key := range allKeys {
-		if len(recordsData.Values[index]) > 0 {
-			allRecords[key] = recordsData.Values[index]
-		}
-	}
-
-	return allRecords, nil
 }
 
 func (c *UnsService) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
