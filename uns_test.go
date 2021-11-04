@@ -508,14 +508,13 @@ func TestUnsUnhashDotWallet(t *testing.T) {
 	assert.Equal(t, expectedDomainName, domainName)
 }
 
-// Fix in separate PR
-// func TestUnsL2UnhashDotWallet(t *testing.T) {
-// 	t.Parallel()
-// 	expectedDomainName := "udtestdev-test-l2-domain-784391.wallet"
-// 	domainName, err := uns.Unhash("0x40920d1d24c83454d9d64e6666927f3abb97b3fd67c7e1bf43de5c2f4297f3b8")
-// 	assert.Nil(t, err)
-// 	assert.Equal(t, expectedDomainName, domainName)
-// }
+func TestUnsL2UnhashDotWallet(t *testing.T) {
+	t.Parallel()
+	expectedDomainName := "udtestdev-test-l2-domain-784391.wallet"
+	domainName, err := uns.Unhash("0x40920d1d24c83454d9d64e6666927f3abb97b3fd67c7e1bf43de5c2f4297f3b8")
+	assert.Nil(t, err)
+	assert.Equal(t, expectedDomainName, domainName)
+}
 
 func TestUnsNamehash(t *testing.T) {
 	t.Parallel()
