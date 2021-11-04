@@ -2,7 +2,6 @@ package resolution
 
 import (
 	"encoding/json"
-	"math/big"
 	"net/http"
 	"strings"
 
@@ -10,10 +9,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	kns "github.com/jgimeno/go-namehash"
-	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/uns/contracts/proxyreader"
-	"github.com/unstoppabledomains/resolution-go/uns/contracts/registry"
 )
 
 // Uns is a naming service handles Unstoppable domains resolution.
@@ -145,77 +142,6 @@ func (c *UnsService) httpUrl(domainName string) (string, error) {
 	return returnFirstNonEmpty(records, redirectUrlKeys), nil
 }
 
-func (c *UnsService) getAllKeysFromContractEvents(contract *resolver.Contract, eventsStartingBlock uint64, domainName string) ([]string, error) {
-	var allKeys []string
-	normalizedName := normalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
-	resetRecordsIterator, err := contract.FilterResetRecords(&bind.FilterOpts{Start: eventsStartingBlock}, []*big.Int{namehash.Big()})
-	if err != nil {
-		return nil, err
-	}
-	newKeyEventsStartingBlock := eventsStartingBlock
-	for resetRecordsIterator.Next() {
-		if resetRecordsIterator.Error() != nil {
-			return nil, err
-		}
-		newKeyEventsStartingBlock = resetRecordsIterator.Event.Raw.BlockNumber
-	}
-	newKeyIterator, err := contract.FilterNewKey(&bind.FilterOpts{Start: newKeyEventsStartingBlock}, []*big.Int{namehash.Big()}, []string{})
-	if err != nil {
-		return nil, err
-	}
-	for newKeyIterator.Next() {
-		if newKeyIterator.Error() != nil {
-			return nil, err
-		}
-		allKeys = append(allKeys, newKeyIterator.Event.Key)
-	}
-	if len(allKeys) == 0 {
-		for key := range c.supportedKeys {
-			allKeys = append(allKeys, key)
-		}
-	}
-	return allKeys, err
-}
-
-func (c *UnsService) allRecords(domainName string) (map[string]string, error) {
-	data, err := c.data(domainName, []string{})
-	if err != nil {
-		return nil, err
-	}
-	var allKeys []string
-	if data.Resolver == c.cnsDefaultResolver || data.Resolver == c.unsRegistry {
-		contract, err := resolver.NewContract(data.Resolver, c.contractBackend)
-		if err != nil {
-			return nil, err
-		}
-		eventsStartingBlock := c.cnsStartingEventsBlock
-		if data.Resolver == c.unsRegistry {
-			eventsStartingBlock = c.unsStartingEventsBlock
-		}
-		allKeys, err = c.getAllKeysFromContractEvents(contract, eventsStartingBlock, domainName)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		for key := range c.supportedKeys {
-			allKeys = append(allKeys, key)
-		}
-	}
-	recordsData, err := c.data(domainName, allKeys)
-	if err != nil {
-		return nil, err
-	}
-	allRecords := make(map[string]string)
-	for index, key := range allKeys {
-		if len(recordsData.Values[index]) > 0 {
-			allRecords[key] = recordsData.Values[index]
-		}
-	}
-
-	return allRecords, nil
-}
-
 func (c *UnsService) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
 	keys, err := dnsTypesToCryptoRecordKeys(types)
 	if err != nil {
@@ -254,16 +180,17 @@ func (c *UnsService) isSupportedDomain(domainName string) (bool, error) {
 func (c *UnsService) tokenURI(domainName string) (string, error) {
 	normalizedName := normalizeName(domainName)
 	namehash := kns.NameHash(normalizedName)
-	tokenUri, err := c.tokenUriByNamehash(namehash)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenUri, nil
+	return c.tokenUriByNamehash(namehash)
 }
 
 func (c *UnsService) tokenURIMetadata(domainName string) (TokenMetadata, error) {
-	tokenUri, err := c.tokenURI(domainName)
+	normalizedName := normalizeName(domainName)
+	namehash := kns.NameHash(normalizedName)
+	return c.tokenURIMetadataByNamehash(namehash)
+}
+
+func (c *UnsService) tokenURIMetadataByNamehash(namehash common.Hash) (TokenMetadata, error) {
+	tokenUri, err := c.tokenUriByNamehash(namehash)
 	if err != nil {
 		return TokenMetadata{}, err
 	}
@@ -277,16 +204,13 @@ func (c *UnsService) tokenURIMetadata(domainName string) (TokenMetadata, error) 
 func (c *UnsService) unhash(domainHash string) (string, error) {
 	namehash := common.HexToHash(domainHash)
 
-	registryAddress, err := c.proxyReader.RegistryOf(&bind.CallOpts{}, namehash.Big())
+	metadata, err := c.tokenURIMetadataByNamehash(namehash)
+
 	if err != nil {
 		return "", err
 	}
-	eventsStartingBlock := c.cnsStartingEventsBlock
-	if registryAddress == c.unsRegistry {
-		eventsStartingBlock = c.unsStartingEventsBlock
-	}
-	domainName, _ := c.hashToNameFromNewURIEvents(namehash, registryAddress, eventsStartingBlock)
 
+	domainName := metadata.Name
 	if domainName == "" {
 		return "", &DomainNotRegisteredError{Namehash: namehash.String()}
 	}
@@ -306,27 +230,6 @@ func (c *UnsService) unhash(domainHash string) (string, error) {
 func (c *UnsService) namehash(domainName string) (string, error) {
 	namehash := kns.NameHash(domainName)
 	return namehash.String(), nil
-}
-
-func (c *UnsService) hashToNameFromNewURIEvents(namehash common.Hash, registryAddress common.Address, eventsStartingBlock uint64) (string, error) {
-	registryContract, err := registry.NewContract(registryAddress, c.contractBackend)
-	if err != nil {
-		return "", err
-	}
-	newUriIterator, err := registryContract.FilterNewURI(&bind.FilterOpts{Start: eventsStartingBlock}, []*big.Int{namehash.Big()})
-	if err != nil {
-		return "", err
-	}
-
-	domainName := ""
-	for newUriIterator.Next() {
-		if newUriIterator.Error() != nil {
-			return "", err
-		}
-		domainName = newUriIterator.Event.Uri
-	}
-
-	return domainName, nil
 }
 
 func (c *UnsService) tokenUriByNamehash(namehash common.Hash) (string, error) {

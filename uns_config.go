@@ -30,7 +30,7 @@ var NetworkProviders = map[string]string{
 	Mainnet: "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	Rinkeby: "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	Polygon: "https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
-	Mumbai:  "https://matic-testnet-archive-rpc.bwarelabs.com/",
+	Mumbai:  "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 }
 
 func parseContracts(data []byte) (contracts, error) {

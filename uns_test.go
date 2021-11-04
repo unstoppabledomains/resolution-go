@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/unstoppabledomains/resolution-go/cns/contracts/resolver"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
@@ -319,16 +317,6 @@ func TestDotCryptoAllRecords(t *testing.T) {
 	allRecords, err := uns.AllRecords(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecords, allRecords)
-}
-
-func TestUnsGetAllKeysFromContractEvents(t *testing.T) {
-	t.Parallel()
-	expectedRecords := []string{"crypto.ETH.address", "crypto.BTC.address"}
-	registryContract, err := resolver.NewContract(common.HexToAddress("0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086"), uns.l1Service.contractBackend)
-	assert.Nil(t, err)
-	allKeys, err := uns.l1Service.getAllKeysFromContractEvents(registryContract, 8775208, "udtestdev-my-new-tls.wallet")
-	assert.Nil(t, err)
-	assert.Equal(t, expectedRecords, allKeys)
 }
 
 func TestUnsAllRecords(t *testing.T) {
