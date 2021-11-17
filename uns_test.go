@@ -554,18 +554,18 @@ func TestUnsLocations(t *testing.T) {
 	expectedLocations[testDomainOne] = namingservice.Location{
 		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
 		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
-		NetworkId:             12,
-		Blockchain:            "Layer 2",
+		NetworkId:             12,        // todo this is wrong
+		Blockchain:            "Layer 2", // todo this is wrong
 		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
-		BlockchainProviderUrl: "",
+		BlockchainProviderUrl: "", // todo this is wrong
 	}
 	expectedLocations[testDomainTwo] = namingservice.Location{
 		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
 		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
-		NetworkId:             12,
-		Blockchain:            "Layer 2",
+		NetworkId:             12,        // todo this is wrong
+		Blockchain:            "Layer 2", // todo this is wrong
 		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
-		BlockchainProviderUrl: "",
+		BlockchainProviderUrl: "", // todo this is wrong
 	}
 	locations, err := uns.Locations([]string{testDomainOne, testDomainTwo})
 

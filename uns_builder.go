@@ -15,7 +15,7 @@ type UnsBuilder interface {
 	// SetContractBackend set Ethereum backend for communication with UNS registry
 	SetContractBackend(backend bind.ContractBackend) UnsBuilder
 
-	// SetContractBackend set Ethereum backend for communication with UNS L2registry
+	// SetL2ContractBackend set Ethereum backend for communication with UNS L2registry
 	SetL2ContractBackend(backend bind.ContractBackend) UnsBuilder
 
 	// SetMetadataClient set http backend for communication with ERC721 metadata server
@@ -24,7 +24,7 @@ type UnsBuilder interface {
 	// SetEthereumNetwork set Ethereum network for communication with UNS registry
 	SetEthereumNetwork(network string) UnsBuilder
 
-	// SetEthereumNetwork set Ethereum network for communication with UNS L2 registry
+	// SetL2EthereumNetwork set Ethereum network for communication with UNS L2 registry
 	SetL2EthereumNetwork(network string) UnsBuilder
 
 	// Build Uns instance
