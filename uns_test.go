@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/namingservice"
 )
 
 type MockedMetadataClient struct {
@@ -543,4 +544,31 @@ func TestUnsUnhashWithout0xPrefixDotWallet(t *testing.T) {
 	domainName, err := uns.Unhash("1586d090e1b5781399f988e4b4f5639f4c2775ef5ec093d1279bb95b9bceb1a0")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedDomainName, domainName)
+}
+
+func TestUnsLocations(t *testing.T) {
+	t.Parallel()
+	testDomainOne := "udtestdev-test-l2-domain-784391.wallet"
+	testDomainTwo := "udtestdev-test-l1-and-l2-ownership.wallet"
+	expectedLocations := map[string]namingservice.Location{}
+	expectedLocations[testDomainOne] = namingservice.Location{
+		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		NetworkId:             12,
+		Blockchain:            "Layer 2",
+		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
+		BlockchainProviderUrl: "",
+	}
+	expectedLocations[testDomainTwo] = namingservice.Location{
+		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		NetworkId:             12,
+		Blockchain:            "Layer 2",
+		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
+		BlockchainProviderUrl: "",
+	}
+	locations, err := uns.Locations([]string{testDomainOne, testDomainTwo})
+
+	assert.Nil(t, err)
+	assert.Equal(t, locations, expectedLocations)
 }

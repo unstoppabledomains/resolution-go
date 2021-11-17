@@ -56,6 +56,10 @@ type NamingService interface {
 	// Returns result in string or empty string record is not found.
 	AllRecords(domainName string) (map[string]string, error)
 
+	// Locations Retrieve locations of domains
+	// Returns key-value map of domain names to location
+	Locations(domainNames []string) (map[string]namingservice.Location, error)
+
 	// DNS Retrieve the DNS records of a domain.
 	// Returns a set of valid and filtered non-empty DNS records attached to domain.
 	DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error)

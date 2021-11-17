@@ -3,6 +3,7 @@ package resolution
 import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/namingservice"
 )
 
 // Uns is a naming service handles Unstoppable domains resolution.
@@ -138,6 +139,22 @@ func (c *Uns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 		return data, err
 	}
 	return nil, err
+}
+
+func (c *Uns) Locations(domainNames []string) (map[string]namingservice.Location, error) {
+	for _, domainName := range domainNames {
+		isSupported, _ := c.IsSupportedDomain((domainName))
+		if !isSupported {
+			return map[string]namingservice.Location{}, &DomainNotSupportedError{DomainName: domainName}
+		}
+	}
+	locations, err := resolveLocations(stringMapLocationParams{
+		L1Function: func() (map[string]namingservice.Location, error) { return c.l1Service.locations(domainNames) },
+		L2Function: func() (map[string]namingservice.Location, error) { return c.l2Service.locations(domainNames) }})
+	if err != nil {
+		return map[string]namingservice.Location{}, err
+	}
+	return locations, nil
 }
 
 func (c *Uns) IsSupportedDomain(domainName string) (bool, error) {
