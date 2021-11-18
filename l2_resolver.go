@@ -127,7 +127,7 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 	locations := map[string]namingservice.Location{}
 
 	for domainName, location := range resultL1.result {
-		if location.OwnerAddress != "" {
+		if location.OwnerAddress != "0x0000000000000000000000000000000000000000" {
 			locations[domainName] = namingservice.Location{
 				RegistryAddress:       location.RegistryAddress,
 				ResolverAddress:       location.ResolverAddress,

@@ -661,3 +661,30 @@ func TestUnsLocationsMainnet(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedLocations, locations)
 }
+func TestUnsLocationsNullValues(t *testing.T) {
+
+	t.Parallel()
+	testDomainL1 := "invaliddomain.crypto"
+	testDomainL2 := "invaliddomain2.crypto"
+	expectedLocations := map[string]namingservice.Location{}
+	expectedLocations[testDomainL1] = namingservice.Location{
+		RegistryAddress:       "",
+		ResolverAddress:       "",
+		NetworkId:             0,
+		Blockchain:            "",
+		OwnerAddress:          "",
+		BlockchainProviderUrl: "",
+	}
+	expectedLocations[testDomainL2] = namingservice.Location{
+		RegistryAddress:       "",
+		ResolverAddress:       "",
+		NetworkId:             0,
+		Blockchain:            "",
+		OwnerAddress:          "",
+		BlockchainProviderUrl: "",
+	}
+	locations, err := uns.Locations([]string{testDomainL1, testDomainL2})
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedLocations, locations)
+}
