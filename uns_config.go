@@ -33,6 +33,13 @@ var NetworkProviders = map[string]string{
 	Mumbai:  "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 }
 
+var NetworkNameToId = map[string]int{
+	"mainnet": 1,
+	"rinkeby": 4,
+	"polygon": 137,
+	"mumbai":  80001,
+}
+
 func parseContracts(data []byte) (contracts, error) {
 	var contractsObject struct {
 		Contracts contracts
@@ -52,6 +59,10 @@ func newContracts() (NetworkContracts, error) {
 		return nil, err
 	}
 	networks[Rinkeby], err = parseContracts(unsRinkebyConfigJSON)
+	if err != nil {
+		return nil, err
+	}
+	networks[Polygon], err = parseContracts(unsPolygonConfigJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -236,6 +247,88 @@ var unsRinkebyConfigJSON = []byte(`
 			"address": "0x84214215904cDEbA9044ECf95F3eBF009185AAf4",
 			"legacyAddresses": [],
 			"deploymentBlock": "0x740d93",
+			"deprecated": true
+		}
+	}
+}`)
+
+var unsPolygonConfigJSON = []byte(`
+{
+	"contracts": {
+		"UNSRegistry": {
+			"address": "0xa9a6A3626993D487d2Dbda3173cf58cA1a9D9e9f",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x01272eb5",
+			"implementation": "0x0a7b33E986f2c8BF2a16bdda6004d3FaFFC27695",
+			"forwarder": "0xa9a6A3626993D487d2Dbda3173cf58cA1a9D9e9f"
+		},
+		"CNSRegistry": {
+			"address": "0x0000000000000000000000000000000000000000",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x0",
+			"forwarder": "0x0000000000000000000000000000000000000000"
+		},
+		"MintingManager": {
+			"address": "0x7be83293BeeDc9Eba1bd76c66A65F10F3efaeC26",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x01272f41",
+			"implementation": "0x10e91753eC98cd259A62085002C25E92C9dc8Aed",
+			"forwarder": "0xC37d3c4326ab0E1D2b9D8b916bBdf5715f780fcF"
+		},
+		"ProxyAdmin": {
+			"address": "0xe1D668052D52388F52b90f4d1798DB2b04bC3b88",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x01272d15"
+		},
+		"SignatureController": {
+			"address": "0x0000000000000000000000000000000000000000",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x0"
+		},
+		"MintingController": {
+			"address": "0x0000000000000000000000000000000000000000",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x0",
+			"deprecated": true
+		},
+		"WhitelistedMinter": {
+			"address": "0x0000000000000000000000000000000000000000",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x0",
+			"deprecated": true
+		},
+		"URIPrefixController": {
+			"address": "0x0000000000000000000000000000000000000000",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x0",
+			"deprecated": true
+		},
+		"DomainZoneController": {
+			"address": "0x0000000000000000000000000000000000000000",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x0",
+			"deprecated": true
+		},
+		"Resolver": {
+			"address": "0x0000000000000000000000000000000000000000",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x0",
+			"forwarder": "0x0000000000000000000000000000000000000000"
+		},
+		"ProxyReader": {
+			"address": "0xA3f32c8cd786dc089Bd1fC175F2707223aeE5d00",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x01273234"
+		},
+		"TwitterValidationOperator": {
+			"address": "0x0000000000000000000000000000000000000000",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x0"
+		},
+		"FreeMinter": {
+			"address": "0x0000000000000000000000000000000000000000",
+			"legacyAddresses": [],
+			"deploymentBlock": "0x0",
 			"deprecated": true
 		}
 	}

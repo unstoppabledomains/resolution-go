@@ -27,6 +27,8 @@ type UnsService struct {
 	contractBackend        bind.ContractBackend
 	metadataClient         MetadataClient
 	Layer                  string
+	networkId              int
+	blockchainProviderUrl  string
 }
 
 type MetadataClient interface {
@@ -161,19 +163,19 @@ func (c *UnsService) locations(domainNames []string) (map[string]namingservice.L
 	}
 
 	for _, tokenId := range tokenIDs {
-		registryOfEncodedFn, err := proxyReaderMethodsAbi.Pack("registryOf", tokenId)
+		packedRegistryOfFn, err := proxyReaderMethodsAbi.Pack("registryOf", tokenId)
 		if err != nil {
 			return nil, err
 		}
-		multicallInput = append(multicallInput, registryOfEncodedFn)
+		multicallInput = append(multicallInput, packedRegistryOfFn)
 	}
 
-	encodedGetDataForManyInput, err := proxyReaderMethodsAbi.Pack("getDataForMany", []string{}, tokenIDs)
+	packedGetDataForManyFn, err := proxyReaderMethodsAbi.Pack("getDataForMany", []string{}, tokenIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	multicallInput = append(multicallInput, encodedGetDataForManyInput)
+	multicallInput = append(multicallInput, packedGetDataForManyFn)
 	ret, err := c.proxyReader.ContractCaller.Multicall(&bind.CallOpts{}, multicallInput)
 
 	if err != nil {
@@ -181,15 +183,14 @@ func (c *UnsService) locations(domainNames []string) (map[string]namingservice.L
 	}
 
 	registryAddresses := []common.Address{}
-
 	encodedRegistryAddresses := ret[:len(ret)-1]
 	for _, encodedRegistryAddress := range encodedRegistryAddresses {
-		registryAddress := common.Address{}
-		err := proxyReaderMethodsAbi.UnpackIntoInterface(&registryAddress, "registryOf", encodedRegistryAddress)
+		decodedRegstryAddress := common.Address{}
+		err := proxyReaderMethodsAbi.UnpackIntoInterface(&decodedRegstryAddress, "registryOf", encodedRegistryAddress)
 		if err != nil {
 			return nil, err
 		}
-		registryAddresses = append(registryAddresses, registryAddress)
+		registryAddresses = append(registryAddresses, decodedRegstryAddress)
 	}
 
 	type GetDataForManyOutstruct struct {
@@ -213,10 +214,9 @@ func (c *UnsService) locations(domainNames []string) (map[string]namingservice.L
 		locations[domainName] = namingservice.Location{
 			RegistryAddress:       (registryAddresses[i]).String(),
 			ResolverAddress:       (dataOutstruct.Resolvers[i]).String(),
-			NetworkId:             1,
-			Blockchain:            c.Layer,
 			OwnerAddress:          (dataOutstruct.Owners[i]).String(),
-			BlockchainProviderUrl: "",
+			NetworkId:             c.networkId,
+			BlockchainProviderUrl: c.blockchainProviderUrl,
 		}
 	}
 

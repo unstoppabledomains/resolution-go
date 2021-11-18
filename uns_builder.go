@@ -132,6 +132,8 @@ func (cb *unsBuilder) Build() (*Uns, error) {
 	if err != nil {
 		return nil, err
 	}
+	l1Service.networkId = NetworkNameToId[cb.l1Network]
+	l1Service.blockchainProviderUrl = NetworkProviders[cb.l1Network]
 	l1Service.Layer = Layer1
 
 	l2Service, err := cb.BuildService(contracts[cb.l2Network], cb.l2ContractBackend, NetworkProviders[cb.l2Network])
@@ -139,6 +141,8 @@ func (cb *unsBuilder) Build() (*Uns, error) {
 		return nil, err
 	}
 	l2Service.Layer = Layer2
+	l2Service.networkId = NetworkNameToId[cb.l2Network]
+	l2Service.blockchainProviderUrl = NetworkProviders[cb.l2Network]
 
 	return &Uns{
 		*l1Service,

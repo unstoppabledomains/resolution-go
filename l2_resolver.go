@@ -1,8 +1,6 @@
 package resolution
 
 import (
-	"fmt"
-
 	"github.com/unstoppabledomains/resolution-go/namingservice"
 )
 
@@ -119,9 +117,6 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 	resultL1 := <-c1
 	resultL2 := <-c2
 
-	fmt.Println(resultL1) // L1 always returns err "execution reverted"
-	fmt.Println(resultL2)
-
 	if resultL2.err != nil {
 		return nil, resultL2.err
 	}
@@ -138,7 +133,7 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 				ResolverAddress:       location.ResolverAddress,
 				OwnerAddress:          location.OwnerAddress,
 				BlockchainProviderUrl: location.BlockchainProviderUrl,
-				NetworkId:             1,
+				NetworkId:             location.NetworkId,
 				Blockchain:            "ETH",
 			}
 		} else {
@@ -153,13 +148,13 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 		}
 	}
 	for domainName, location := range resultL2.result {
-		if location.OwnerAddress != "" {
+		if location.OwnerAddress != "0x0000000000000000000000000000000000000000" {
 			locations[domainName] = namingservice.Location{
 				RegistryAddress:       location.RegistryAddress,
 				ResolverAddress:       location.ResolverAddress,
 				OwnerAddress:          location.OwnerAddress,
 				BlockchainProviderUrl: location.BlockchainProviderUrl,
-				NetworkId:             137,
+				NetworkId:             location.NetworkId,
 				Blockchain:            "MATIC",
 			}
 		}

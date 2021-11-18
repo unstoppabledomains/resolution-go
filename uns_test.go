@@ -546,29 +546,118 @@ func TestUnsUnhashWithout0xPrefixDotWallet(t *testing.T) {
 	assert.Equal(t, expectedDomainName, domainName)
 }
 
-func TestUnsLocations(t *testing.T) {
+func TestUnsSingleL1Locations(t *testing.T) {
 	t.Parallel()
-	testDomainOne := "udtestdev-test-l2-domain-784391.wallet"
-	testDomainTwo := "udtestdev-test-l1-and-l2-ownership.wallet"
+	testDomainL1 := "test-usdt-and-dns-records.crypto"
 	expectedLocations := map[string]namingservice.Location{}
-	expectedLocations[testDomainOne] = namingservice.Location{
-		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
-		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
-		NetworkId:             12,        // todo this is wrong
-		Blockchain:            "Layer 2", // todo this is wrong
+	expectedLocations[testDomainL1] = namingservice.Location{
+		RegistryAddress:       "0xAad76bea7CFEc82927239415BB18D2e93518ecBB",
+		ResolverAddress:       "0x95AE1515367aa64C462c71e87157771165B1287A",
+		NetworkId:             4,
+		Blockchain:            "ETH",
 		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
-		BlockchainProviderUrl: "", // todo this is wrong
+		BlockchainProviderUrl: "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	}
-	expectedLocations[testDomainTwo] = namingservice.Location{
-		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
-		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
-		NetworkId:             12,        // todo this is wrong
-		Blockchain:            "Layer 2", // todo this is wrong
-		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
-		BlockchainProviderUrl: "", // todo this is wrong
-	}
-	locations, err := uns.Locations([]string{testDomainOne, testDomainTwo})
+	locations, err := uns.Locations([]string{testDomainL1})
 
 	assert.Nil(t, err)
-	assert.Equal(t, locations, expectedLocations)
+	assert.Equal(t, expectedLocations, locations)
+}
+func TestUnsSingleL2Locations(t *testing.T) {
+	t.Parallel()
+	testDomainL2 := "udtestdev-test-l2-domain-784391.wallet"
+	expectedLocations := map[string]namingservice.Location{}
+	expectedLocations[testDomainL2] = namingservice.Location{
+		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		NetworkId:             80001,
+		Blockchain:            "MATIC",
+		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
+		BlockchainProviderUrl: "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	locations, err := uns.Locations([]string{testDomainL2})
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedLocations, locations)
+}
+func TestUnsLocationsDomainOnBothNetworks(t *testing.T) {
+	t.Parallel()
+	testDomainL1AndL2 := "udtestdev-test-l1-and-l2-ownership.wallet"
+	testDomainL2 := "udtestdev-test-l2-domain-784391.wallet"
+	expectedLocations := map[string]namingservice.Location{}
+	expectedLocations[testDomainL1AndL2] = namingservice.Location{
+		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		NetworkId:             80001,
+		Blockchain:            "MATIC",
+		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
+		BlockchainProviderUrl: "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	expectedLocations[testDomainL2] = namingservice.Location{
+		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		NetworkId:             80001,
+		Blockchain:            "MATIC",
+		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
+		BlockchainProviderUrl: "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	locations, err := uns.Locations([]string{testDomainL1AndL2, testDomainL2})
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedLocations, locations)
+}
+func TestUnsLocations(t *testing.T) {
+	t.Parallel()
+	testDomainL1 := "test-usdt-and-dns-records.crypto"
+	testDomainL2 := "udtestdev-test-l2-domain-784391.wallet"
+	expectedLocations := map[string]namingservice.Location{}
+	expectedLocations[testDomainL1] = namingservice.Location{
+		RegistryAddress:       "0xAad76bea7CFEc82927239415BB18D2e93518ecBB",
+		ResolverAddress:       "0x95AE1515367aa64C462c71e87157771165B1287A",
+		NetworkId:             4,
+		Blockchain:            "ETH",
+		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
+		BlockchainProviderUrl: "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	expectedLocations[testDomainL2] = namingservice.Location{
+		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		NetworkId:             80001,
+		Blockchain:            "MATIC",
+		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
+		BlockchainProviderUrl: "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	locations, err := uns.Locations([]string{testDomainL1, testDomainL2})
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedLocations, locations)
+}
+
+func TestUnsLocationsMainnet(t *testing.T) {
+	var uns, _ = NewUnsBuilder().SetEthereumNetwork("mainnet").SetL2EthereumNetwork("polygon").Build()
+
+	t.Parallel()
+	testDomainL1 := "ryan.crypto"
+	testDomainL2 := "fwefwf.crypto"
+	expectedLocations := map[string]namingservice.Location{}
+	expectedLocations[testDomainL1] = namingservice.Location{
+		RegistryAddress:       "0xD1E5b0FF1287aA9f9A268759062E4Ab08b9Dacbe",
+		ResolverAddress:       "0xb66DcE2DA6afAAa98F2013446dBCB0f4B0ab2842",
+		NetworkId:             1,
+		Blockchain:            "ETH",
+		OwnerAddress:          "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2",
+		BlockchainProviderUrl: "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	expectedLocations[testDomainL2] = namingservice.Location{
+		RegistryAddress:       "0xa9a6A3626993D487d2Dbda3173cf58cA1a9D9e9f",
+		ResolverAddress:       "0xa9a6A3626993D487d2Dbda3173cf58cA1a9D9e9f",
+		NetworkId:             137,
+		Blockchain:            "MATIC",
+		OwnerAddress:          "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2",
+		BlockchainProviderUrl: "https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	locations, err := uns.Locations([]string{testDomainL1, testDomainL2})
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedLocations, locations)
 }
