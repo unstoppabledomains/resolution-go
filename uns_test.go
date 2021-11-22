@@ -232,8 +232,8 @@ func TestUnsL2Resolver(t *testing.T) {
 func TestUnsOwner(t *testing.T) {
 	t.Parallel()
 	testDomain := "testing.crypto"
-	expectedRecord := "0x95AE1515367aa64C462c71e87157771165B1287A"
-	record, err := uns.Resolver(testDomain)
+	expectedRecord := "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2"
+	record, err := uns.Owner(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
 }
@@ -241,10 +241,27 @@ func TestUnsOwner(t *testing.T) {
 func TestUnsL2Owner(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-test-l2-domain-784391.wallet"
-	expectedRecord := "0x2a93C52E7B6E7054870758e15A1446E769EdfB93"
-	record, err := uns.Resolver(testDomain)
+	expectedRecord := "0x499dD6D875787869670900a2130223D85d4F6Aa7"
+	record, err := uns.Owner(testDomain)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
+}
+
+func TestUnsOwnerWithoutResolver(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-d0137c.crypto"
+	expectedRecord := "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2"
+	record, err := uns.Owner(testDomain)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedRecord, record)
+}
+
+func TestUnsOwnerWithoutOwner(t *testing.T) {
+	t.Parallel()
+	testDomain := "unregistered-domain.crypto"
+	var expectedError *DomainNotRegisteredError
+	_, err := uns.Owner(testDomain)
+	assert.ErrorAs(t, err, &expectedError)
 }
 
 func TestUnsAddrVersion(t *testing.T) {
