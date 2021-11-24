@@ -2,6 +2,7 @@ package resolution
 
 import (
 	"encoding/json"
+	"math/big"
 	"net/http"
 	"strings"
 
@@ -32,24 +33,28 @@ type MetadataClient interface {
 
 var unsZeroAddress = common.HexToAddress("0x0")
 
+func domainNameToTokenId(domainName string) *big.Int {
+	normalizedName := normalizeName(domainName)
+	namehash := kns.NameHash(normalizedName)
+	return namehash.Big()
+}
+
 // Data Get raw data attached to domain
 func (c *UnsService) data(domainName string, keys []string) (*struct {
 	Resolver common.Address
 	Owner    common.Address
 	Values   []string
 }, error) {
-	normalizedName := normalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
-	tokenID := namehash.Big()
+	tokenID := domainNameToTokenId(domainName)
 	data, err := c.proxyReader.GetData(&bind.CallOpts{Pending: false}, keys, tokenID)
 	if err != nil {
 		return nil, err
 	}
 	if data.Owner == unsZeroAddress {
-		return nil, &DomainNotRegisteredError{DomainName: normalizedName}
+		return nil, &DomainNotRegisteredError{DomainName: domainName}
 	}
 	if data.Resolver == unsZeroAddress {
-		return nil, &DomainNotConfiguredError{DomainName: normalizedName, Layer: c.Layer}
+		return nil, &DomainNotConfiguredError{DomainName: domainName, Layer: c.Layer}
 	}
 
 	return &data, nil
@@ -118,11 +123,14 @@ func (c *UnsService) resolver(domainName string) (string, error) {
 }
 
 func (c *UnsService) owner(domainName string) (string, error) {
-	data, err := c.data(domainName, []string{})
+	tokenID := domainNameToTokenId(domainName)
+	data, err := c.proxyReader.GetData(&bind.CallOpts{Pending: false}, []string{}, tokenID)
 	if err != nil {
 		return "", err
 	}
-
+	if data.Owner == unsZeroAddress {
+		return "", &DomainNotRegisteredError{DomainName: domainName}
+	}
 	return data.Owner.String(), nil
 }
 
