@@ -142,12 +142,6 @@ func (c *Uns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Reco
 }
 
 func (c *Uns) Locations(domainNames []string) (map[string]namingservice.Location, error) {
-	for _, domainName := range domainNames {
-		isSupported, _ := c.IsSupportedDomain((domainName))
-		if !isSupported {
-			return map[string]namingservice.Location{}, &DomainNotSupportedError{DomainName: domainName}
-		}
-	}
 	locations, err := resolveLocations(stringMapLocationParams{
 		L1Function: func() (map[string]namingservice.Location, error) { return c.l1Service.locations(domainNames) },
 		L2Function: func() (map[string]namingservice.Location, error) { return c.l2Service.locations(domainNames) }})
