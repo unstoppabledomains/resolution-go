@@ -34,10 +34,10 @@ var NetworkProviders = map[string]string{
 }
 
 var NetworkNameToId = map[string]int{
-	"mainnet": 1,
-	"rinkeby": 4,
-	"polygon": 137,
-	"mumbai":  80001,
+	Mainnet: 1,
+	Rinkeby: 4,
+	Polygon: 137,
+	Mumbai:  80001,
 }
 
 func parseContracts(data []byte) (contracts, error) {
