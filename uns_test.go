@@ -743,3 +743,94 @@ func TestUnsLocationsNoResolver(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedLocations, locations)
 }
+
+func TestUnsLocationsManyDomains(t *testing.T) {
+
+	t.Parallel()
+	testDomainL1 := "udtestdev-test-l2-domain-784391.wallet"
+	expectedLocations := map[string]namingservice.Location{}
+	expectedLocations[testDomainL1] = namingservice.Location{
+		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		NetworkId:             80001,
+		Blockchain:            "MATIC",
+		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
+		BlockchainProviderUrl: "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	testDomainL2 := "udtestdev-test-l1-domain-no-resolver.crypto"
+	expectedLocations[testDomainL2] = namingservice.Location{
+		RegistryAddress:       "0xAad76bea7CFEc82927239415BB18D2e93518ecBB",
+		ResolverAddress:       "0x0000000000000000000000000000000000000000",
+		NetworkId:             4,
+		Blockchain:            "ETH",
+		OwnerAddress:          "0x58cA45E932a88b2E7D0130712B3AA9fB7c5781e2",
+		BlockchainProviderUrl: "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	testDomainThree := "invaliddomain.crypto"
+	testDomainFour := "invaliddomain2.crypto"
+	testDomainFive := "invaliddomain4.crypto"
+	testDomainSix := "invaliddomain6.crypto"
+	testDomainSeven := "invaliddomain7.crypto"
+	testDomainEight := "invaliddomain8.crypto"
+	testDomainNine := "udtestdev-test-l1-and-l2-ownership.wallet"
+	expectedLocations[testDomainThree] = namingservice.Location{
+		RegistryAddress:       "",
+		ResolverAddress:       "",
+		NetworkId:             0,
+		Blockchain:            "",
+		OwnerAddress:          "",
+		BlockchainProviderUrl: "",
+	}
+	expectedLocations[testDomainFour] = namingservice.Location{
+		RegistryAddress:       "",
+		ResolverAddress:       "",
+		NetworkId:             0,
+		Blockchain:            "",
+		OwnerAddress:          "",
+		BlockchainProviderUrl: "",
+	}
+	expectedLocations[testDomainFive] = namingservice.Location{
+		RegistryAddress:       "",
+		ResolverAddress:       "",
+		NetworkId:             0,
+		Blockchain:            "",
+		OwnerAddress:          "",
+		BlockchainProviderUrl: "",
+	}
+	expectedLocations[testDomainSix] = namingservice.Location{
+		RegistryAddress:       "",
+		ResolverAddress:       "",
+		NetworkId:             0,
+		Blockchain:            "",
+		OwnerAddress:          "",
+		BlockchainProviderUrl: "",
+	}
+	expectedLocations[testDomainSeven] = namingservice.Location{
+		RegistryAddress:       "",
+		ResolverAddress:       "",
+		NetworkId:             0,
+		Blockchain:            "",
+		OwnerAddress:          "",
+		BlockchainProviderUrl: "",
+	}
+	expectedLocations[testDomainEight] = namingservice.Location{
+		RegistryAddress:       "",
+		ResolverAddress:       "",
+		NetworkId:             0,
+		Blockchain:            "",
+		OwnerAddress:          "",
+		BlockchainProviderUrl: "",
+	}
+	expectedLocations[testDomainNine] = namingservice.Location{
+		RegistryAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		ResolverAddress:       "0x2a93C52E7B6E7054870758e15A1446E769EdfB93",
+		NetworkId:             80001,
+		Blockchain:            "MATIC",
+		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
+		BlockchainProviderUrl: "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	}
+	locations, err := uns.Locations([]string{testDomainL1, testDomainL2, testDomainThree, testDomainFour, testDomainFive, testDomainSix, testDomainSeven, testDomainEight, testDomainNine})
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedLocations, locations)
+}
