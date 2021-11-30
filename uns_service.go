@@ -6,11 +6,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	kns "github.com/jgimeno/go-namehash"
 	"github.com/unstoppabledomains/resolution-go/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/namingservice"
 	"github.com/unstoppabledomains/resolution-go/uns/contracts/proxyreader"
 )
 
@@ -25,6 +27,8 @@ type UnsService struct {
 	contractBackend        bind.ContractBackend
 	metadataClient         MetadataClient
 	Layer                  string
+	networkId              int
+	blockchainProviderUrl  string
 }
 
 type MetadataClient interface {
@@ -148,6 +152,82 @@ func (c *UnsService) httpUrl(domainName string) (string, error) {
 		return "", err
 	}
 	return returnFirstNonEmpty(records, redirectUrlKeys), nil
+}
+
+func (c *UnsService) locations(domainNames []string) (map[string]namingservice.Location, error) {
+	tokenIDs := make([]*big.Int, 0, len(domainNames))
+	for _, domainName := range domainNames {
+		normalizedName := normalizeName(domainName)
+		namehash := kns.NameHash(normalizedName)
+		tokenID := namehash.Big()
+		tokenIDs = append(tokenIDs, tokenID)
+	}
+	var multicallInput [][]byte
+
+	proxyReaderMethodsAbi, err := abi.JSON(strings.NewReader(proxyreader.ContractABI))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, tokenId := range tokenIDs {
+		packedRegistryOfFn, err := proxyReaderMethodsAbi.Pack("registryOf", tokenId)
+		if err != nil {
+			return nil, err
+		}
+		multicallInput = append(multicallInput, packedRegistryOfFn)
+	}
+
+	packedGetDataForManyFn, err := proxyReaderMethodsAbi.Pack("getDataForMany", []string{}, tokenIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	multicallInput = append(multicallInput, packedGetDataForManyFn)
+	ret, err := c.proxyReader.ContractCaller.Multicall(&bind.CallOpts{}, multicallInput)
+
+	if err != nil {
+		return nil, err
+	}
+
+	registryAddresses := []common.Address{}
+	encodedRegistryAddresses := ret[:len(ret)-1]
+	for _, encodedRegistryAddress := range encodedRegistryAddresses {
+		decodedRegstryAddress := common.Address{}
+		err := proxyReaderMethodsAbi.UnpackIntoInterface(&decodedRegstryAddress, "registryOf", encodedRegistryAddress)
+		if err != nil {
+			return nil, err
+		}
+		registryAddresses = append(registryAddresses, decodedRegstryAddress)
+	}
+
+	type GetDataForManyOutstruct struct {
+		Resolvers []common.Address
+		Owners    []common.Address
+		Values    [][]string
+	}
+	dataOutstruct := GetDataForManyOutstruct{
+		Resolvers: []common.Address{},
+		Owners:    []common.Address{},
+		Values:    [][]string{},
+	}
+	data := ret[len(ret)-1]
+	err = proxyReaderMethodsAbi.UnpackIntoInterface(&dataOutstruct, "getDataForMany", data)
+	if err != nil {
+		return nil, err
+	}
+
+	locations := map[string]namingservice.Location{}
+	for i, domainName := range domainNames {
+		locations[domainName] = namingservice.Location{
+			RegistryAddress:       (registryAddresses[i]).String(),
+			ResolverAddress:       (dataOutstruct.Resolvers[i]).String(),
+			OwnerAddress:          (dataOutstruct.Owners[i]).String(),
+			NetworkId:             c.networkId,
+			BlockchainProviderUrl: c.blockchainProviderUrl,
+		}
+	}
+
+	return locations, nil
 }
 
 func (c *UnsService) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
