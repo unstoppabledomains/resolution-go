@@ -50,6 +50,11 @@ func main() {
   btcAddress, _ := zns.Addr("brad.zil", "BTC")
   fmt.Println("BTC address for brad.zil is", btcAddress)
 
+  // Get locations of domains
+  uns, _ := resolution.NewUnsBuilder().Build()
+  locations, _ := uns.Locations([]string{"ryan.crypto", "brad.crypto"})
+  fmt.Println("Locations for ryan.crypto and brad.crypto are", locations)
+
   // Detect domain naming service
   namingServices := map[string]resolution.NamingService{namingservice.UNS: uns, namingservice.ZNS: zns}
   domainToDetect := "ryan.crypto"
