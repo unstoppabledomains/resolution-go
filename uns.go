@@ -2,8 +2,8 @@ package resolution
 
 import (
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/unstoppabledomains/resolution-go/dnsrecords"
-	"github.com/unstoppabledomains/resolution-go/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v2/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/v2/namingservice"
 )
 
 // Uns is a naming service handles Unstoppable domains resolution.

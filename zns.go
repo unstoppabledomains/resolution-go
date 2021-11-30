@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/unstoppabledomains/resolution-go/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v2/namingservice"
 
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
-	"github.com/unstoppabledomains/resolution-go/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/v2/dnsrecords"
 )
 
 // Zns is a naming service handles .zil domains resolution.

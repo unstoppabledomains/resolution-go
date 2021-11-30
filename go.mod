@@ -1,4 +1,4 @@
-module github.com/unstoppabledomains/resolution-go
+module github.com/unstoppabledomains/resolution-go/v2
 
 go 1.16
 

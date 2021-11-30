@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/unstoppabledomains/resolution-go/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/v2/dnsrecords"
 )
 
 func TestDnsTypesToRecordKeys(t *testing.T) {
