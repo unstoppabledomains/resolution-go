@@ -7,6 +7,9 @@ type TokenMetadataAttribute struct {
 	TraitType   string     `json:"trait_type"`
 	Value       json.Token `json:"value"`
 }
+type TokenMetadataProperties struct {
+	Records map[string]string `json:"records"`
+}
 
 type TokenMetadata struct {
 	Name            string                   `json:"name"`
@@ -18,5 +21,6 @@ type TokenMetadata struct {
 	BackgroundColor string                   `json:"background_color"`
 	AnimationUrl    string                   `json:"animation_url"`
 	YoutubeUrl      string                   `json:"youtube_url"`
+	Properties      TokenMetadataProperties  `json:"properties"`
 	Attributes      []TokenMetadataAttribute `json:"attributes"`
 }

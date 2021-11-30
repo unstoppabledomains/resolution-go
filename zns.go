@@ -262,6 +262,31 @@ func (z *Zns) TokenURI(_ string) (string, error) {
 	return "", &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
 }
 
+func (z *Zns) Locations(domainNames []string) (map[string]namingservice.Location, error) {
+	locations := make(map[string]namingservice.Location)
+	for _, domainName := range domainNames {
+		isSupported, _ := z.IsSupportedDomain((domainName))
+		if !isSupported {
+			return map[string]namingservice.Location{}, &DomainNotSupportedError{DomainName: domainName}
+		}
+	}
+	for _, domainName := range domainNames {
+		state, err := z.State(domainName)
+		if err != nil {
+			return map[string]namingservice.Location{}, err
+		}
+		locations[domainName] = namingservice.Location{
+			RegistryAddress:       z.znsRegistry,
+			ResolverAddress:       state.Resolver,
+			NetworkId:             1,
+			Blockchain:            "ZIL",
+			OwnerAddress:          state.Owner,
+			BlockchainProviderUrl: znsDefaultProvider,
+		}
+	}
+	return locations, nil
+}
+
 func (z *Zns) TokenURIMetadata(_ string) (TokenMetadata, error) {
 	return TokenMetadata{}, &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
 }
