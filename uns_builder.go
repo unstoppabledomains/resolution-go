@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/unstoppabledomains/resolution-go/uns/contracts/proxyreader"
+	"github.com/unstoppabledomains/resolution-go/v2/uns/contracts/proxyreader"
 )
 
 // UnsBuilder is a builder to setup and build instance of Uns

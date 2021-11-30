@@ -1,7 +1,7 @@
 package resolution
 
 import (
-	"github.com/unstoppabledomains/resolution-go/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v2/namingservice"
 )
 
 type genericFunctions struct {

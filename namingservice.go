@@ -3,8 +3,8 @@ package resolution
 import (
 	"strings"
 
-	"github.com/unstoppabledomains/resolution-go/dnsrecords"
-	"github.com/unstoppabledomains/resolution-go/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v2/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/v2/namingservice"
 )
 
 // NamingService Unstoppable supports multiple naming services (.zil and .crypto).
