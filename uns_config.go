@@ -17,6 +17,7 @@ const (
 	Rinkeby string = "rinkeby"
 	Polygon string = "polygon"
 	Mumbai  string = "mumbai"
+	Goerli  string = "goerli"
 )
 
 const (
@@ -29,6 +30,7 @@ type NetworkContracts map[string]contracts
 var NetworkProviders = map[string]string{
 	Mainnet: "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	Rinkeby: "https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	Goerli:  "https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	Polygon: "https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	Mumbai:  "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 }
@@ -38,6 +40,7 @@ var NetworkNameToId = map[string]int{
 	Rinkeby: 4,
 	Polygon: 137,
 	Mumbai:  80001,
+	Goerli:  5,
 }
 
 func parseContracts(data []byte) (contracts, error) {
@@ -67,6 +70,10 @@ func newContracts() (NetworkContracts, error) {
 		return nil, err
 	}
 	networks[Mumbai], err = parseContracts(unsMumbaiConfigJSON)
+	if err != nil {
+		return nil, err
+	}
+	networks[Goerli], err = parseContracts(unsGoerliConfigJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -415,3 +422,112 @@ var unsMumbaiConfigJSON = []byte(`
 		}
 	}
 }`)
+
+var unsGoerliConfigJSON = []byte(`
+{
+   "contracts":{
+      "UNSRegistry":{
+         "address":"0x070e83FCed225184E67c86302493ffFCDB953f71",
+         "implementation":"0x24b91e7Cd07cb5ae581034e545Db2Fe36F9e9Ada",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x5b57ea",
+         "forwarder":"0x070e83FCed225184E67c86302493ffFCDB953f71"
+      },
+      "CNSRegistry":{
+         "address":"0x801452cFAC27e79a11c6b185986fdE09e8637589",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x5b57d7",
+         "forwarder":"0x00443017FFaa4C840Caf5Dc7d3CB59147f363080"
+      },
+      "MintingManager":{
+         "address":"0x9ee42D3EB042e06F8Cd241890C4fA0d51e4DA345",
+         "implementation":"0x487DE785da9A671E23976F08abF991072Af9dB21",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x5b57ec",
+         "forwarder":"0x7F9F48cF94C69ce91D4b442DA186F31118ac0185"
+      },
+      "ProxyAdmin":{
+         "address":"0xf4906E210523F9dA79E33811A44EE000441F4E04",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x5b57e8"
+      },
+      "SignatureController":{
+         "address":"0x5199dAE4B24B987ba18FcE1b64664D1B798d372B",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x5b57d8"
+      },
+      "MintingController":{
+         "address":"0xCEC41677be322049cC885c0DAe2fE0D52CA195ca",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x5b57d9",
+         "deprecated":true
+      },
+      "WhitelistedMinter":{
+         "address":"0x0000000000000000000000000000000000000000",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x0",
+         "deprecated":true
+      },
+      "URIPrefixController":{
+         "address":"0x29465e3d2daA588E62375977bCe9b3f51406a794",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x5b57da",
+         "deprecated":true
+      },
+      "DomainZoneController":{
+         "address":"0x0000000000000000000000000000000000000000",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x0",
+         "deprecated":true
+      },
+      "Resolver":{
+         "address":"0x0555344A5F440Bd1d8cb6B42db46c5e5D4070437",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x5b57dc",
+         "forwarder":"0xdD076eBC73f3AE9F4F946B3707eb8d26Fb53ede7"
+      },
+      "ProxyReader":{
+         "address":"0xFc5f608149f4D9e2Ed0733efFe9DD57ee24BCF68",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x5b57f3"
+      },
+      "TwitterValidationOperator":{
+         "address":"0x0000000000000000000000000000000000000000",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x0"
+      },
+      "FreeMinter":{
+         "address":"0x0000000000000000000000000000000000000000",
+         "legacyAddresses":[
+            
+         ],
+         "deploymentBlock":"0x0",
+         "deprecated":true
+      }
+   }
+}
+`)
