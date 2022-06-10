@@ -26,6 +26,18 @@ resolution-go decentralized domains across two zones:
 - Zilliqa Name Service (ZNS)
   - `.zil`
 
+# Installing resolution-go
+
+```shell
+go get github.com/unstoppabledomains/resolution-go
+```
+
+# Updating resolution-go
+
+```shell
+go get -u github.com/unstoppabledomains/resolution-go
+```
+
 # Usage
 
 ```go
