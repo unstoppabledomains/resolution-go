@@ -144,8 +144,14 @@ func (cb *unsBuilder) Build() (*Uns, error) {
 	l2Service.networkId = NetworkNameToId[cb.l2Network]
 	l2Service.blockchainProviderUrl = NetworkProviders[cb.l2Network]
 
+	zService, err := NewZnsBuilder().Build()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Uns{
 		*l1Service,
 		*l2Service,
+		*zService,
 	}, nil
 }

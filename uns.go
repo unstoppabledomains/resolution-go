@@ -10,6 +10,7 @@ import (
 type Uns struct {
 	l1Service UnsService
 	l2Service UnsService
+	zService  Zns
 }
 
 // Data Get raw data attached to domain
