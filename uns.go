@@ -176,6 +176,7 @@ func (c *Uns) Locations(domainNames []string) (map[string]namingservice.Location
 		L2Function: func() (map[string]namingservice.Location, error) { return c.l2Service.locations(domainNames) },
 		ZFunction:  func() (map[string]namingservice.Location, error) { return c.zService.Locations(domainNames) },
 	})
+
 	if err != nil {
 		return map[string]namingservice.Location{}, err
 	}

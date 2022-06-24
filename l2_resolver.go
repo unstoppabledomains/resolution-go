@@ -135,16 +135,6 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 	resultL2 := <-c2
 	resultZ := <-cz
 
-	if resultL2.err != nil {
-		return nil, resultL2.err
-	}
-	if resultL1.err != nil {
-		return nil, resultL1.err
-	}
-	if resultZ.err != nil {
-		return nil, resultZ.err
-	}
-
 	locations := map[string]namingservice.Location{}
 
 	for domainName, location := range resultL1.result {
@@ -157,6 +147,7 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 				NetworkId:             location.NetworkId,
 				Blockchain:            "ETH",
 			}
+			return locations, nil
 		} else {
 			locations[domainName] = namingservice.Location{
 				RegistryAddress:       "",
@@ -168,6 +159,7 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 			}
 		}
 	}
+
 	for domainName, location := range resultL2.result {
 		if location.OwnerAddress != "0x0000000000000000000000000000000000000000" {
 			locations[domainName] = namingservice.Location{
@@ -178,8 +170,40 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 				NetworkId:             location.NetworkId,
 				Blockchain:            "MATIC",
 			}
+			return locations, nil
+		} else {
+			locations[domainName] = namingservice.Location{
+				RegistryAddress:       "",
+				ResolverAddress:       "",
+				NetworkId:             0,
+				Blockchain:            "",
+				OwnerAddress:          "",
+				BlockchainProviderUrl: "",
+			}
 		}
 	}
 
+	for domainName, location := range resultZ.result {
+		if location.OwnerAddress != "0x0000000000000000000000000000000000000000" {
+			locations[domainName] = namingservice.Location{
+				RegistryAddress:       location.RegistryAddress,
+				ResolverAddress:       location.ResolverAddress,
+				OwnerAddress:          location.OwnerAddress,
+				BlockchainProviderUrl: location.BlockchainProviderUrl,
+				NetworkId:             location.NetworkId,
+				Blockchain:            "ZIL",
+			}
+		} else {
+			locations[domainName] = namingservice.Location{
+				RegistryAddress:       "",
+				ResolverAddress:       "",
+				NetworkId:             0,
+				Blockchain:            "",
+				OwnerAddress:          "",
+				BlockchainProviderUrl: "",
+			}
+			return locations, nil
+		}
+	}
 	return locations, nil
 }

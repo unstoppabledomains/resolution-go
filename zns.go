@@ -92,14 +92,6 @@ func (zb *znsBuilder) Build() (*Zns, error) {
 
 // State Get raw data attached to domain.
 func (z *Zns) State(domainName string) (*ZnsDomainState, error) {
-	// normalizedName := normalizeName(domainName)
-	// isSupported, err := z.IsSupportedDomain(normalizedName)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if !isSupported {
-	// 	return nil, &DomainNotSupportedError{DomainName: normalizedName}
-	// }
 	namehash, err := ZnsNameHash(domainName)
 	if err != nil {
 		return nil, err
@@ -264,12 +256,6 @@ func (z *Zns) TokenURI(_ string) (string, error) {
 
 func (z *Zns) Locations(domainNames []string) (map[string]namingservice.Location, error) {
 	locations := make(map[string]namingservice.Location)
-	// for _, domainName := range domainNames {
-	// 	isSupported, _ := z.IsSupportedDomain((domainName))
-	// 	if !isSupported {
-	// 		return map[string]namingservice.Location{}, &DomainNotSupportedError{DomainName: domainName}
-	// 	}
-	// }
 	for _, domainName := range domainNames {
 		state, err := z.State(domainName)
 		if err != nil {
