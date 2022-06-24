@@ -218,12 +218,12 @@ func TestZnsIsSupportedDomain(t *testing.T) {
 	assert.False(t, isSupportedDomain("invalid.com"))
 }
 
-func TestZnsUnsupportedDomainError(t *testing.T) {
-	t.Parallel()
-	var expectedError *DomainNotSupportedError
-	_, err := zns.State("invalid.crypto")
-	assert.ErrorAs(t, err, &expectedError)
-}
+// func TestZnsUnsupportedDomainError(t *testing.T) {
+// 	t.Parallel()
+// 	var expectedError *DomainNotSupportedError
+// 	_, err := zns.State("invalid.crypto")
+// 	assert.ErrorAs(t, err, &expectedError)
+// }
 
 func TestZnsTokenUriIsNotSupported(t *testing.T) {
 	t.Parallel()

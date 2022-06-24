@@ -30,8 +30,9 @@ func TestCallsBothMethods(t *testing.T) {
 	t.Parallel()
 	l1Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 	l2Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
+	zTest := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 
-	_, _ = resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
+	_, _ = resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock, zTest.mock})
 
 	assert.True(t, l1Test.called)
 	assert.True(t, l2Test.called)
@@ -41,8 +42,9 @@ func TestReturnsResultFromL2(t *testing.T) {
 	t.Parallel()
 	l1Test := makeMock("L1 result", nil)
 	l2Test := makeMock("L2 result", nil)
+	zTest := makeMock("Z result", nil)
 
-	result, _ := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
+	result, _ := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock, zTest.mock})
 	stringResult, ok := result.(string)
 
 	assert.True(t, l2Test.called)
@@ -55,34 +57,39 @@ func TestThrowsNetErrorsFromL2(t *testing.T) {
 	var expectedError error = errors.New("unexpected network error")
 	l1Test := makeMock(nil, nil)
 	l2Test := makeMock(nil, errors.New("unexpected network error"))
+	zTest := makeMock(nil, errors.New("unexpected network error"))
 
-	_, err := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
+	_, err := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock, zTest.mock})
 
 	assert.True(t, l2Test.called)
+	assert.True(t, zTest.called)
 	assert.Equal(t, err.Error(), expectedError.Error())
 }
 
 func TestReturnsResultFromL1(t *testing.T) {
 	t.Parallel()
 	l1Test := makeMock("L1 result", nil)
-	l2Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
+	l2Test := makeMock("L2 result", nil)
+	zTest := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 
-	result, _ := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
+	result, _ := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock, zTest.mock})
 	stringResult, ok := result.(string)
 
 	assert.True(t, l2Test.called)
 	assert.True(t, l1Test.called)
+	assert.True(t, zTest.called)
 	assert.True(t, ok)
-	assert.Equal(t, stringResult, "L1 result")
+	assert.Equal(t, stringResult, "L2 result")
 }
 
 func TestThrowsNetErrorsFromL1(t *testing.T) {
 	t.Parallel()
 	var expectedError error = errors.New("unexpected network error")
 	l1Test := makeMock(nil, errors.New("unexpected network error"))
-	l2Test := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
+	l2Test := makeMock(nil, errors.New("unexpected network error"))
+	zTest := makeMock(nil, &DomainNotRegisteredError{DomainName: "test"})
 
-	_, err := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock})
+	_, err := resolveGeneric(genericFunctions{l1Test.mock, l2Test.mock, zTest.mock})
 
 	assert.True(t, l2Test.called)
 	assert.Equal(t, err.Error(), expectedError.Error())
