@@ -90,6 +90,33 @@ func main() {
 }
 ```
 
+# Custom Ethereum provider configuration
+
+```go
+package main
+
+import (
+  "github.com/ethereum/go-ethereum/ethclient"
+	"github.com/unstoppabledomains/resolution-go/v2"
+)
+
+func main() {
+  var infuraApiKey = INFURA_PROJECT_ID
+  var ethereumUrl = "https://mainnet.infura.io/v3/" + infuraApiKey
+  var ethereumL2Url = "https://polygon-mumbai.infura.io/v3/" + infuraApiKey
+
+  var unsBuilder := resolution.NewUnsBuilder()
+  var backend, _ := ethclient.Dial(ethereumUrl)
+  var backendL2, _ := ethclient.Dial(ethereumL2Url)
+
+  unsBuilder.SetContractBackend(backend)
+  unsBuilder.SetL2ContractBackend(backendL2)
+
+  var unsResolution, _ = unsBuilder.Build()
+  var znsResolution, _ = resolution.NewZnsBuilder().Build()
+}
+```
+
 # Network support
 
 Library supports Ethereum mainnet and Zilliqa mainnet only.
