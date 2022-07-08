@@ -4,6 +4,8 @@ import (
 	"github.com/unstoppabledomains/resolution-go/v2/namingservice"
 )
 
+const zeroAddress = "0x0000000000000000000000000000000000000000"
+
 type genericFunctions struct {
 	L1Function func() (interface{}, error)
 	L2Function func() (interface{}, error)
@@ -138,7 +140,7 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 	locations := map[string]namingservice.Location{}
 
 	for domainName, location := range resultL1.result {
-		if location.OwnerAddress != "0x0000000000000000000000000000000000000000" {
+		if location.OwnerAddress != zeroAddress {
 			locations[domainName] = namingservice.Location{
 				RegistryAddress:       location.RegistryAddress,
 				ResolverAddress:       location.ResolverAddress,
@@ -161,7 +163,7 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 	}
 
 	for domainName, location := range resultL2.result {
-		if location.OwnerAddress != "0x0000000000000000000000000000000000000000" {
+		if location.OwnerAddress != zeroAddress {
 			locations[domainName] = namingservice.Location{
 				RegistryAddress:       location.RegistryAddress,
 				ResolverAddress:       location.ResolverAddress,
@@ -184,7 +186,7 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 	}
 
 	for domainName, location := range resultZ.result {
-		if location.OwnerAddress != "0x0000000000000000000000000000000000000000" {
+		if location.OwnerAddress != zeroAddress {
 			locations[domainName] = namingservice.Location{
 				RegistryAddress:       location.RegistryAddress,
 				ResolverAddress:       location.ResolverAddress,

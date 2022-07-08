@@ -54,50 +54,98 @@ func (c *Uns) Records(domainName string, keys []string) (map[string]string, erro
 	return resolveStringMap(stringMapResolverParams{
 		L1Function: func() (map[string]string, error) { return c.l1Service.records(domainName, keys) },
 		L2Function: func() (map[string]string, error) { return c.l2Service.records(domainName, keys) },
-		ZFunction:  func() (map[string]string, error) { return c.zService.Records(domainName, keys) },
-	})
+		ZFunction: func() (map[string]string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.Records(domainName, keys)
+			} else {
+				return nil, &DomainNotSupportedError{DomainName: domainName}
+			}
+		}})
 }
 
 func (c *Uns) Record(domainName string, key string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.record(domainName, key) },
 		L2Function: func() (string, error) { return c.l2Service.record(domainName, key) },
-		ZFunction:  func() (string, error) { return c.zService.Record(domainName, key) }})
+		ZFunction: func() (string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.Record(domainName, key)
+			} else {
+				return "", &DomainNotSupportedError{DomainName: domainName}
+			}
+		}})
 }
 
 func (c *Uns) Addr(domainName string, ticker string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.addr(domainName, ticker) },
 		L2Function: func() (string, error) { return c.l2Service.addr(domainName, ticker) },
-		ZFunction:  func() (string, error) { return c.zService.Addr(domainName, ticker) }})
+		ZFunction: func() (string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.Addr(domainName, ticker)
+			} else {
+				return "", &DomainNotSupportedError{DomainName: domainName}
+			}
+		}})
 }
 
 func (c *Uns) AddrVersion(domainName string, ticker string, version string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.addrVersion(domainName, ticker, version) },
 		L2Function: func() (string, error) { return c.l2Service.addrVersion(domainName, ticker, version) },
-		ZFunction:  func() (string, error) { return c.zService.AddrVersion(domainName, ticker, version) }})
+		ZFunction: func() (string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.AddrVersion(domainName, ticker, version)
+			} else {
+				return "", &DomainNotSupportedError{DomainName: domainName}
+			}
+		}})
 }
 
 func (c *Uns) Email(domainName string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.email(domainName) },
 		L2Function: func() (string, error) { return c.l2Service.email(domainName) },
-		ZFunction:  func() (string, error) { return c.zService.Email(domainName) }})
+		ZFunction: func() (string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.Email(domainName)
+			} else {
+				return "", &DomainNotSupportedError{DomainName: domainName}
+			}
+		}})
 }
 
 func (c *Uns) Resolver(domainName string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.resolver(domainName) },
 		L2Function: func() (string, error) { return c.l2Service.resolver(domainName) },
-		ZFunction:  func() (string, error) { return c.zService.Resolver(domainName) }})
+		ZFunction: func() (string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.Resolver(domainName)
+			} else {
+				return "", &DomainNotSupportedError{DomainName: domainName}
+			}
+		}})
 }
 
 func (c *Uns) Owner(domainName string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.owner(domainName) },
 		L2Function: func() (string, error) { return c.l2Service.owner(domainName) },
-		ZFunction:  func() (string, error) { return c.zService.Owner(domainName) },
+		ZFunction: func() (string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.Owner(domainName)
+			} else {
+				return "", &DomainNotRegisteredError{DomainName: domainName}
+			}
+		},
 	})
 }
 
@@ -105,14 +153,28 @@ func (c *Uns) IpfsHash(domainName string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.ipfsHash(domainName) },
 		L2Function: func() (string, error) { return c.l2Service.ipfsHash(domainName) },
-		ZFunction:  func() (string, error) { return c.zService.IpfsHash(domainName) }})
+		ZFunction: func() (string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.IpfsHash(domainName)
+			} else {
+				return "", &DomainNotRegisteredError{DomainName: domainName}
+			}
+		}})
 }
 
 func (c *Uns) HTTPUrl(domainName string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.httpUrl(domainName) },
 		L2Function: func() (string, error) { return c.l2Service.httpUrl(domainName) },
-		ZFunction:  func() (string, error) { return c.zService.HTTPUrl(domainName) }})
+		ZFunction: func() (string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.HTTPUrl(domainName)
+			} else {
+				return "", &DomainNotRegisteredError{DomainName: domainName}
+			}
+		}})
 }
 
 func (c *Uns) AllRecords(domainName string) (map[string]string, error) {
@@ -134,7 +196,14 @@ func (c *Uns) AllRecords(domainName string) (map[string]string, error) {
 	recordsMap, err := resolveStringMap(stringMapResolverParams{
 		L1Function: func() (map[string]string, error) { return c.l1Service.records(domainName, recordKeys) },
 		L2Function: func() (map[string]string, error) { return c.l2Service.records(domainName, recordKeys) },
-		ZFunction:  func() (map[string]string, error) { return c.zService.Records(domainName, recordKeys) },
+		ZFunction: func() (map[string]string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.Records(domainName, recordKeys)
+			} else {
+				return nil, &DomainNotSupportedError{DomainName: domainName}
+			}
+		},
 	})
 	if err != nil {
 		return make(map[string]string), err
@@ -191,7 +260,14 @@ func (c *Uns) TokenURI(domainName string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.tokenURI(domainName) },
 		L2Function: func() (string, error) { return c.l2Service.tokenURI(domainName) },
-		ZFunction:  func() (string, error) { return c.zService.TokenURI(domainName) }})
+		ZFunction: func() (string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.TokenURI(domainName)
+			} else {
+				return "", &DomainNotSupportedError{DomainName: domainName}
+			}
+		}})
 }
 
 func (c *Uns) TokenURIMetadata(domainName string) (TokenMetadata, error) {
