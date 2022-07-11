@@ -4,9 +4,12 @@ import (
 	"github.com/unstoppabledomains/resolution-go/v2/namingservice"
 )
 
+const zeroAddress = "0x0000000000000000000000000000000000000000"
+
 type genericFunctions struct {
 	L1Function func() (interface{}, error)
 	L2Function func() (interface{}, error)
+	ZFunction  func() (interface{}, error)
 }
 
 func resolveGeneric(functions genericFunctions) (interface{}, error) {
@@ -17,6 +20,7 @@ func resolveGeneric(functions genericFunctions) (interface{}, error) {
 
 	c1 := make(chan chanStruct)
 	c2 := make(chan chanStruct)
+	cz := make(chan chanStruct)
 
 	returnToChannel := func(f func() (interface{}, error), c chan chanStruct) {
 		r, e := f()
@@ -25,14 +29,22 @@ func resolveGeneric(functions genericFunctions) (interface{}, error) {
 
 	go returnToChannel(functions.L1Function, c1)
 	go returnToChannel(functions.L2Function, c2)
+	go returnToChannel(functions.ZFunction, cz)
 
 	result := <-c2
 	if result.err != nil {
 		_, notRegistered := result.err.(*DomainNotRegisteredError)
 		if notRegistered {
 			result = <-c1
-		} else {
-			return nil, result.err
+			if result.err != nil {
+				_, notRegistered := result.err.(*DomainNotRegisteredError)
+				if notRegistered {
+					result = <-cz
+					if result.err != nil {
+						return nil, result.err
+					}
+				}
+			}
 		}
 	}
 
@@ -43,6 +55,7 @@ type stringMapFunction func() (map[string]string, error)
 type stringMapResolverParams struct {
 	L1Function stringMapFunction
 	L2Function stringMapFunction
+	ZFunction  stringMapFunction
 }
 
 func resolveStringMap(functions stringMapResolverParams) (map[string]string, error) {
@@ -56,6 +69,7 @@ func resolveStringMap(functions stringMapResolverParams) (map[string]string, err
 	res, err := resolveGeneric(genericFunctions{
 		L1Function: convertToGenericFunction(functions.L1Function),
 		L2Function: convertToGenericFunction(functions.L2Function),
+		ZFunction:  convertToGenericFunction(functions.ZFunction),
 	})
 
 	strmap, ok := res.(map[string]string)
@@ -69,6 +83,7 @@ type stringFunction func() (string, error)
 type stringResolverParams struct {
 	L1Function stringFunction
 	L2Function stringFunction
+	ZFunction  stringFunction
 }
 
 func resolveString(functions stringResolverParams) (string, error) {
@@ -82,6 +97,7 @@ func resolveString(functions stringResolverParams) (string, error) {
 	res, err := resolveGeneric(genericFunctions{
 		L1Function: convertToGenericFunction(functions.L1Function),
 		L2Function: convertToGenericFunction(functions.L2Function),
+		ZFunction:  convertToGenericFunction(functions.ZFunction),
 	})
 
 	str, ok := res.(string)
@@ -95,6 +111,7 @@ type stringMapLocationFuction func() (map[string]namingservice.Location, error)
 type stringMapLocationParams struct {
 	L1Function stringMapLocationFuction
 	L2Function stringMapLocationFuction
+	ZFunction  stringMapLocationFuction
 }
 
 func resolveLocations(functions stringMapLocationParams) (map[string]namingservice.Location, error) {
@@ -105,6 +122,7 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 
 	c1 := make(chan chanStruct)
 	c2 := make(chan chanStruct)
+	cz := make(chan chanStruct)
 
 	returnToChannel := func(f func() (map[string]namingservice.Location, error), c chan chanStruct) {
 		r, e := f()
@@ -113,21 +131,16 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 
 	go returnToChannel(functions.L1Function, c1)
 	go returnToChannel(functions.L2Function, c2)
+	go returnToChannel(functions.ZFunction, cz)
 
 	resultL1 := <-c1
 	resultL2 := <-c2
-
-	if resultL2.err != nil {
-		return nil, resultL2.err
-	}
-	if resultL1.err != nil {
-		return nil, resultL1.err
-	}
+	resultZ := <-cz
 
 	locations := map[string]namingservice.Location{}
 
 	for domainName, location := range resultL1.result {
-		if location.OwnerAddress != "0x0000000000000000000000000000000000000000" {
+		if location.OwnerAddress != zeroAddress {
 			locations[domainName] = namingservice.Location{
 				RegistryAddress:       location.RegistryAddress,
 				ResolverAddress:       location.ResolverAddress,
@@ -136,6 +149,7 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 				NetworkId:             location.NetworkId,
 				Blockchain:            "ETH",
 			}
+			return locations, nil
 		} else {
 			locations[domainName] = namingservice.Location{
 				RegistryAddress:       "",
@@ -147,8 +161,9 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 			}
 		}
 	}
+
 	for domainName, location := range resultL2.result {
-		if location.OwnerAddress != "0x0000000000000000000000000000000000000000" {
+		if location.OwnerAddress != zeroAddress {
 			locations[domainName] = namingservice.Location{
 				RegistryAddress:       location.RegistryAddress,
 				ResolverAddress:       location.ResolverAddress,
@@ -157,8 +172,40 @@ func resolveLocations(functions stringMapLocationParams) (map[string]namingservi
 				NetworkId:             location.NetworkId,
 				Blockchain:            "MATIC",
 			}
+			return locations, nil
+		} else {
+			locations[domainName] = namingservice.Location{
+				RegistryAddress:       "",
+				ResolverAddress:       "",
+				NetworkId:             0,
+				Blockchain:            "",
+				OwnerAddress:          "",
+				BlockchainProviderUrl: "",
+			}
 		}
 	}
 
+	for domainName, location := range resultZ.result {
+		if location.OwnerAddress != zeroAddress {
+			locations[domainName] = namingservice.Location{
+				RegistryAddress:       location.RegistryAddress,
+				ResolverAddress:       location.ResolverAddress,
+				OwnerAddress:          location.OwnerAddress,
+				BlockchainProviderUrl: location.BlockchainProviderUrl,
+				NetworkId:             location.NetworkId,
+				Blockchain:            "ZIL",
+			}
+		} else {
+			locations[domainName] = namingservice.Location{
+				RegistryAddress:       "",
+				ResolverAddress:       "",
+				NetworkId:             0,
+				Blockchain:            "",
+				OwnerAddress:          "",
+				BlockchainProviderUrl: "",
+			}
+			return locations, nil
+		}
+	}
 	return locations, nil
 }
