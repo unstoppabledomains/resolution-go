@@ -10,7 +10,7 @@ import (
 
 func TestUnsBuilder(t *testing.T) {
 	t.Parallel()
-	builder := NewUnsBuilder().SetEthereumNetwork("rinkeby").SetL2EthereumNetwork("mumbai")
+	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	_, err := builder.Build()
 	assert.Nil(t, err)
 	assert.NotNil(t, uns.l1Service.contractBackend)
@@ -26,9 +26,9 @@ func TestUnsBuilder(t *testing.T) {
 
 func TestUnsBuilderSetBackend(t *testing.T) {
 	t.Parallel()
-	backendl1, _ := ethclient.Dial("https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
-	backendl2, _ := ethclient.Dial("https://matic-testnet-archive-rpc.bwarelabs.com/")
-	builder := NewUnsBuilder().SetEthereumNetwork("rinkeby").SetL2EthereumNetwork("mumbai")
+	backendl1, _ := ethclient.Dial("https://eth-goerli.alchemyapi.io/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN")
+	backendl2, _ := ethclient.Dial("https://polygon-mumbai.g.alchemy.com/v2/EP3SMW2f-2FMABuWuEdHdxKq_v1_ww8")
+	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetContractBackend(backendl1)
 	builder.SetL2ContractBackend(backendl2)
 	uns, err := builder.Build()
@@ -40,7 +40,7 @@ func TestUnsBuilderSetBackend(t *testing.T) {
 func TestUnsBuilderSetMetadataClient(t *testing.T) {
 	t.Parallel()
 	client := &http.Client{}
-	builder := NewUnsBuilder().SetEthereumNetwork("rinkeby").SetL2EthereumNetwork("mumbai")
+	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetMetadataClient(client)
 	uns, err := builder.Build()
 	assert.Nil(t, err)
@@ -69,8 +69,8 @@ func TestUnsBuilderChecksL2Network(t *testing.T) {
 func TestUnsBuilderChecksL2ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError
-	backendl1, _ := ethclient.Dial("https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
-	builder := NewUnsBuilder().SetEthereumNetwork("mainnet").SetL2EthereumNetwork("mumbai")
+	backendl1, _ := ethclient.Dial("https://eth-goerli.alchemyapi.io/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN")
+	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetContractBackend(backendl1)
 	_, err := builder.Build()
 	assert.ErrorAs(t, err, &expectedError)
@@ -80,8 +80,8 @@ func TestUnsBuilderChecksL2ContractBackend(t *testing.T) {
 func TestUnsBuilderChecksL1ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError
-	backendl2, _ := ethclient.Dial("https://rinkeby.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
-	builder := NewUnsBuilder().SetEthereumNetwork("mainnet").SetL2EthereumNetwork("mumbai")
+	backendl2, _ := ethclient.Dial("https://eth-goerli.alchemyapi.io/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN")
+	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetL2ContractBackend(backendl2)
 	_, err := builder.Build()
 	assert.ErrorAs(t, err, &expectedError)

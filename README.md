@@ -7,24 +7,11 @@
 
 # resolution-go
 
-resolution-go is a library for interacting with blockchain domain names. It can be used to retrieve [payment addresses](https://unstoppabledomains.com/features#Add-Crypto-Addresses), IPFS hashes for [decentralized websites](https://unstoppabledomains.com/features#Build-Website), DNS records and other [records types](https://docs.unstoppabledomains.com/domain-registry-essentials/records-reference)
+resolution-go is a library for interacting with blockchain domain names. It can be used to retrieve [payment addresses](https://unstoppabledomains.com/learn/how-to-send-crypto-using-your-domain) and IPFS hashes for [decentralized websites](https://support.unstoppabledomains.com/support/solutions/articles/48001181925-build-website).
 
 resolution-go is primarily built and maintained by [Unstoppable Domains](https://unstoppabledomains.com/).
 
-resolution-go decentralized domains across two zones:
-
-- Unstoppable Name Service (UNS)
-  - `.crypto`
-  - `.wallet`
-  - `.coin`
-  - `.bitcoin`
-  - `.x`
-  - `.888`
-  - `.nft`
-  - `.dao`
-  - `.blockchain`
-- Zilliqa Name Service (ZNS)
-  - `.zil`
+Resolution supports different decentralized domains. Please, refer to the [Top Level Domains List](https://resolve.unstoppabledomains.com/supported_tlds)
 
 # Installing resolution-go
 
@@ -77,7 +64,7 @@ func main() {
   }
 
   // Set custom Ethereum endpoint for UNS service
-  ethContractBackend, _ := ethclient.Dial("https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
+  ethContractBackend, _ := ethclient.Dial("https://eth-mainnet.alchemyapi.io/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ")
   unsWithCustomBackend, _ := resolution.NewUnsBuilder().SetContractBackend(ethContractBackend).Build()
   allUnsRecords, _ := unsWithCustomBackend.AllRecords("beresnev.crypto")
   fmt.Println("Records for beresnev.crypto", allUnsRecords)
@@ -101,9 +88,9 @@ import (
 )
 
 func main() {
-  var infuraApiKey = INFURA_PROJECT_ID
-  var ethereumUrl = "https://mainnet.infura.io/v3/" + infuraApiKey
-  var ethereumL2Url = "https://polygon-mumbai.infura.io/v3/" + infuraApiKey
+  var alchemyApiKey = ALCHEMY_PROJECT_ID
+  var ethereumUrl = "https://eth-mainnet.alchemyapi.io/v2/" + alchemyApiKey
+  var ethereumL2Url = "https://polygon-mainnet.g.alchemy.com/v2/" + alchemyApiKey
 
   var unsBuilder := resolution.NewUnsBuilder()
   var backend, _ := ethclient.Dial(ethereumUrl)
@@ -116,10 +103,6 @@ func main() {
   var znsResolution, _ = resolution.NewZnsBuilder().Build()
 }
 ```
-
-# Network support
-
-Library supports Ethereum mainnet and Zilliqa mainnet only.
 
 # Contributions
 
