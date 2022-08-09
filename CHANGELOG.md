@@ -1,3 +1,8 @@
+## 3.1.0
+
+- `.zil` on UNS support
+- Disabled `.coin` support
+
 ## 2.0.0
 
 - L2 support

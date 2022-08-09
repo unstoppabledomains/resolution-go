@@ -49,7 +49,11 @@ func (c *UnsService) data(domainName string, keys []string) (*struct {
 	Owner    common.Address
 	Values   []string
 }, error) {
-	tokenID := domainNameToTokenId(domainName)
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return nil, err
+	}
+	tokenID := domainNameToTokenId(normalizedDomain)
 	data, err := c.proxyReader.GetData(&bind.CallOpts{Pending: false}, keys, tokenID)
 	if err != nil {
 		return nil, err
@@ -65,7 +69,11 @@ func (c *UnsService) data(domainName string, keys []string) (*struct {
 }
 
 func (c *UnsService) records(domainName string, keys []string) (map[string]string, error) {
-	data, err := c.data(domainName, keys)
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return nil, err
+	}
+	data, err := c.data(normalizedDomain, keys)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +85,11 @@ func (c *UnsService) records(domainName string, keys []string) (map[string]strin
 }
 
 func (c *UnsService) record(domainName string, key string) (string, error) {
-	records, err := c.records(domainName, []string{key})
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
+	records, err := c.records(normalizedDomain, []string{key})
 	if err != nil {
 		return "", err
 	}
@@ -85,11 +97,15 @@ func (c *UnsService) record(domainName string, key string) (string, error) {
 }
 
 func (c *UnsService) addr(domainName string, ticker string) (string, error) {
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
 	key, err := buildCryptoKey(ticker)
 	if err != nil {
 		return "", err
 	}
-	value, err := c.record(domainName, key)
+	value, err := c.record(normalizedDomain, key)
 	if err != nil {
 		return "", err
 	}
@@ -97,11 +113,15 @@ func (c *UnsService) addr(domainName string, ticker string) (string, error) {
 }
 
 func (c *UnsService) addrVersion(domainName string, ticker string, version string) (string, error) {
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
 	key, err := buildCryptoKeyVersion(ticker, version)
 	if err != nil {
 		return "", err
 	}
-	value, err := c.record(domainName, key)
+	value, err := c.record(normalizedDomain, key)
 	if err != nil {
 		return "", err
 	}
@@ -109,7 +129,11 @@ func (c *UnsService) addrVersion(domainName string, ticker string, version strin
 }
 
 func (c *UnsService) email(domainName string) (string, error) {
-	value, err := c.record(domainName, emailKey)
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
+	value, err := c.record(normalizedDomain, emailKey)
 	if err != nil {
 		return "", err
 	}
@@ -118,7 +142,11 @@ func (c *UnsService) email(domainName string) (string, error) {
 }
 
 func (c *UnsService) resolver(domainName string) (string, error) {
-	data, err := c.data(domainName, []string{})
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
+	data, err := c.data(normalizedDomain, []string{})
 	if err != nil {
 		return "", err
 	}
@@ -127,19 +155,27 @@ func (c *UnsService) resolver(domainName string) (string, error) {
 }
 
 func (c *UnsService) owner(domainName string) (string, error) {
-	tokenID := domainNameToTokenId(domainName)
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
+	tokenID := domainNameToTokenId(normalizedDomain)
 	data, err := c.proxyReader.GetData(&bind.CallOpts{Pending: false}, []string{}, tokenID)
 	if err != nil {
 		return "", err
 	}
 	if data.Owner == unsZeroAddress {
-		return "", &DomainNotRegisteredError{DomainName: domainName}
+		return "", &DomainNotRegisteredError{DomainName: normalizedDomain}
 	}
 	return data.Owner.String(), nil
 }
 
 func (c *UnsService) ipfsHash(domainName string) (string, error) {
-	records, err := c.records(domainName, ipfsKeys)
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
+	records, err := c.records(normalizedDomain, ipfsKeys)
 	if err != nil {
 		return "", err
 	}
@@ -147,7 +183,11 @@ func (c *UnsService) ipfsHash(domainName string) (string, error) {
 }
 
 func (c *UnsService) httpUrl(domainName string) (string, error) {
-	records, err := c.records(domainName, redirectUrlKeys)
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
+	records, err := c.records(normalizedDomain, redirectUrlKeys)
 	if err != nil {
 		return "", err
 	}
@@ -157,8 +197,11 @@ func (c *UnsService) httpUrl(domainName string) (string, error) {
 func (c *UnsService) locations(domainNames []string) (map[string]namingservice.Location, error) {
 	tokenIDs := make([]*big.Int, 0, len(domainNames))
 	for _, domainName := range domainNames {
-		normalizedName := normalizeName(domainName)
-		namehash := kns.NameHash(normalizedName)
+		normalizedDomain, err := normalizeAndVerifyName(domainName)
+		if err != nil {
+			return nil, err
+		}
+		namehash := kns.NameHash(normalizedDomain)
 		tokenID := namehash.Big()
 		tokenIDs = append(tokenIDs, tokenID)
 	}
@@ -231,11 +274,15 @@ func (c *UnsService) locations(domainNames []string) (map[string]namingservice.L
 }
 
 func (c *UnsService) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return nil, err
+	}
 	keys, err := dnsTypesToCryptoRecordKeys(types)
 	if err != nil {
 		return nil, err
 	}
-	records, err := c.records(domainName, keys)
+	records, err := c.records(normalizedDomain, keys)
 	if err != nil {
 		return nil, err
 	}
@@ -253,8 +300,8 @@ func (c *UnsService) isSupportedDomain(domainName string) (bool, error) {
 		return false, nil
 	}
 	extension := chunks[len(chunks)-1]
-	if extension == "zil" {
-		return false, nil
+	if extension == "zil" || extension == "coin" {
+		return false, &DomainNotSupportedError{DomainName: domainName}
 	}
 	namehash := kns.NameHash(extension)
 	tokenID := namehash.Big()
@@ -266,14 +313,20 @@ func (c *UnsService) isSupportedDomain(domainName string) (bool, error) {
 }
 
 func (c *UnsService) tokenURI(domainName string) (string, error) {
-	normalizedName := normalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
+	namehash := kns.NameHash(normalizedDomain)
 	return c.tokenUriByNamehash(namehash)
 }
 
 func (c *UnsService) tokenURIMetadata(domainName string) (TokenMetadata, error) {
-	normalizedName := normalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return TokenMetadata{}, err
+	}
+	namehash := kns.NameHash(normalizedDomain)
 	return c.tokenURIMetadataByNamehash(namehash)
 }
 
@@ -312,11 +365,20 @@ func (c *UnsService) unhash(domainHash string) (string, error) {
 		return "", &InvalidDomainNameReturnedError{Namehash: domainHash, DomainName: domainName}
 	}
 
-	return domainName, nil
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
+
+	return normalizedDomain, nil
 }
 
 func (c *UnsService) namehash(domainName string) (string, error) {
-	namehash := kns.NameHash(domainName)
+	normalizedDomain, err := normalizeAndVerifyName(domainName)
+	if err != nil {
+		return "", err
+	}
+	namehash := kns.NameHash(normalizedDomain)
 	return namehash.String(), nil
 }
 

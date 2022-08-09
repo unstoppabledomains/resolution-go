@@ -126,6 +126,13 @@ func TestUnsL2Records(t *testing.T) {
 	assert.Equal(t, expectedRecords, records)
 }
 
+func TestUnsUnsupportedRecords(t *testing.T) {
+	t.Parallel()
+	_, err := uns.Records("test.coin", []string{"crypto.ETH.address", "crypto.BTC.address"})
+	var expectedError *DomainNotSupportedError
+	assert.ErrorAs(t, err, &expectedError)
+}
+
 func TestUnsEmptyRecords(t *testing.T) {
 	t.Parallel()
 	expectedRecords := map[string]string{"crypto.BTC.address": "", "crypto.ETH.address": "0x084Ac37CDEfE1d3b68a63c08B203EFc3ccAB9742", "record-not-exist": ""}
@@ -171,6 +178,20 @@ func TestUnsL2Addr(t *testing.T) {
 	record, err := uns.Addr(domains["DomainL2"].Name, "LINK")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedRecord, record)
+}
+
+func TestUnsUnsupportedAddr(t *testing.T) {
+	t.Parallel()
+	_, err := uns.Addr("test.coin", "ETH")
+	var expectedError *DomainNotSupportedError
+	assert.ErrorAs(t, err, &expectedError)
+}
+
+func TestUnsUnsupportedOwner(t *testing.T) {
+	t.Parallel()
+	_, err := uns.Owner("test.coin")
+	var expectedError *DomainNotSupportedError
+	assert.ErrorAs(t, err, &expectedError)
 }
 
 func TestUnsZilOnL1Owner(t *testing.T) {
@@ -366,7 +387,7 @@ func TestUnsIsSupportedDomain(t *testing.T) {
 	assert.True(t, isSupportedDomain("invalid.blockchain"))
 	assert.True(t, isSupportedDomain("invalid.dao"))
 	assert.True(t, isSupportedDomain("invalid.nft"))
-	assert.True(t, isSupportedDomain("invalid.coin"))
+	assert.False(t, isSupportedDomain("invalid.coin"))
 	assert.False(t, isSupportedDomain("invalid.com"))
 	assert.False(t, isSupportedDomain("radomin-domain.com"))
 	assert.False(t, isSupportedDomain("some-domain.net"))

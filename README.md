@@ -16,7 +16,6 @@ resolution-go decentralized domains across two zones:
 - Unstoppable Name Service (UNS)
   - `.crypto`
   - `.wallet`
-  - `.coin`
   - `.bitcoin`
   - `.x`
   - `.888`
