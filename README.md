@@ -64,7 +64,7 @@ func main() {
   }
 
   // Set custom Ethereum endpoint for UNS service
-  ethContractBackend, _ := ethclient.Dial("https://eth-mainnet.alchemyapi.io/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ")
+  ethContractBackend, _ := ethclient.Dial("https://eth-mainnet.g.alchemy.com/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ")
   unsWithCustomBackend, _ := resolution.NewUnsBuilder().SetContractBackend(ethContractBackend).Build()
   allUnsRecords, _ := unsWithCustomBackend.AllRecords("beresnev.crypto")
   fmt.Println("Records for beresnev.crypto", allUnsRecords)
@@ -89,7 +89,7 @@ import (
 
 func main() {
   var alchemyApiKey = ALCHEMY_PROJECT_ID
-  var ethereumUrl = "https://eth-mainnet.alchemyapi.io/v2/" + alchemyApiKey
+  var ethereumUrl = "https://eth-mainnet.g.alchemy.com/v2/" + alchemyApiKey
   var ethereumL2Url = "https://polygon-mainnet.g.alchemy.com/v2/" + alchemyApiKey
 
   var unsBuilder := resolution.NewUnsBuilder()
