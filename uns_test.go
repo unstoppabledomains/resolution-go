@@ -480,7 +480,7 @@ func TestUnsSingleL1Locations(t *testing.T) {
 		NetworkId:             5,
 		Blockchain:            "ETH",
 		OwnerAddress:          "0xe586d5Bf4d7779498648DF67b73c88a712E4359d",
-		BlockchainProviderUrl: "https://eth-goerli.alchemyapi.io/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN",
+		BlockchainProviderUrl: "https://eth-goerli.g.alchemy.com/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN",
 	}
 	locations, err := uns.Locations([]string{domains["DomainL1"].Name})
 

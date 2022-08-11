@@ -28,9 +28,9 @@ const (
 type NetworkContracts map[string]contracts
 
 var NetworkProviders = map[string]string{
-	Mainnet: "https://eth-mainnet.alchemyapi.io/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ",
-	Rinkeby: "https://eth-goerli.alchemyapi.io/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN",
-	Goerli:  "https://eth-goerli.alchemyapi.io/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN",
+	Mainnet: "https://eth-mainnet.g.alchemy.com/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ",
+	Rinkeby: "https://eth-goerli.g.alchemy.com/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN",
+	Goerli:  "https://eth-goerli.g.alchemy.com/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN",
 	Polygon: "https://polygon-mainnet.g.alchemy.com/v2/wh7r4O1amrfHhO-0-YiLa1Cg02JICqH2",
 	Mumbai:  "https://polygon-mumbai.g.alchemy.com/v2/EP3SMW2f-2FMABuWuEdHdxKq_v1_ww82",
 }
