@@ -1,6 +1,8 @@
 ## 2.1.0
+
 - Update config to use Alchemy
 - Update tests from Rinkeby to Goerli
+- Update resolver-keys
 
 ## 2.0.0
 
