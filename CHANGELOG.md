@@ -1,3 +1,6 @@
+## 2.2.0
+- Use default networks for UnsBuilder
+
 ## 2.1.0
 
 - Update config to use Alchemy
