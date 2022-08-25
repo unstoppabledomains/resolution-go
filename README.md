@@ -16,13 +16,13 @@ Resolution supports different decentralized domains. Please, refer to the [Top L
 # Installing resolution-go
 
 ```shell
-go get github.com/unstoppabledomains/resolution-go
+go get github.com/unstoppabledomains/resolution-go/v2
 ```
 
 # Updating resolution-go
 
 ```shell
-go get -u github.com/unstoppabledomains/resolution-go
+go get -u github.com/unstoppabledomains/resolution-go/v2
 ```
 
 # Usage
@@ -85,24 +85,24 @@ func main() {
 package main
 
 import (
-  "github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/unstoppabledomains/resolution-go/v2"
 )
 
 func main() {
-  var alchemyApiKey = ALCHEMY_PROJECT_ID
-  var ethereumUrl = "https://eth-mainnet.g.alchemy.com/v2/" + alchemyApiKey
-  var ethereumL2Url = "https://polygon-mainnet.g.alchemy.com/v2/" + alchemyApiKey
+	var alchemyApiKey = ALCHEMY_PROJECT_ID
+	var ethereumUrl = "https://eth-mainnet.g.alchemy.com/v2/" + alchemyApiKey
+	var ethereumL2Url = "https://polygon-mainnet.g.alchemy.com/v2/" + alchemyApiKey
 
-  var unsBuilder := resolution.NewUnsBuilder()
-  var backend, _ := ethclient.Dial(ethereumUrl)
-  var backendL2, _ := ethclient.Dial(ethereumL2Url)
+	var unsBuilder := resolution.NewUnsBuilder()
+	var backend, _ := ethclient.Dial(ethereumUrl)
+	var backendL2, _ := ethclient.Dial(ethereumL2Url)
 
-  unsBuilder.SetContractBackend(backend)
-  unsBuilder.SetL2ContractBackend(backendL2)
+	unsBuilder.SetContractBackend(backend)
+	unsBuilder.SetL2ContractBackend(backendL2)
 
-  var unsResolution, _ = unsBuilder.Build()
-  var znsResolution, _ = resolution.NewZnsBuilder().Build()
+	var unsResolution, _ = unsBuilder.Build()
+	var znsResolution, _ = resolution.NewZnsBuilder().Build()
 }
 ```
 
