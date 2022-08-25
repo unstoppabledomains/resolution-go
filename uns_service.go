@@ -334,6 +334,10 @@ func (c *UnsService) tokenUriByNamehash(namehash common.Hash) (string, error) {
 }
 
 func (c *UnsService) tokenMetadataByUri(tokenUri string) (TokenMetadata, error) {
+	if tokenUri == "" {
+		return TokenMetadata{}, nil
+	}
+
 	metadataResponse, err := c.metadataClient.Get(tokenUri)
 	if err != nil {
 		return TokenMetadata{}, err

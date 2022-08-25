@@ -48,24 +48,6 @@ func TestUnsBuilderSetMetadataClient(t *testing.T) {
 	assert.Equal(t, client, uns.l2Service.metadataClient)
 }
 
-func TestUnsBuilderChecksL1Network(t *testing.T) {
-	t.Parallel()
-	var expectedError *UnsConfigurationError
-	builder := NewUnsBuilder().SetL2EthereumNetwork("mumbai")
-	_, err := builder.Build()
-	assert.ErrorAs(t, err, &expectedError)
-	assert.Equal(t, "Invalid UNS configuration value of network for Layer 1", err.Error())
-}
-
-func TestUnsBuilderChecksL2Network(t *testing.T) {
-	t.Parallel()
-	var expectedError *UnsConfigurationError
-	builder := NewUnsBuilder().SetEthereumNetwork("mainnet")
-	_, err := builder.Build()
-	assert.ErrorAs(t, err, &expectedError)
-	assert.Equal(t, "Invalid UNS configuration value of network for Layer 2", err.Error())
-}
-
 func TestUnsBuilderChecksL2ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError

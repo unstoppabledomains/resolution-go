@@ -31,49 +31,51 @@ go get -u github.com/unstoppabledomains/resolution-go
 package main
 
 import (
-  "fmt"
-  "github.com/Zilliqa/gozilliqa-sdk/provider"
-  "github.com/ethereum/go-ethereum/ethclient"
-  "github.com/unstoppabledomains/resolution-go"
-  "github.com/unstoppabledomains/resolution-go/namingservice"
+	"fmt"
+
+	"github.com/Zilliqa/gozilliqa-sdk/provider"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/unstoppabledomains/resolution-go/v2"
+	"github.com/unstoppabledomains/resolution-go/v2/namingservice"
 )
 
 func main() {
-  // Resolve .crypto
-  uns, _ := resolution.NewUnsBuilder().Build()
-  ethAddress, _ := uns.Addr("brad.crypto", "ETH")
-  fmt.Println("ETH address for brad.crypto is", ethAddress)
+	// Resolve .crypto
+	uns, _ := resolution.NewUnsBuilder().Build()
+	ethAddress, _ := uns.Addr("brad.crypto", "ETH")
+	fmt.Println("ETH address for brad.crypto is", ethAddress)
 
-  // Resolve .zil
-  zns, _ := resolution.NewZnsBuilder().Build()
-  btcAddress, _ := zns.Addr("brad.zil", "BTC")
-  fmt.Println("BTC address for brad.zil is", btcAddress)
+	// Resolve.zil
+	zns, _ := resolution.NewZnsBuilder().Build()
+	btcAddress, _ := zns.Addr("brad.zil", "BTC")
+	fmt.Println("BTC address for brad.zil is", btcAddress)
 
-  // Get locations of domains
-  uns, _ := resolution.NewUnsBuilder().Build()
-  locations, _ := uns.Locations([]string{"ryan.crypto", "brad.crypto"})
-  fmt.Println("Locations for ryan.crypto and brad.crypto are", locations)
+	// Get locations of domains
+	uns, _ = resolution.NewUnsBuilder().Build()
+	locations, _ := uns.Locations([]string{"ryan.crypto", "brad.crypto"})
+	fmt.Println("Locations for ryan.crypto and brad.crypto are", locations)
 
-  // Detect domain naming service
-  namingServices := map[string]resolution.NamingService{namingservice.UNS: uns, namingservice.ZNS: zns}
-  domainToDetect := "ryan.crypto"
-  namingServiceName, _ := resolution.DetectNamingService(domainToDetect)
-  if namingServices[namingServiceName] != nil {
-    resolvedAddress, _ := namingServices[namingServiceName].Addr(domainToDetect, "ETH")
-    fmt.Println("ETH address for", domainToDetect, "is", resolvedAddress)
-  }
+	// Detect domain naming service
+	namingServices := map[string]resolution.NamingService{namingservice.UNS: uns, namingservice.ZNS: zns}
+	domainToDetect := "ryan.crypto"
+	namingServiceName, _ := resolution.DetectNamingService(domainToDetect)
+	if namingServices[namingServiceName] != nil {
+		resolvedAddress, _ := namingServices[namingServiceName].Addr(domainToDetect, "ETH")
+		fmt.Println("ETH address for", domainToDetect, "is", resolvedAddress)
+	}
 
-  // Set custom Ethereum endpoint for UNS service
-  ethContractBackend, _ := ethclient.Dial("https://eth-mainnet.g.alchemy.com/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ")
-  unsWithCustomBackend, _ := resolution.NewUnsBuilder().SetContractBackend(ethContractBackend).Build()
-  allUnsRecords, _ := unsWithCustomBackend.AllRecords("beresnev.crypto")
-  fmt.Println("Records for beresnev.crypto", allUnsRecords)
+	// Set custom Ethereum endpoint for UNS service
+	ethContractBackend, _ := ethclient.Dial("https://eth-mainnet.g.alchemy.com/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ")
+	ethL2ContactBackend, _ := ethclient.Dial("https://polygon-mainnet.g.alchemy.com/v2/wh7r4O1amrfHhO-0-YiLa1Cg02JICqH2")
+	unsWithCustomBackend, _ := resolution.NewUnsBuilder().SetContractBackend(ethContractBackend).SetL2ContractBackend(ethL2ContactBackend).Build()
+	allUnsRecords, _ := unsWithCustomBackend.AllRecords("beresnev.crypto")
+	fmt.Println("Records for beresnev.crypto", allUnsRecords)
 
-  // Set custom Zilliqa endpoint for ZNS service
-  zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
-  znsWithCustomProvider, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
-  allZnsRecords, _ := znsWithCustomProvider.AllRecords("brad.zil")
-  fmt.Println("Records for brad.zil", allZnsRecords)
+	// Set custom Zilliqa endpoint for ZNS service
+	zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
+	znsWithCustomProvider, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
+	allZnsRecords, _ := znsWithCustomProvider.AllRecords("brad.zil")
+	fmt.Println("Records for brad.zil", allZnsRecords)
 }
 ```
 
@@ -115,6 +117,7 @@ Once your app has a working Unstoppable Domains integration, [register it here](
 Also, every week we select a newly-integrated app to feature in the Unstoppable Update newsletter. This newsletter is delivered to straight into the inbox of ~100,000 crypto fanatics — all of whom could be new customers to grow your business.
 
 # Get help
+
 [Join our discord community](https://discord.gg/unstoppabledomains) and ask questions.
 
 # Help us improve
