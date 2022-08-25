@@ -41,7 +41,10 @@ type unsBuilder struct {
 
 // NewUnsBuilder Creates builder to setup new instance of Uns
 func NewUnsBuilder() UnsBuilder {
-	return &unsBuilder{}
+	return &unsBuilder{
+		l1Network: "mainnet",
+		l2Network: "polygon",
+	}
 }
 
 // SetContractBackend set Ethereum backend for communication with UNS registry
