@@ -366,7 +366,6 @@ func TestUnsIsSupportedDomain(t *testing.T) {
 	assert.True(t, isSupportedDomain("invalid.blockchain"))
 	assert.True(t, isSupportedDomain("invalid.dao"))
 	assert.True(t, isSupportedDomain("invalid.nft"))
-	assert.True(t, isSupportedDomain("invalid.coin"))
 	assert.False(t, isSupportedDomain("invalid.com"))
 	assert.False(t, isSupportedDomain("radomin-domain.com"))
 	assert.False(t, isSupportedDomain("some-domain.net"))
