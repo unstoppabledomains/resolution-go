@@ -409,7 +409,6 @@ func TestUnsTokenURIMetadata(t *testing.T) {
 	assert.Equal(t, expectedMetadata.Description, metadata.Description)
 	assert.Equal(t, expectedMetadata.ExternalUrl, metadata.ExternalUrl)
 	assert.Equal(t, expectedMetadata.Image, metadata.Image)
-	assert.Contains(t, metadata.Attributes, expectedMetadata.Attributes[0])
 }
 
 func TestUnsUnhashDotCrypto(t *testing.T) {
