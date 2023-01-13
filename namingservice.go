@@ -54,6 +54,7 @@ type NamingService interface {
 
 	// AllRecords Retrieve all records of a domain.
 	// Returns result in string or empty string record is not found.
+	// Deprecated: This method will be removed in future releases
 	AllRecords(domainName string) (map[string]string, error)
 
 	// Locations Retrieve locations of domains

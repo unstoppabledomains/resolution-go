@@ -67,15 +67,17 @@ func main() {
 	// Set custom Ethereum endpoint for UNS service
 	ethContractBackend, _ := ethclient.Dial("https://eth-mainnet.g.alchemy.com/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ")
 	ethL2ContactBackend, _ := ethclient.Dial("https://polygon-mainnet.g.alchemy.com/v2/wh7r4O1amrfHhO-0-YiLa1Cg02JICqH2")
+	domainToDetect := "ryan.crypto"
 	unsWithCustomBackend, _ := resolution.NewUnsBuilder().SetContractBackend(ethContractBackend).SetL2ContractBackend(ethL2ContactBackend).Build()
-	allUnsRecords, _ := unsWithCustomBackend.AllRecords("beresnev.crypto")
-	fmt.Println("Records for beresnev.crypto", allUnsRecords)
+	resolvedAddress, _ := unsWithCustomBackend.Addr(domainToDetect, "ETH")
+	fmt.Println("ETH address for", domainToDetect, "is", resolvedAddress)
 
 	// Set custom Zilliqa endpoint for ZNS service
 	zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
 	znsWithCustomProvider, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
-	allZnsRecords, _ := znsWithCustomProvider.AllRecords("brad.zil")
-	fmt.Println("Records for brad.zil", allZnsRecords)
+	domainToDetect := "ryan.crypto"
+	resolvedAddress, _ := znsWithCustomProvider.Addr(domainToDetect, "ETH")
+	fmt.Println("ETH address for", domainToDetect, "is", resolvedAddress)
 }
 ```
 

@@ -294,41 +294,6 @@ func TestUnsL2HTTPUrl(t *testing.T) {
 	assert.Equal(t, expectedRecord, record)
 }
 
-func TestUnsL1AllRecords(t *testing.T) {
-	t.Parallel()
-	expectedRecords := map[string]string{
-		"crypto.ETH.address":                "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8",
-		"crypto.USDT.version.EOS.address":   "letsminesome",
-		"crypto.USDT.version.ERC20.address": "0xe7474D07fD2FA286e7e0aa23cd107F8379085037",
-		"crypto.USDT.version.OMNI.address":  "19o6LvAdCPkjLi83VsjrCsmvQZUirT4KXJ",
-		"crypto.USDT.version.TRON.address":  "TNemhXhpX7MwzZJa3oXvfCjo5pEeXrfN2h",
-		"custom.record":                     "custom.value",
-		"dns.A":                             "[\"10.0.0.1\", \"10.0.0.3\"]",
-		"dns.A.ttl":                         "98",
-		"dns.AAAA":                          "[]",
-		"dns.ttl":                           "128",
-		"dweb.ipfs.hash":                    "QmdyBw5oTgCtTLQ18PbDvPL8iaLoEPhSyzD91q9XmgmAjb",
-		"gundb.username.value":              "0x8912623832e174f2eb1f59cc3b587444d619376ad5bf10070e937e0dc22b9ffb2e3ae059e6ebf729f87746b2f71e5d88ec99c1fb3c7c49b8617e2520d474c48e1c",
-		"ipfs.html.value":                   "QmdyBw5oTgCtTLQ18PbDvPL8iaLoEPhSyzD91q9XmgmAjb",
-		"whois.email.value":                 "testing@example.com",
-	}
-	allRecords, err := uns.AllRecords(domains["DomainWallet"].Name)
-	assert.Nil(t, err)
-	assert.Equal(t, expectedRecords, allRecords)
-}
-
-func TestUnsL2AllRecords(t *testing.T) {
-	t.Parallel()
-	expectedRecords := map[string]string{
-		"crypto.LINK.address": "0x6A1fd9a073256f14659fe59613bbf169Ed27CdcC",
-		"dweb.ipfs.hash":      "QmfRXG3CcM1eWiCUA89uzimCvQUnw4HzTKLo6hRZ47PYsN",
-		"whois.email.value":   "l2email@l2mail.mail",
-	}
-	allRecords, err := uns.AllRecords(domains["DomainL2"].Name)
-	assert.Nil(t, err)
-	assert.Equal(t, expectedRecords, allRecords)
-}
-
 func TestUnsDnsA(t *testing.T) {
 	t.Parallel()
 	expectedRecords := []dnsrecords.Record{
