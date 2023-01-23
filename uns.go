@@ -182,15 +182,8 @@ func (c *Uns) AllRecords(domainName string) (map[string]string, error) {
 	if err != nil {
 		return make(map[string]string), err
 	}
-	metadata, err := c.TokenURIMetadata(domainName)
-	if err != nil {
-		return make(map[string]string), err
-	}
-	recordKeys := make([]string, 0, len(metadata.Properties.Records)+len(standardKeys))
+	recordKeys := make([]string, 0, len(standardKeys))
 	for k := range standardKeys {
-		recordKeys = append(recordKeys, k)
-	}
-	for k := range metadata.Properties.Records {
 		recordKeys = append(recordKeys, k)
 	}
 	recordsMap, err := resolveStringMap(stringMapResolverParams{

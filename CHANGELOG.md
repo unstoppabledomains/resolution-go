@@ -1,3 +1,6 @@
+## 2.3.0
+- Deprecate `AllRecords` method
+
 ## 2.2.0
 - Use default networks for UnsBuilder
 

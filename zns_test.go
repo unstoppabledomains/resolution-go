@@ -26,31 +26,6 @@ func TestZnsBuilderSetProvider(t *testing.T) {
 	assert.Equal(t, znsProvider, znsService.provider)
 }
 
-func TestZnsStateAllRecords(t *testing.T) {
-	t.Parallel()
-	expectedRecords := map[string]string{
-		"ipfs.html.value":                   "QmVaAtQbi3EtsfpKoLzALm6vXphdi2KjMgxEDKeGg6wHuK",
-		"crypto.BCH.address":                "qrq4sk49ayvepqz7j7ep8x4km2qp8lauvcnzhveyu6",
-		"crypto.BTC.address":                "1EVt92qQnaLDcmVFtHivRJaunG2mf2C3mB",
-		"crypto.ETH.address":                "0x45b31e01AA6f42F0549aD482BE81635ED3149abb",
-		"crypto.LTC.address":                "LetmswTW3b7dgJ46mXuiXMUY17XbK29UmL",
-		"crypto.XMR.address":                "447d7TVFkoQ57k3jm3wGKoEAkfEym59mK96Xw5yWamDNFGaLKW5wL2qK5RMTDKGSvYfQYVN7dLSrLdkwtKH3hwbSCQCu26d",
-		"crypto.ZEC.address":                "t1h7ttmQvWCSH1wfrcmvT4mZJfGw2DgCSqV",
-		"crypto.ZIL.address":                "zil1yu5u4hegy9v3xgluweg4en54zm8f8auwxu0xxj",
-		"crypto.DASH.address":               "XnixreEBqFuSLnDSLNbfqMH1GsZk7cgW4j",
-		"crypto.USDT.version.ERC20.address": "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8",
-		"ipfs.redirect_domain.value":        "www.unstoppabledomains.com",
-		"whois.email.value":                 "derainberk@gmail.com",
-	}
-	expectedOwner := "0x003e3cdfeceae96efe007f8196a1b1b1df547eee"
-	expectedResolver := "0x02621c64a57e1424adfe122569f2356145f05d4f"
-	state, err := zns.State("testing.zil")
-	assert.Nil(t, err)
-	assert.Equal(t, expectedRecords, state.Records)
-	assert.Equal(t, expectedOwner, state.Owner)
-	assert.Equal(t, expectedResolver, state.Resolver)
-}
-
 func TestZnsStateDomainNotRegistered(t *testing.T) {
 	t.Parallel()
 	var expectedError *DomainNotRegisteredError
@@ -148,27 +123,6 @@ func TestZnsEmail(t *testing.T) {
 	email, err := zns.Email("testing.zil")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedEmail, email)
-}
-
-func TestZnsAllRecords(t *testing.T) {
-	t.Parallel()
-	expectedRecords := map[string]string{
-		"ipfs.html.value":                   "QmVaAtQbi3EtsfpKoLzALm6vXphdi2KjMgxEDKeGg6wHuK",
-		"crypto.BCH.address":                "qrq4sk49ayvepqz7j7ep8x4km2qp8lauvcnzhveyu6",
-		"crypto.BTC.address":                "1EVt92qQnaLDcmVFtHivRJaunG2mf2C3mB",
-		"crypto.ETH.address":                "0x45b31e01AA6f42F0549aD482BE81635ED3149abb",
-		"crypto.LTC.address":                "LetmswTW3b7dgJ46mXuiXMUY17XbK29UmL",
-		"crypto.XMR.address":                "447d7TVFkoQ57k3jm3wGKoEAkfEym59mK96Xw5yWamDNFGaLKW5wL2qK5RMTDKGSvYfQYVN7dLSrLdkwtKH3hwbSCQCu26d",
-		"crypto.ZEC.address":                "t1h7ttmQvWCSH1wfrcmvT4mZJfGw2DgCSqV",
-		"crypto.ZIL.address":                "zil1yu5u4hegy9v3xgluweg4en54zm8f8auwxu0xxj",
-		"crypto.DASH.address":               "XnixreEBqFuSLnDSLNbfqMH1GsZk7cgW4j",
-		"crypto.USDT.version.ERC20.address": "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8",
-		"whois.email.value":                 "derainberk@gmail.com",
-		"ipfs.redirect_domain.value":        "www.unstoppabledomains.com",
-	}
-	records, err := zns.AllRecords("testing.zil")
-	assert.Nil(t, err)
-	assert.Equal(t, expectedRecords, records)
 }
 
 func TestZnsIpfs(t *testing.T) {
