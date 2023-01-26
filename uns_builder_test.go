@@ -26,8 +26,8 @@ func TestUnsBuilder(t *testing.T) {
 
 func TestUnsBuilderSetBackend(t *testing.T) {
 	t.Parallel()
-	backendl1, _ := ethclient.Dial("https://eth-goerli.g.alchemy.com/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN")
-	backendl2, _ := ethclient.Dial("https://polygon-mumbai.g.alchemy.com/v2/EP3SMW2f-2FMABuWuEdHdxKq_v1_ww8")
+	backendl1, _ := ethclient.Dial("https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
+	backendl2, _ := ethclient.Dial("https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetContractBackend(backendl1)
 	builder.SetL2ContractBackend(backendl2)
@@ -51,7 +51,7 @@ func TestUnsBuilderSetMetadataClient(t *testing.T) {
 func TestUnsBuilderChecksL2ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError
-	backendl1, _ := ethclient.Dial("https://eth-goerli.g.alchemy.com/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN")
+	backendl1, _ := ethclient.Dial("https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetContractBackend(backendl1)
 	_, err := builder.Build()
@@ -62,7 +62,7 @@ func TestUnsBuilderChecksL2ContractBackend(t *testing.T) {
 func TestUnsBuilderChecksL1ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError
-	backendl2, _ := ethclient.Dial("https://eth-goerli.g.alchemy.com/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN")
+	backendl2, _ := ethclient.Dial("https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetL2ContractBackend(backendl2)
 	_, err := builder.Build()

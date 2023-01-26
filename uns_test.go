@@ -443,7 +443,7 @@ func TestUnsSingleL1Locations(t *testing.T) {
 		NetworkId:             5,
 		Blockchain:            "ETH",
 		OwnerAddress:          "0xe586d5Bf4d7779498648DF67b73c88a712E4359d",
-		BlockchainProviderUrl: "https://eth-goerli.g.alchemy.com/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN",
+		BlockchainProviderUrl: "https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	}
 	locations, err := uns.Locations([]string{domains["DomainL1"].Name})
 
@@ -460,7 +460,7 @@ func TestUnsSingleL2Locations(t *testing.T) {
 		NetworkId:             80001,
 		Blockchain:            "MATIC",
 		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
-		BlockchainProviderUrl: "https://polygon-mumbai.g.alchemy.com/v2/EP3SMW2f-2FMABuWuEdHdxKq_v1_ww82",
+		BlockchainProviderUrl: "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	}
 	locations, err := uns.Locations([]string{domains["DomainL2"].Name})
 
@@ -532,7 +532,7 @@ func TestUnsLocationsNoResolver(t *testing.T) {
 		NetworkId:             80001,
 		Blockchain:            "MATIC",
 		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
-		BlockchainProviderUrl: "https://polygon-mumbai.g.alchemy.com/v2/EP3SMW2f-2FMABuWuEdHdxKq_v1_ww82",
+		BlockchainProviderUrl: "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	}
 	locations, err := uns.Locations([]string{testDomainL1})
 
