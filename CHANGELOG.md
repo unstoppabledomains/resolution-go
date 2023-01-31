@@ -1,3 +1,5 @@
+## 2.3.1
+- Update config to use Infura
 ## 2.3.0
 - Deprecate `AllRecords` method
 

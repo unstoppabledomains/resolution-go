@@ -14,7 +14,6 @@ type contracts map[string]struct {
 
 const (
 	Mainnet string = "mainnet"
-	Rinkeby string = "rinkeby"
 	Polygon string = "polygon"
 	Mumbai  string = "mumbai"
 	Goerli  string = "goerli"
@@ -28,16 +27,14 @@ const (
 type NetworkContracts map[string]contracts
 
 var NetworkProviders = map[string]string{
-	Mainnet: "https://eth-mainnet.g.alchemy.com/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ",
-	Rinkeby: "https://eth-goerli.g.alchemy.com/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN",
-	Goerli:  "https://eth-goerli.g.alchemy.com/v2/r3soltxtCL_KhZGl7EwWsWax5ll_MFTN",
-	Polygon: "https://polygon-mainnet.g.alchemy.com/v2/wh7r4O1amrfHhO-0-YiLa1Cg02JICqH2",
-	Mumbai:  "https://polygon-mumbai.g.alchemy.com/v2/EP3SMW2f-2FMABuWuEdHdxKq_v1_ww82",
+	Mainnet: "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	Goerli:  "https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	Polygon: "https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
+	Mumbai:  "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 }
 
 var NetworkNameToId = map[string]int{
 	Mainnet: 1,
-	Rinkeby: 4,
 	Polygon: 137,
 	Mumbai:  80001,
 	Goerli:  5,
@@ -58,10 +55,6 @@ func newContracts() (NetworkContracts, error) {
 	networks := make(NetworkContracts)
 	var err error
 	networks[Mainnet], err = parseContracts(unsMainnetConfigJSON)
-	if err != nil {
-		return nil, err
-	}
-	networks[Rinkeby], err = parseContracts(unsRinkebyConfigJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -147,15 +140,18 @@ var unsMainnetConfigJSON = []byte(`
 			"forwarder": "0x486eb10E4F48C038513ECAf11585Ca2779768CF2"
 		},
 		"ProxyReader": {
-			"address": "0x1BDc0fD4fbABeed3E611fd6195fCd5d41dcEF393",
+			"address": "0x578853aa776Eef10CeE6c4dd2B5862bdcE767A8B",
+			"implementation": "0xfE97D99558BDe54FB9Cb20F0C45f9199bB8df0a0",
 			"legacyAddresses": [
+				"0x6E68f3EaAD2CC946C6CC7f4859251d8D70Dd3EDB",
+				"0x1BDc0fD4fbABeed3E611fd6195fCd5d41dcEF393",
 				"0x58034A288D2E56B661c9056A0C27273E5460B63c",
 				"0xc3C2BAB5e3e52DBF311b2aAcEf2e40344f19494E",
 				"0xfEe4D4F0aDFF8D84c12170306507554bC7045878",
 				"0xa6E7cEf2EDDEA66352Fd68E5915b60BDbb7309f5",
 				"0x7ea9Ee21077F84339eDa9C80048ec6db678642B1"
 			],
-			"deploymentBlock": "0xde71cd"
+			"deploymentBlock": "0xf2f03c"
 		},
 		"TwitterValidationOperator": {
 			"address": "0x2F659766E3D08561CA3408FbAba7C0749ab2c402",
@@ -177,92 +173,6 @@ var unsMainnetConfigJSON = []byte(`
 			"address": "0xA0c68C638235ee32657e8f720a23ceC1bFc77C77",
 			"legacyAddresses": [],
 			"deploymentBlock": "0xa3cf4d"
-		}
-	}
-}`)
-
-var unsRinkebyConfigJSON = []byte(`
-{
-	"contracts": {
-		"UNSRegistry": {
-			"address": "0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086",
-			"implementation": "0xc479D7A65243f7Eb1641F06a6C04E5F06cb5c4F7",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x85e628",
-			"forwarder": "0x7fb83000B8eD59D3eAD22f0D584Df3a85fBC0086"
-		},
-		"CNSRegistry": {
-			"address": "0xAad76bea7CFEc82927239415BB18D2e93518ecBB",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x7232bc",
-			"forwarder": "0xdf5CC97216785398D5C77348e68fc9461108f85d"
-		},
-		"MintingManager": {
-			"address": "0xdAAf99A920D31F4f5720e4667b12b24e54A03070",
-			"implementation": "0x38Fa95a0AC0E59D6e2845eFADBc17aF0FF9c7089",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x85e629",
-			"forwarder": "0xfB13e29C4D31a48B4Cd61131Cf3b681416e11681"
-		},
-		"ProxyAdmin": {
-			"address": "0xaf9815005A208d1460b6fC60B4f90B9f2185E88c",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x85e627"
-		},
-		"SignatureController": {
-			"address": "0x66a5e3e2C27B4ce4F46BBd975270BE154748D164",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x7232be"
-		},
-		"MintingController": {
-			"address": "0x51765307AeB3Df2E647014a2C501d5324212467c",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x7232bf",
-			"deprecated": true
-		},
-		"WhitelistedMinter": {
-			"address": "0xbcB32f13f90978a9e059E8Cb40FaA9e6619d98e7",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x7232c6",
-			"deprecated": true
-		},
-		"URIPrefixController": {
-			"address": "0xe1d2e4B9f0518CA5c803073C3dFa886470627237",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x7232c0",
-			"deprecated": true
-		},
-		"DomainZoneController": {
-			"address": "0x6f8F96A566663C1d4fEe70edD37E9b62Fe39dE5D",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x7232c2",
-			"deprecated": true
-		},
-		"Resolver": {
-			"address": "0x95AE1515367aa64C462c71e87157771165B1287A",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x7232cf",
-			"forwarder": "0xE172D8557d6F342b1b2976dE784F6Dff6ABC0a37"
-		},
-		"ProxyReader": {
-			"address": "0xE6729D224D00b3dd4FC731C4Ee3274E35Da06578",
-			"legacyAddresses": [
-				"0x299974AeD8911bcbd2C61262605b89F591a53E83",
-				"0x9F19473F6a98a715176291c930558E1954fd3D1e",
-				"0x3A2e74CF832cbA3d77E72708d55370119E4323a6"
-			],
-			"deploymentBlock": "0x8dc79a"
-		},
-		"TwitterValidationOperator": {
-			"address": "0x9ea4A63184ebE9CBA55CD1af473D98075Aa02b4C",
-			"legacyAddresses": ["0x1CB337b3b208dc29a6AcE8d11Bb591b66c5Dd83d"],
-			"deploymentBlock": "0x86935e"
-		},
-		"FreeMinter": {
-			"address": "0x84214215904cDEbA9044ECf95F3eBF009185AAf4",
-			"legacyAddresses": [],
-			"deploymentBlock": "0x740d93",
-			"deprecated": true
 		}
 	}
 }`)
@@ -331,12 +241,15 @@ var unsPolygonConfigJSON = []byte(`
 			"forwarder": "0x0000000000000000000000000000000000000000"
 		},
 		"ProxyReader": {
-			"address": "0x3E67b8c702a1292d1CEb025494C84367fcb12b45",
+			"address": "0x91EDd8708062bd4233f4Dd0FCE15A7cb4d500091",
+			"implementation": "0x9D0F27232b5c364488083e3B10F6963F635Ae521",
 			"legacyAddresses": [
+				"0x68Af8fFFCdC6218836C62Bc2Fd2D35dA544471dD",
+				"0x3E67b8c702a1292d1CEb025494C84367fcb12b45",
 				"0x423F2531bd5d3C3D4EF7C318c2D1d9BEDE67c680",
 				"0xA3f32c8cd786dc089Bd1fC175F2707223aeE5d00"
 			],
-			"deploymentBlock": "0x019d61a9"
+			"deploymentBlock": "0x021b1c05"
 		},
 		"TwitterValidationOperator": {
 			"address": "0x0000000000000000000000000000000000000000",
@@ -426,12 +339,15 @@ var unsMumbaiConfigJSON = []byte(`
 			"forwarder": "0x0000000000000000000000000000000000000000"
 		},
 		"ProxyReader": {
-			"address": "0x6fe7c857C1B0E54492C8762f27e0a45CA7ff264B",
+			"address": "0xBD4674F11d512120dFc8BAe5f84963d7419A5db2",
+			"implementation": "0xacE4C348E1703657201082Ba449aA45ADf8F936a",
 			"legacyAddresses": [
+				"0x71f7C0A978A541aB13Bd5783470f38b0dd71Cf78",
+				"0x6fe7c857C1B0E54492C8762f27e0a45CA7ff264B",
 				"0xbd9e01F6513E7C05f71Bf21d419a3bDF1EA9104b",
 				"0x332A8191905fA8E6eeA7350B5799F225B8ed30a9"
 			],
-			"deploymentBlock": "0x0189f72d"
+			"deploymentBlock": "0x01bb07d3"
 		},
 		"TwitterValidationOperator": {
 			"address": "0x0000000000000000000000000000000000000000",
@@ -521,12 +437,15 @@ var unsGoerliConfigJSON = []byte(`
 			"forwarder": "0xFCc1A95B7287Ae7a8B7cA813F12991dF5714d4C7"
 		},
 		"ProxyReader": {
-			"address": "0xE3b961856C417d081a02cBa0161a051268F52677",
+			"address": "0x76007c52C73972A441aFA1A0E1016B140ffdE689",
+			"implementation": "0x0B0A42A7FeA63e75396D0dcD77626F706AB9Fdfb",
 			"legacyAddresses": [
+				"0x77cb0e7503Ea82315421BcF0eE9603451cd285F6",
+				"0xE3b961856C417d081a02cBa0161a051268F52677",
 				"0x9A70ff906D422C2FD0F7B94244D6b36DB62Ee982",
 				"0xFc5f608149f4D9e2Ed0733efFe9DD57ee24BCF68"
 			],
-			"deploymentBlock": "0x65bdfe"
+			"deploymentBlock": "0x78b972"
 		},
 		"TwitterValidationOperator": {
 			"address": "0x0000000000000000000000000000000000000000",

@@ -65,8 +65,8 @@ func main() {
 	}
 
 	// Set custom Ethereum endpoint for UNS service
-	ethContractBackend, _ := ethclient.Dial("https://eth-mainnet.g.alchemy.com/v2/RAQcwz7hhKhmwgoti6HYM_M_9nRJjEsQ")
-	ethL2ContactBackend, _ := ethclient.Dial("https://polygon-mainnet.g.alchemy.com/v2/wh7r4O1amrfHhO-0-YiLa1Cg02JICqH2")
+	ethContractBackend, _ := ethclient.Dial("https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
+	ethL2ContactBackend, _ := ethclient.Dial("https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
 	domainToDetect := "ryan.crypto"
 	unsWithCustomBackend, _ := resolution.NewUnsBuilder().SetContractBackend(ethContractBackend).SetL2ContractBackend(ethL2ContactBackend).Build()
 	resolvedAddress, _ := unsWithCustomBackend.Addr(domainToDetect, "ETH")
@@ -92,9 +92,8 @@ import (
 )
 
 func main() {
-	var alchemyApiKey = ALCHEMY_PROJECT_ID
-	var ethereumUrl = "https://eth-mainnet.g.alchemy.com/v2/" + alchemyApiKey
-	var ethereumL2Url = "https://polygon-mainnet.g.alchemy.com/v2/" + alchemyApiKey
+	var ethereumUrl = "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
+	var ethereumL2Url = "https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
 
 	var unsBuilder := resolution.NewUnsBuilder()
 	var backend, _ := ethclient.Dial(ethereumUrl)
