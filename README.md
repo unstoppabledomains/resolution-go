@@ -107,6 +107,8 @@ func main() {
 }
 ```
 
+> NOTE: The default Infura key provided is rate limited and should only be used for testing. For production applications, please bring your own Infura or Alchemy RPC URL to prevent downtime.
+
 # Contributions
 
 Contributions to this library are more than welcome. The easiest way to contribute is through GitHub issues and pull requests.
