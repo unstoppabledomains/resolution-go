@@ -2,6 +2,7 @@ package resolution
 
 import (
 	"encoding/json"
+	"embed"
 )
 
 // contracts struct of contracts
@@ -10,6 +11,11 @@ type contracts map[string]struct {
 	Implementation  string
 	LegacyAddresses []string
 	DeploymentBlock string
+}
+
+// networks struct of contracts
+type networks map[string]struct {
+	Contracts contracts
 }
 
 const (
@@ -40,39 +46,32 @@ var NetworkNameToId = map[string]int{
 	Goerli:  5,
 }
 
-func parseContracts(data []byte) (contracts, error) {
-	var contractsObject struct {
-		Contracts contracts
+//go:embed uns/uns-config.json
+var unsConfigEmbed embed.FS
+var unsConfigJSON, _= unsConfigEmbed.ReadFile("uns/uns-config.json")
+
+func parseAllContracts(data []byte) (networks, error) {
+	var networksObject struct {
+		Networks networks
 	}
-	err := json.Unmarshal(data, &contractsObject)
+	err := json.Unmarshal(data, &networksObject)
 	if err != nil {
 		return nil, err
 	}
-	return contractsObject.Contracts, nil
+	return networksObject.Networks, nil
 }
 
 func newContracts() (NetworkContracts, error) {
 	networks := make(NetworkContracts)
 	var err error
-	networks[Mainnet], err = parseContracts(unsMainnetConfigJSON)
+	net, err := parseAllContracts(unsConfigJSON)
 	if err != nil {
 		return nil, err
 	}
-	networks[Polygon], err = parseContracts(unsPolygonConfigJSON)
-	if err != nil {
-		return nil, err
-	}
-	networks[Mumbai], err = parseContracts(unsMumbaiConfigJSON)
-	if err != nil {
-		return nil, err
-	}
-	networks[Goerli], err = parseContracts(unsGoerliConfigJSON)
-	if err != nil {
-		return nil, err
-	}
+
+	networks[Mainnet] = net["1"].Contracts
+	networks[Polygon] = net["137"].Contracts
+	networks[Mumbai] = net["80001"].Contracts
+	networks[Goerli] = net["5"].Contracts
 	return networks, nil
 }
-
-//go:embed uns/uns-config.json
-var f embed.FS
-var unsMainnetConfigJSON, _ := f.ReadFile("uns/uns-config.json")

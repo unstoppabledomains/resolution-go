@@ -19,6 +19,10 @@ const emailKey = "whois.email.value"
 var ipfsKeys = []string{"dweb.ipfs.hash", "ipfs.html.value"}
 var redirectUrlKeys = []string{"browser.redirect_url", "ipfs.redirect_domain.value"}
 
+//go:embed uns/resolver-keys.json
+var resolverKeysEmbed embed.FS
+var supportedKeysJSON, _ = resolverKeysEmbed.ReadFile("uns/resolver-keys.json")
+
 // buildCryptoKey returns raw key for crypto currency which is used to query blockchain
 func buildCryptoKey(ticker string) (string, error) {
 	var key strings.Builder
@@ -61,7 +65,3 @@ func newSupportedKeys() (supportedKeys, error) {
 	}
 	return keysObject.Keys, nil
 }
-
-//go:embed uns/resolver-keys.json
-var f embed.FS
-var supportedKeysJSON, _ := f.ReadFile("uns/resolver-keys.json")
