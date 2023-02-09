@@ -1,5 +1,9 @@
+## 2.3.2
+- Update supported keys in `keys.go`
+
 ## 2.3.1
 - Update config to use Infura
+
 ## 2.3.0
 - Deprecate `AllRecords` method
 

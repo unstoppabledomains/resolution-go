@@ -349,7 +349,7 @@ func TestUnsDomainNotRegisteredError(t *testing.T) {
 func TestUnsTokenURI(t *testing.T) {
 	t.Parallel()
 	tokenURI, err := uns.TokenURI(domains["DomainWallet"].Name)
-	expectedTokenURI := "https://metadata.staging.unstoppabledomains.com/metadata/6304531997610998161237844647282663196661123000121147597890468333969432655810"
+	expectedTokenURI := "https://metadata.ud-staging.com/metadata/6304531997610998161237844647282663196661123000121147597890468333969432655810"
 	assert.Nil(t, err)
 	assert.Equal(t, expectedTokenURI, tokenURI)
 }

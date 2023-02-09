@@ -246,7 +246,15 @@ func (c *Uns) Locations(domainNames []string) (map[string]namingservice.Location
 }
 
 func (c *Uns) IsSupportedDomain(domainName string) (bool, error) {
-	return c.l1Service.isSupportedDomain(domainName)
+	l1Supports, err := c.l1Service.isSupportedDomain(domainName)
+	if err != nil {
+		return false, err
+	}
+	l2Supports, err := c.l2Service.isSupportedDomain(domainName)
+	if err != nil {
+		return false, err
+	}
+	return l1Supports || l2Supports, nil
 }
 
 func (c *Uns) TokenURI(domainName string) (string, error) {
