@@ -27,7 +27,7 @@ jobs:
       - uses: oprypin/find-latest-tag@v1
         id: get-latest-tag
         with:
-          repository: unstoppabledomains/test-go-release
+          repository: unstoppabledomains/resolution-go
           releases-only: false
 
       - name: 'Get next versions'
