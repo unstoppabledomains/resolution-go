@@ -10,11 +10,11 @@ on:
         default: ''
       releaseType:
         type: choice
-        description: Select major/minor/patch
+        description: Select patch/minor/major
         options:
-        - major
-        - minor
         - patch
+        - minor
+        - major
          
   
 jobs:
