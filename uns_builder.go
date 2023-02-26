@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/unstoppabledomains/resolution-go/v2/udclient"
 	"github.com/unstoppabledomains/resolution-go/v2/uns/contracts/proxyreader"
 )
 
@@ -81,6 +82,12 @@ func (cb *unsBuilder) SetL2ContractBackendProviderUrl(url string) UnsBuilder {
 
 func (cb *unsBuilder) SetMetadataClient(client MetadataClient) UnsBuilder {
 	cb.metadataClient = client
+	return cb
+}
+
+func (cb *unsBuilder) SetUdClient(client udclient.UdClient) UnsBuilder {
+	cb.l1ContractBackend = client.L1ContractBackend
+	cb.l2ContractBackend = client.L2ContractBackend
 	return cb
 }
 
