@@ -3,6 +3,7 @@ package udclient
 import (
 	"context"
 	"net/http"
+	"runtime"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -14,27 +15,33 @@ type UdClient struct {
 	L2ContractBackend *ethclient.Client
 }
 
+var libVersion = "resolution-go-v2.3.2"
 var l1RpcProxyPath = "/rpcproxy/l1"
 var l2RpcProxyPath = "/rpcproxy/l2"
 
+// Dial connects a client to the a proxy service with a authentication key
 func Dial(apiKey string, proxyBaseUrl string) (*UdClient, error) {
 	l1ProxyUrl := proxyBaseUrl + l1RpcProxyPath
 	l2ProxyUrl := proxyBaseUrl + l2RpcProxyPath
 
 	tokenHeader := rpc.WithHeader("authorization", "Bearer "+apiKey)
+
+	libClientHeaderString := libVersion + "/" + runtime.Version()
+	agentHeader := rpc.WithHeader("x-lib-client", libClientHeaderString)
+
 	httpClient := rpc.WithHTTPClient(&http.Client{
 		Timeout: 3 * time.Second,
 	})
 
 	ctx := context.Background()
 
-	l1RpcClient, err := rpc.DialOptions(ctx, l1ProxyUrl, httpClient, tokenHeader)
+	l1RpcClient, err := rpc.DialOptions(ctx, l1ProxyUrl, httpClient, tokenHeader, agentHeader)
 
 	if err != nil {
 		return nil, err
 	}
 
-	l2RpcClient, err := rpc.DialOptions(ctx, l2ProxyUrl, httpClient, tokenHeader)
+	l2RpcClient, err := rpc.DialOptions(ctx, l2ProxyUrl, httpClient, tokenHeader, agentHeader)
 
 	if err != nil {
 		return nil, err
