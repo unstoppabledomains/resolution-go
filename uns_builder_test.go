@@ -2,16 +2,18 @@ package resolution
 
 import (
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
 )
 
+// TestUnsBuilder uses default rpc provider
 func TestUnsBuilder(t *testing.T) {
 	t.Parallel()
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
-	_, err := builder.Build()
+	uns, err := builder.Build()
 	assert.Nil(t, err)
 	assert.NotNil(t, uns.l1Service.contractBackend)
 	assert.NotNil(t, uns.l1Service.metadataClient)
@@ -26,8 +28,9 @@ func TestUnsBuilder(t *testing.T) {
 
 func TestUnsBuilderSetBackend(t *testing.T) {
 	t.Parallel()
-	backendl1, _ := ethclient.Dial("https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
-	backendl2, _ := ethclient.Dial("https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
+
+	backendl1, _ := ethclient.Dial(os.Getenv("L1_TEST_NET_RPC_URL"))
+	backendl2, _ := ethclient.Dial(os.Getenv("L2_TEST_NET_RPC_URL"))
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetContractBackend(backendl1)
 	builder.SetL2ContractBackend(backendl2)
@@ -51,7 +54,8 @@ func TestUnsBuilderSetMetadataClient(t *testing.T) {
 func TestUnsBuilderChecksL2ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError
-	backendl1, _ := ethclient.Dial("https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
+
+	backendl1, _ := ethclient.Dial(os.Getenv("L1_TEST_NET_RPC_URL"))
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetContractBackend(backendl1)
 	_, err := builder.Build()
@@ -62,7 +66,8 @@ func TestUnsBuilderChecksL2ContractBackend(t *testing.T) {
 func TestUnsBuilderChecksL1ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError
-	backendl2, _ := ethclient.Dial("https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
+
+	backendl2, _ := ethclient.Dial(os.Getenv("L1_TEST_NET_RPC_URL"))
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetL2ContractBackend(backendl2)
 	_, err := builder.Build()
