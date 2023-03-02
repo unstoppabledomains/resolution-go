@@ -9,6 +9,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func getL1TestProviderUrl() string {
+	if os.Getenv("L1_TEST_NET_RPC_URL") != "" {
+		return os.Getenv("L1_TEST_NET_RPC_URL")
+	}
+
+	return DefaultNetworkProviders["goerli"]
+}
+
+func getL2TestProviderUrl() string {
+	if os.Getenv("L2_TEST_NET_RPC_URL") != "" {
+		return os.Getenv("L2_TEST_NET_RPC_URL")
+	}
+
+	return DefaultNetworkProviders["mumbai"]
+}
+
 // TestUnsBuilder uses default rpc provider
 func TestUnsBuilder(t *testing.T) {
 	t.Parallel()
@@ -29,8 +45,8 @@ func TestUnsBuilder(t *testing.T) {
 func TestUnsBuilderSetBackend(t *testing.T) {
 	t.Parallel()
 
-	backendl1, _ := ethclient.Dial(os.Getenv("L1_TEST_NET_RPC_URL"))
-	backendl2, _ := ethclient.Dial(os.Getenv("L2_TEST_NET_RPC_URL"))
+	backendl1, _ := ethclient.Dial(getL1TestProviderUrl())
+	backendl2, _ := ethclient.Dial(getL2TestProviderUrl())
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetContractBackend(backendl1)
 	builder.SetL2ContractBackend(backendl2)
@@ -55,7 +71,7 @@ func TestUnsBuilderChecksL2ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError
 
-	backendl1, _ := ethclient.Dial(os.Getenv("L1_TEST_NET_RPC_URL"))
+	backendl1, _ := ethclient.Dial(getL1TestProviderUrl())
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetContractBackend(backendl1)
 	_, err := builder.Build()
@@ -67,7 +83,7 @@ func TestUnsBuilderChecksL1ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError
 
-	backendl2, _ := ethclient.Dial(os.Getenv("L1_TEST_NET_RPC_URL"))
+	backendl2, _ := ethclient.Dial(getL1TestProviderUrl())
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetL2ContractBackend(backendl2)
 	_, err := builder.Build()

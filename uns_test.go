@@ -2,7 +2,6 @@ package resolution
 
 import (
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -43,8 +42,8 @@ func (m *MockedMetadataClient) Get(_ string) (resp *http.Response, err error) {
 
 func getUns() *Uns {
 	builder := NewUnsBuilder()
-	builder = builder.SetEthereumNetwork("goerli").SetContractBackendProviderUrl(os.Getenv("L1_TEST_NET_RPC_URL"))
-	builder = builder.SetL2EthereumNetwork("mumbai").SetL2ContractBackendProviderUrl(os.Getenv("L2_TEST_NET_RPC_URL"))
+	builder = builder.SetEthereumNetwork("goerli").SetContractBackendProviderUrl(getL1TestProviderUrl())
+	builder = builder.SetL2EthereumNetwork("mumbai").SetL2ContractBackendProviderUrl(getL2TestProviderUrl())
 	uns, _ := builder.Build()
 	return uns
 }
@@ -533,7 +532,7 @@ func TestUnsSingleL1Locations(t *testing.T) {
 		NetworkId:             5,
 		Blockchain:            "ETH",
 		OwnerAddress:          "0xe586d5Bf4d7779498648DF67b73c88a712E4359d",
-		BlockchainProviderUrl: os.Getenv("L1_TEST_NET_RPC_URL"),
+		BlockchainProviderUrl: getL1TestProviderUrl(),
 	}
 
 	uns := getUns()
@@ -552,7 +551,7 @@ func TestUnsSingleL2Locations(t *testing.T) {
 		NetworkId:             80001,
 		Blockchain:            "MATIC",
 		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
-		BlockchainProviderUrl: os.Getenv("L2_TEST_NET_RPC_URL"),
+		BlockchainProviderUrl: getL2TestProviderUrl(),
 	}
 
 	uns := getUns()
@@ -630,7 +629,7 @@ func TestUnsLocationsNoResolver(t *testing.T) {
 		NetworkId:             80001,
 		Blockchain:            "MATIC",
 		OwnerAddress:          "0x499dD6D875787869670900a2130223D85d4F6Aa7",
-		BlockchainProviderUrl: os.Getenv("L2_TEST_NET_RPC_URL"),
+		BlockchainProviderUrl: getL2TestProviderUrl(),
 	}
 
 	uns := getUns()
