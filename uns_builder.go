@@ -29,7 +29,7 @@ type UnsBuilder interface {
 	SetMetadataClient(backend MetadataClient) UnsBuilder
 
 	// SetUdClient set http proxy backends for communication with UNS registry
-	SetUdClient(backend udclient.UdClient) UnsBuilder
+	SetUdClient(client udclient.UdClient) UnsBuilder
 
 	// SetEthereumNetwork set Ethereum network for communication with UNS registry
 	SetEthereumNetwork(network string) UnsBuilder

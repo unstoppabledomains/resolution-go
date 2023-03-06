@@ -16,8 +16,8 @@ type UdClient struct {
 }
 
 var libVersion = "resolution-go-v2.3.2"
-var l1RpcProxyPath = "/rpcproxy/l1"
-var l2RpcProxyPath = "/rpcproxy/l2"
+var l1RpcProxyPath = "/chains/eth/rpc"
+var l2RpcProxyPath = "/chains/matic/rpc"
 
 // Dial connects a client to the a proxy service with a authentication key
 func Dial(apiKey string, proxyBaseUrl string) (*UdClient, error) {
