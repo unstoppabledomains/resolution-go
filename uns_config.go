@@ -1,8 +1,8 @@
 package resolution
 
 import (
-	"encoding/json"
 	"embed"
+	"encoding/json"
 )
 
 // contracts struct of contracts
@@ -32,7 +32,7 @@ const (
 
 type NetworkContracts map[string]contracts
 
-var NetworkProviders = map[string]string{
+var DefaultNetworkProviders = map[string]string{
 	Mainnet: "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	Goerli:  "https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
 	Polygon: "https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
@@ -48,7 +48,7 @@ var NetworkNameToId = map[string]int{
 
 //go:embed uns/uns-config.json
 var unsConfigEmbed embed.FS
-var unsConfigJSON, _= unsConfigEmbed.ReadFile("uns/uns-config.json")
+var unsConfigJSON, _ = unsConfigEmbed.ReadFile("uns/uns-config.json")
 
 func parseAllContracts(data []byte) (networks, error) {
 	var networksObject struct {

@@ -15,8 +15,14 @@ type UnsBuilder interface {
 	// SetContractBackend set Ethereum backend for communication with UNS registry
 	SetContractBackend(backend bind.ContractBackend) UnsBuilder
 
+	// SetContractBackendProviderUrl set Ethereum backend Rpc URL
+	SetContractBackendProviderUrl(url string) UnsBuilder
+
 	// SetL2ContractBackend set Ethereum backend for communication with UNS L2registry
 	SetL2ContractBackend(backend bind.ContractBackend) UnsBuilder
+
+	// SetL2ContractBackendProviderUrl set Polygon backend Rpc URL
+	SetL2ContractBackendProviderUrl(url string) UnsBuilder
 
 	// SetMetadataClient set http backend for communication with ERC721 metadata server
 	SetMetadataClient(backend MetadataClient) UnsBuilder
@@ -37,6 +43,8 @@ type unsBuilder struct {
 	metadataClient    MetadataClient
 	l1Network         string
 	l2Network         string
+	l1ProviderUrl     string
+	l2ProviderUrl     string
 }
 
 // NewUnsBuilder Creates builder to setup new instance of Uns
@@ -53,9 +61,21 @@ func (cb *unsBuilder) SetContractBackend(backend bind.ContractBackend) UnsBuilde
 	return cb
 }
 
-// SetContractBackend set Ethereum backend for communication with UNS registry
+// SetContractBackendProviderUrl set Ethereum backend Rpc URL
+func (cb *unsBuilder) SetContractBackendProviderUrl(url string) UnsBuilder {
+	cb.l1ProviderUrl = url
+	return cb
+}
+
+// SetL2ContractBackend set Polygon backend for communication with UNS registry
 func (cb *unsBuilder) SetL2ContractBackend(backend bind.ContractBackend) UnsBuilder {
 	cb.l2ContractBackend = backend
+	return cb
+}
+
+// SetL2ContractBackendProviderUrl set Polygon backend Rpc URL
+func (cb *unsBuilder) SetL2ContractBackendProviderUrl(url string) UnsBuilder {
+	cb.l2ProviderUrl = url
 	return cb
 }
 
@@ -131,21 +151,38 @@ func (cb *unsBuilder) Build() (*Uns, error) {
 		}
 	}
 
-	l1Service, err := cb.BuildService(contracts[cb.l1Network], cb.l1ContractBackend, NetworkProviders[cb.l1Network])
+	var l1ProviderUrl string
+
+	if cb.l1ProviderUrl != "" {
+		l1ProviderUrl = cb.l1ProviderUrl
+	} else {
+		l1ProviderUrl = DefaultNetworkProviders[cb.l1Network]
+	}
+
+	l1Service, err := cb.BuildService(contracts[cb.l1Network], cb.l1ContractBackend, l1ProviderUrl)
 	if err != nil {
 		return nil, err
 	}
+
 	l1Service.networkId = NetworkNameToId[cb.l1Network]
-	l1Service.blockchainProviderUrl = NetworkProviders[cb.l1Network]
+	l1Service.blockchainProviderUrl = l1ProviderUrl
 	l1Service.Layer = Layer1
 
-	l2Service, err := cb.BuildService(contracts[cb.l2Network], cb.l2ContractBackend, NetworkProviders[cb.l2Network])
+	var l2ProviderUrl string
+
+	if cb.l2ProviderUrl != "" {
+		l2ProviderUrl = cb.l2ProviderUrl
+	} else {
+		l2ProviderUrl = DefaultNetworkProviders[cb.l2Network]
+	}
+
+	l2Service, err := cb.BuildService(contracts[cb.l2Network], cb.l2ContractBackend, l2ProviderUrl)
 	if err != nil {
 		return nil, err
 	}
 	l2Service.Layer = Layer2
 	l2Service.networkId = NetworkNameToId[cb.l2Network]
-	l2Service.blockchainProviderUrl = NetworkProviders[cb.l2Network]
+	l2Service.blockchainProviderUrl = l2ProviderUrl
 
 	zService, err := NewZnsBuilder().Build()
 	if err != nil {

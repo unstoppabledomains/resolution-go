@@ -24,4 +24,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Test
+        env:
+          L1_TEST_NET_RPC_URL: ${{ secrets.L1_TEST_NET_RPC_URL }}
+          L2_TEST_NET_RPC_URL: ${{ secrets.L2_TEST_NET_RPC_URL }}
         run: go test ./...
