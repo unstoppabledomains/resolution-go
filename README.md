@@ -27,7 +27,7 @@ go get -u github.com/unstoppabledomains/resolution-go/v2
 
 # Usage
 
-## Initialize quick start (deprecated)
+## Initialize with Default Ethereum Providers (deprecated)
 > NOTE: The default Infura key provided is rate limited and should only be used for testing. For production applications, please bring your own Infura or Alchemy RPC URL to prevent downtime.
 
 ```go
@@ -44,7 +44,7 @@ func main() {
 }
 ```
 
-## Initialize with proxy service
+## Initialize with Unstoppable Domains' Proxy Provider
 
 ```go
 package main
@@ -61,7 +61,7 @@ uns, _ := resolution.NewUnsBuilder().SetUdClient(*udclient).Build()
 
 ```
 
-## Initialize with custom RPC providers
+## Initialize with Custom Ethereum Provider Configuration
 
 ```go
 package main
