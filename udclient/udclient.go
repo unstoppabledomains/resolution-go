@@ -16,11 +16,12 @@ type UdClient struct {
 }
 
 var libVersion = "resolution-go-v2.3.2"
+var proxyBaseUrl = "https://resolve.unstoppabledomains.com"
 var l1RpcProxyPath = "/chains/eth/rpc"
 var l2RpcProxyPath = "/chains/matic/rpc"
 
 // Dial connects a client to the a proxy service with a authentication key
-func Dial(apiKey string, proxyBaseUrl string) (*UdClient, error) {
+func Dial(apiKey string) (*UdClient, error) {
 	l1ProxyUrl := proxyBaseUrl + l1RpcProxyPath
 	l2ProxyUrl := proxyBaseUrl + l2RpcProxyPath
 

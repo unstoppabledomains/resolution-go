@@ -9,7 +9,7 @@ import (
 func TestUdClientDial(t *testing.T) {
 	t.Parallel()
 
-	client, err := Dial("test", "http://example.com")
+	client, err := Dial("test")
 	assert.Nil(t, err)
 
 	assert.NotNil(t, client)

@@ -52,12 +52,10 @@ package main
 import (
 	"fmt"
 	"github.com/unstoppabledomains/resolution-go/v2"
-	"github.com/unstoppabledomains/resolution-go/v2/udclient"
 )
 
 // obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
-udclient, _ := udclient.Dial("<api_key>", "http://resolve.unstoppabledomains.com")
-uns, _ := resolution.NewUnsBuilder().SetUdClient(*udclient).Build()
+uns, _ := resolution.NewUnsBuilder().SetUdClient("<api_key>").Build()
 
 ```
 

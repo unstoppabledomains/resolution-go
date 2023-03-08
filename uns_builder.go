@@ -29,7 +29,7 @@ type UnsBuilder interface {
 	SetMetadataClient(backend MetadataClient) UnsBuilder
 
 	// SetUdClient set http proxy backends for communication with UNS registry
-	SetUdClient(client udclient.UdClient) UnsBuilder
+	SetUdClient(apiKey string) UnsBuilder
 
 	// SetEthereumNetwork set Ethereum network for communication with UNS registry
 	SetEthereumNetwork(network string) UnsBuilder
@@ -88,7 +88,8 @@ func (cb *unsBuilder) SetMetadataClient(client MetadataClient) UnsBuilder {
 	return cb
 }
 
-func (cb *unsBuilder) SetUdClient(client udclient.UdClient) UnsBuilder {
+func (cb *unsBuilder) SetUdClient(apiKey string) UnsBuilder {
+	client, _ := udclient.Dial(apiKey)
 	cb.l1ContractBackend = client.L1ContractBackend
 	cb.l2ContractBackend = client.L2ContractBackend
 	return cb

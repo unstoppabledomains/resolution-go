@@ -7,7 +7,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
-	"github.com/unstoppabledomains/resolution-go/v2/udclient"
 )
 
 func getL1TestProviderUrl() string {
@@ -60,13 +59,12 @@ func TestUnsBuilderSetBackend(t *testing.T) {
 func TestUnsBuilderSetProxyBackend(t *testing.T) {
 	t.Parallel()
 
-	udClient, _ := udclient.Dial("test", "http://example.com")
-	builder := NewUnsBuilder().SetUdClient(*udClient)
+	builder := NewUnsBuilder().SetUdClient("test")
 	uns, err := builder.Build()
 
 	assert.Nil(t, err)
-	assert.Equal(t, udClient.L1ContractBackend, uns.l1Service.contractBackend)
-	assert.Equal(t, udClient.L2ContractBackend, uns.l2Service.contractBackend)
+	assert.Equal(t, uns.l1Service.networkId, 1)
+	assert.Equal(t, uns.l2Service.networkId, 137)
 }
 
 func TestUnsBuilderSetMetadataClient(t *testing.T) {
