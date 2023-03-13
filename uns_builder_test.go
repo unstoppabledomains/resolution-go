@@ -14,7 +14,7 @@ func getL1TestProviderUrl() string {
 		return os.Getenv("L1_TEST_NET_RPC_URL")
 	}
 
-	return DefaultNetworkProviders["goerli"]
+	panic("L1_TEST_NET_RPC_URL is not set!")
 }
 
 func getL2TestProviderUrl() string {
@@ -22,24 +22,7 @@ func getL2TestProviderUrl() string {
 		return os.Getenv("L2_TEST_NET_RPC_URL")
 	}
 
-	return DefaultNetworkProviders["mumbai"]
-}
-
-// TestUnsBuilder uses default rpc provider
-func TestUnsBuilder(t *testing.T) {
-	t.Parallel()
-	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
-	uns, err := builder.Build()
-	assert.Nil(t, err)
-	assert.NotNil(t, uns.l1Service.contractBackend)
-	assert.NotNil(t, uns.l1Service.metadataClient)
-	assert.NotNil(t, uns.l1Service.supportedKeys)
-	assert.NotNil(t, uns.l1Service.proxyReader)
-
-	assert.NotNil(t, uns.l2Service.contractBackend)
-	assert.NotNil(t, uns.l2Service.metadataClient)
-	assert.NotNil(t, uns.l2Service.supportedKeys)
-	assert.NotNil(t, uns.l2Service.proxyReader)
+	panic("L2_TEST_NET_RPC_URL is not set!")
 }
 
 func TestUnsBuilderSetBackend(t *testing.T) {
@@ -56,6 +39,17 @@ func TestUnsBuilderSetBackend(t *testing.T) {
 	assert.Equal(t, backendl2, uns.l2Service.contractBackend)
 }
 
+func TestUnsBuilderSetProviderUrl(t *testing.T) {
+	t.Parallel()
+
+	builder := NewUnsBuilder()
+	builder = builder.SetEthereumNetwork("goerli").SetContractBackendProviderUrl(getL1TestProviderUrl())
+	builder = builder.SetL2EthereumNetwork("mumbai").SetL2ContractBackendProviderUrl(getL2TestProviderUrl())
+	uns, err := builder.Build()
+	assert.Nil(t, err)
+	assert.NotNil(t, uns)
+}
+
 func TestUnsBuilderSetProxyBackend(t *testing.T) {
 	t.Parallel()
 
@@ -70,12 +64,30 @@ func TestUnsBuilderSetProxyBackend(t *testing.T) {
 func TestUnsBuilderSetMetadataClient(t *testing.T) {
 	t.Parallel()
 	client := &http.Client{}
+
+	backendl1, _ := ethclient.Dial(getL1TestProviderUrl())
+	backendl2, _ := ethclient.Dial(getL2TestProviderUrl())
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
+	builder.SetContractBackend(backendl1)
+	builder.SetL2ContractBackend(backendl2)
+
 	builder.SetMetadataClient(client)
 	uns, err := builder.Build()
 	assert.Nil(t, err)
 	assert.Equal(t, client, uns.l1Service.metadataClient)
 	assert.Equal(t, client, uns.l2Service.metadataClient)
+}
+
+func TestUnsBuilderChecksContractBackend(t *testing.T) {
+	t.Parallel()
+
+	var expectedError *UnsConfigurationError
+
+	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
+	uns, err := builder.Build()
+	assert.Nil(t, uns)
+	assert.NotNil(t, err)
+	assert.ErrorAs(t, err, &expectedError)
 }
 
 func TestUnsBuilderChecksL2ContractBackend(t *testing.T) {
@@ -94,7 +106,7 @@ func TestUnsBuilderChecksL1ContractBackend(t *testing.T) {
 	t.Parallel()
 	var expectedError *UnsConfigurationError
 
-	backendl2, _ := ethclient.Dial(getL1TestProviderUrl())
+	backendl2, _ := ethclient.Dial(getL2TestProviderUrl())
 	builder := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai")
 	builder.SetL2ContractBackend(backendl2)
 	_, err := builder.Build()

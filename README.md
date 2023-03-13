@@ -13,6 +13,12 @@ resolution-go is primarily built and maintained by [Unstoppable Domains](https:/
 
 Resolution supports different decentralized domains. Please, refer to the [Top Level Domains List](https://resolve.unstoppabledomains.com/supported_tlds)
 
+- [Installing Resolution](#installing-resolution-go)
+- [Updating Resolution](#updating-resolution-go)
+- [Using Resolution](#using-resolution)
+- [Contributions](#contributions)
+- [Free advertising for integrated apps](#free-advertising-for-integrated-apps)
+
 # Installing resolution-go
 
 ```shell
@@ -25,24 +31,7 @@ go get github.com/unstoppabledomains/resolution-go/v2
 go get -u github.com/unstoppabledomains/resolution-go/v2
 ```
 
-# Usage
-
-## Initialize with Default Ethereum Providers (deprecated)
-> NOTE: The default Infura key provided is rate limited and should only be used for testing. For production applications, please bring your own Infura or Alchemy RPC URL to prevent downtime.
-
-```go
-package main
-
-import (
-	"fmt"
-	"github.com/unstoppabledomains/resolution-go/v2"
-)
-
-func main() {
-	// quick start using default RPC providers
-	uns, _ := resolution.NewUnsBuilder().Build()
-}
-```
+# Using Resolution
 
 ## Initialize with Unstoppable Domains' Proxy Provider
 
@@ -56,6 +45,9 @@ import (
 
 // obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
 uns, _ := resolution.NewUnsBuilder().SetUdClient("<api_key>").Build()
+
+zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
+	zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
 
 ```
 
@@ -107,7 +99,7 @@ import (
 
 func main() {
 	// Resolve .crypto
-	uns, _ := resolution.NewUnsBuilder().Build()
+	uns, _ := resolution.NewUnsBuilder().SetUdClient("<api_key>").Build()
 	ethAddress, _ := uns.Addr("brad.crypto", "ETH")
 	fmt.Println("ETH address for brad.crypto is", ethAddress)
 
@@ -135,6 +127,35 @@ func main() {
 # Contributions
 
 Contributions to this library are more than welcome. The easiest way to contribute is through GitHub issues and pull requests.
+
+Use these commands to set up a local development environment (**macOS Terminal**
+or **Linux shell**).
+
+1. Recommended golang version
+
+* go1.18
+
+2. Clone the repository
+
+   ```bash
+   git clone https://github.com/unstoppabledomains/resolution-go.git
+   cd resolution-go
+   ```
+
+3. Install dependencies
+
+    ```bash
+    go mod download
+    ```
+
+### Internal config
+
+#### Unit tests:
+
+**resolution-go** library relies on environment variables to load **TestNet** RPC Urls. This way, our keys don't expose directly to the code. In order to validate the code change, please set these variables to your local environment.
+
+* L1_TEST_NET_RPC_URL
+* L2_TEST_NET_RPC_URL
 
 # Free advertising for integrated apps
 

@@ -153,47 +153,31 @@ func (cb *unsBuilder) Build() (*Uns, error) {
 	if cb.l2Network == "" {
 		return nil, &UnsConfigurationError{Layer: Layer2, InvalidField: "network"}
 	}
-	l1Custom, l2Custom := cb.l1ContractBackend != nil, cb.l2ContractBackend != nil
-	if l1Custom != l2Custom {
-		if l1Custom {
-			return nil, &UnsConfigurationError{Layer: Layer2, InvalidField: "contractBackend"}
-		} else {
-			return nil, &UnsConfigurationError{Layer: Layer1, InvalidField: "contractBackend"}
-		}
+
+	if cb.l1ContractBackend == nil && cb.l1ProviderUrl == "" {
+		return nil, &UnsConfigurationError{Layer: Layer1, InvalidField: "contractBackend"}
 	}
 
-	var l1ProviderUrl string
-
-	if cb.l1ProviderUrl != "" {
-		l1ProviderUrl = cb.l1ProviderUrl
-	} else {
-		l1ProviderUrl = DefaultNetworkProviders[cb.l1Network]
+	if cb.l2ContractBackend == nil && cb.l2ProviderUrl == "" {
+		return nil, &UnsConfigurationError{Layer: Layer2, InvalidField: "contractBackend"}
 	}
 
-	l1Service, err := cb.BuildService(contracts[cb.l1Network], cb.l1ContractBackend, l1ProviderUrl)
+	l1Service, err := cb.BuildService(contracts[cb.l1Network], cb.l1ContractBackend, cb.l1ProviderUrl)
 	if err != nil {
 		return nil, err
 	}
 
 	l1Service.networkId = NetworkNameToId[cb.l1Network]
-	l1Service.blockchainProviderUrl = l1ProviderUrl
+	l1Service.blockchainProviderUrl = cb.l1ProviderUrl
 	l1Service.Layer = Layer1
 
-	var l2ProviderUrl string
-
-	if cb.l2ProviderUrl != "" {
-		l2ProviderUrl = cb.l2ProviderUrl
-	} else {
-		l2ProviderUrl = DefaultNetworkProviders[cb.l2Network]
-	}
-
-	l2Service, err := cb.BuildService(contracts[cb.l2Network], cb.l2ContractBackend, l2ProviderUrl)
+	l2Service, err := cb.BuildService(contracts[cb.l2Network], cb.l2ContractBackend, cb.l2ProviderUrl)
 	if err != nil {
 		return nil, err
 	}
 	l2Service.Layer = Layer2
 	l2Service.networkId = NetworkNameToId[cb.l2Network]
-	l2Service.blockchainProviderUrl = l2ProviderUrl
+	l2Service.blockchainProviderUrl = cb.l2ProviderUrl
 
 	zService, err := NewZnsBuilder().Build()
 	if err != nil {
