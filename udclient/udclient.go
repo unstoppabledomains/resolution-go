@@ -15,7 +15,7 @@ type UdClient struct {
 	L2ContractBackend *ethclient.Client
 }
 
-var libVersion = "resolution-go-v2.3.2"
+var libVersion = "resolution-go/v3.0.0"
 var proxyBaseUrl = "https://resolve.unstoppabledomains.com"
 var l1RpcProxyPath = "/chains/eth/rpc"
 var l2RpcProxyPath = "/chains/matic/rpc"
