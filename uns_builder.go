@@ -89,7 +89,12 @@ func (cb *unsBuilder) SetMetadataClient(client MetadataClient) UnsBuilder {
 }
 
 func (cb *unsBuilder) SetUdClient(apiKey string) UnsBuilder {
-	client, _ := udclient.Dial(apiKey)
+	client, err := udclient.Dial(apiKey)
+
+	if err != nil {
+		panic(err)
+	}
+
 	cb.l1ContractBackend = client.L1ContractBackend
 	cb.l2ContractBackend = client.L2ContractBackend
 	return cb

@@ -25,10 +25,10 @@ func Dial(apiKey string) (*UdClient, error) {
 	l1ProxyUrl := proxyBaseUrl + l1RpcProxyPath
 	l2ProxyUrl := proxyBaseUrl + l2RpcProxyPath
 
-	tokenHeader := rpc.WithHeader("authorization", "Bearer "+apiKey)
+	tokenHeader := rpc.WithHeader("Authorization", "Bearer "+apiKey)
 
 	libClientHeaderString := libVersion + "/" + runtime.Version()
-	agentHeader := rpc.WithHeader("x-lib-client", libClientHeaderString)
+	agentHeader := rpc.WithHeader("X-Lib-Client", libClientHeaderString)
 
 	httpClient := rpc.WithHTTPClient(&http.Client{
 		Timeout: 3 * time.Second,
