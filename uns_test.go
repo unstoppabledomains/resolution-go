@@ -51,7 +51,8 @@ func getUns() *Uns {
 // TestNewUnsWithSupportedKeys uses default provider
 func TestNewUnsWithSupportedKeys(t *testing.T) {
 	t.Parallel()
-	unsService, _ := NewUnsBuilder().SetEthereumNetwork("goerli").SetL2EthereumNetwork("mumbai").Build()
+
+	unsService := getUns()
 	deprecatedKeyName := unsService.l1Service.supportedKeys["crypto.ETH.address"]
 	assert.Equal(t, "ETH", deprecatedKeyName.DeprecatedKeyName)
 }

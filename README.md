@@ -13,6 +13,12 @@ resolution-go is primarily built and maintained by [Unstoppable Domains](https:/
 
 Resolution supports different decentralized domains. Please, refer to the [Top Level Domains List](https://resolve.unstoppabledomains.com/supported_tlds)
 
+- [Installing Resolution](#installing-resolution-go)
+- [Updating Resolution](#updating-resolution-go)
+- [Using Resolution](#using-resolution)
+- [Contributions](#contributions)
+- [Free advertising for integrated apps](#free-advertising-for-integrated-apps)
+
 # Installing resolution-go
 
 ```shell
@@ -25,7 +31,59 @@ go get github.com/unstoppabledomains/resolution-go/v2
 go get -u github.com/unstoppabledomains/resolution-go/v2
 ```
 
-# Usage
+# Using Resolution
+
+## Initialize with Unstoppable Domains' Proxy Provider
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/unstoppabledomains/resolution-go/v2"
+)
+
+// obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
+uns, _ := resolution.NewUnsBuilder().SetUdClient("<api_key>").Build()
+
+zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
+	zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
+
+```
+
+## Initialize with Custom Ethereum Provider Configuration
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/Zilliqa/gozilliqa-sdk/provider"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/unstoppabledomains/resolution-go/v2"
+)
+
+func main() {
+	// obtain a key from https://www.infura.io
+	var ethereumUrl = "https://mainnet.infura.io/v3/<infura_api_key>"
+	var ethereumL2Url = "https://polygon-mainnet.infura.io/v3/<infura_api_key>"
+
+	var unsBuilder := resolution.NewUnsBuilder()
+	var backend, _ := ethclient.Dial(ethereumUrl)
+	var backendL2, _ := ethclient.Dial(ethereumL2Url)
+
+	unsBuilder.SetContractBackend(backend)
+	unsBuilder.SetL2ContractBackend(backendL2)
+
+	var uns, _ = unsBuilder.Build()
+
+	zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
+	zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
+}
+```
+
+## Resolve domains example
 
 ```go
 package main
@@ -41,7 +99,7 @@ import (
 
 func main() {
 	// Resolve .crypto
-	uns, _ := resolution.NewUnsBuilder().Build()
+	uns, _ := resolution.NewUnsBuilder().SetUdClient("<api_key>").Build()
 	ethAddress, _ := uns.Addr("brad.crypto", "ETH")
 	fmt.Println("ETH address for brad.crypto is", ethAddress)
 
@@ -63,55 +121,41 @@ func main() {
 		resolvedAddress, _ := namingServices[namingServiceName].Addr(domainToDetect, "ETH")
 		fmt.Println("ETH address for", domainToDetect, "is", resolvedAddress)
 	}
-
-	// Set custom Ethereum endpoint for UNS service
-	ethContractBackend, _ := ethclient.Dial("https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
-	ethL2ContactBackend, _ := ethclient.Dial("https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e")
-	domainToDetect := "ryan.crypto"
-	unsWithCustomBackend, _ := resolution.NewUnsBuilder().SetContractBackend(ethContractBackend).SetL2ContractBackend(ethL2ContactBackend).Build()
-	resolvedAddress, _ := unsWithCustomBackend.Addr(domainToDetect, "ETH")
-	fmt.Println("ETH address for", domainToDetect, "is", resolvedAddress)
-
-	// Set custom Zilliqa endpoint for ZNS service
-	zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
-	znsWithCustomProvider, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
-	domainToDetect := "ryan.crypto"
-	resolvedAddress, _ := znsWithCustomProvider.Addr(domainToDetect, "ETH")
-	fmt.Println("ETH address for", domainToDetect, "is", resolvedAddress)
 }
 ```
-
-# Custom Ethereum provider configuration
-
-```go
-package main
-
-import (
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/unstoppabledomains/resolution-go/v2"
-)
-
-func main() {
-	var ethereumUrl = "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
-	var ethereumL2Url = "https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e"
-
-	var unsBuilder := resolution.NewUnsBuilder()
-	var backend, _ := ethclient.Dial(ethereumUrl)
-	var backendL2, _ := ethclient.Dial(ethereumL2Url)
-
-	unsBuilder.SetContractBackend(backend)
-	unsBuilder.SetL2ContractBackend(backendL2)
-
-	var unsResolution, _ = unsBuilder.Build()
-	var znsResolution, _ = resolution.NewZnsBuilder().Build()
-}
-```
-
-> NOTE: The default Infura key provided is rate limited and should only be used for testing. For production applications, please bring your own Infura or Alchemy RPC URL to prevent downtime.
 
 # Contributions
 
 Contributions to this library are more than welcome. The easiest way to contribute is through GitHub issues and pull requests.
+
+Use these commands to set up a local development environment (**macOS Terminal**
+or **Linux shell**).
+
+1. Recommended golang version
+
+* go1.18
+
+2. Clone the repository
+
+   ```bash
+   git clone https://github.com/unstoppabledomains/resolution-go.git
+   cd resolution-go
+   ```
+
+3. Install dependencies
+
+    ```bash
+    go mod download
+    ```
+
+### Internal config
+
+#### Unit tests:
+
+**resolution-go** library relies on environment variables to load **TestNet** RPC Urls. This way, our keys don't expose directly to the code. In order to validate the code change, please set these variables to your local environment.
+
+* L1_TEST_NET_RPC_URL
+* L2_TEST_NET_RPC_URL
 
 # Free advertising for integrated apps
 
