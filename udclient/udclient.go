@@ -28,7 +28,7 @@ func Dial(apiKey string) (*UdClient, error) {
 	tokenHeader := rpc.WithHeader("Authorization", "Bearer "+apiKey)
 
 	libClientHeaderString := libVersion + "/" + runtime.Version()
-	agentHeader := rpc.WithHeader("X-Lib-Client", libClientHeaderString)
+	agentHeader := rpc.WithHeader("X-Lib-Agent", libClientHeaderString)
 
 	httpClient := rpc.WithHTTPClient(&http.Client{
 		Timeout: 3 * time.Second,
