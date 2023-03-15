@@ -15,10 +15,10 @@ type UdClient struct {
 	L2ContractBackend *ethclient.Client
 }
 
-var libVersion = "UnstoppableDomains/resolution-go/v3.0.0"
-var proxyBaseUrl = "https://api.unstoppabledomains.com/resolve"
-var l1RpcProxyPath = "/chains/eth/rpc"
-var l2RpcProxyPath = "/chains/matic/rpc"
+const libVersion = "UnstoppableDomains/resolution-go/v3.0.0"
+const proxyBaseUrl = "https://api.unstoppabledomains.com/resolve"
+const l1RpcProxyPath = "/chains/eth/rpc"
+const l2RpcProxyPath = "/chains/matic/rpc"
 
 // Dial connects a client to the a proxy service with a authentication key
 func Dial(apiKey string) (*UdClient, error) {
