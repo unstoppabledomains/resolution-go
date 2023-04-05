@@ -1,13 +1,21 @@
+## v3.0.0 - 2023-04-05
+
+Remove default RPC urls, Allow initialized with UD partner key
+
 ## 2.3.2
+
 - Update supported keys in `keys.go`
 
 ## 2.3.1
+
 - Update config to use Infura
 
 ## 2.3.0
+
 - Deprecate `AllRecords` method
 
 ## 2.2.0
+
 - Use default networks for UnsBuilder
 
 ## 2.1.0
