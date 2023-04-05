@@ -32,13 +32,6 @@ const (
 
 type NetworkContracts map[string]contracts
 
-var DefaultNetworkProviders = map[string]string{
-	Mainnet: "https://mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
-	Goerli:  "https://goerli.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
-	Polygon: "https://polygon-mainnet.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
-	Mumbai:  "https://polygon-mumbai.infura.io/v3/c5da69dfac9c4d9d96dd232580d4124e",
-}
-
 var NetworkNameToId = map[string]int{
 	Mainnet: 1,
 	Polygon: 137,
