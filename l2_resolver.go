@@ -1,7 +1,7 @@
 package resolution
 
 import (
-	"github.com/unstoppabledomains/resolution-go/v2/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
 )
 
 const zeroAddress = "0x0000000000000000000000000000000000000000"

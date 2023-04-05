@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/unstoppabledomains/resolution-go/v2/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
 )
 
 func dnsTypesToCryptoRecordKeys(types []dnsrecords.Type) ([]string, error) {
