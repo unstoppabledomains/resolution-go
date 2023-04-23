@@ -1,0 +1,13 @@
+{
+  "name": "resolution-go",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:unstoppabledomains/resolution-go.git",
+  "author": "Tu Nguyen <tu@unstoppabledomains.com>",
+  "license": "MIT",
+  "dependencies": {
+    "ffi-napi": "^4.0.3",
+    "ref-napi": "^3.0.3",
+    "ref-struct-napi": "^1.1.1"
+  }
+}
