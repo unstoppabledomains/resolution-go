@@ -16,7 +16,7 @@ type UdClient struct {
 }
 
 const libVersion = "UnstoppableDomains/resolution-go/v3.0.0"
-const proxyBaseUrl = "https://api.unstoppabledomains.com/resolve"
+const proxyBaseUrl = "https://resolve.unstoppabledomains.com"
 const l1RpcProxyPath = "/chains/eth/rpc"
 const l2RpcProxyPath = "/chains/matic/rpc"
 
