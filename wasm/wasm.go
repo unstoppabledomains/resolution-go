@@ -20,18 +20,14 @@ func Addr(domainName string, ticker string) string {
 	return ethAddress
 }
 
-//export Addr2
-func Addr2(this js.Value, inputs []js.Value) interface{} {
+func NameHash(domainName js.Value, inputs []js.Value) interface{} {
 	var domain string = inputs[0].String()
-	var ticker string = inputs[1].String()
-	var apiKey string = inputs[2].String()
-	fmt.Println("input domainName", domain, len(domain))
-	fmt.Println("input ticker", ticker, len(ticker))
-
+	var apiKey string = inputs[1].String()
 	uns, _ := resolution.NewUnsBuilder().SetUdClient(apiKey).Build()
-	ethAddress, _ := uns.Addr(domain, ticker)
-	fmt.Println("ethAddress", ethAddress)
-	return ethAddress
+
+	nameHash, _ := uns.Namehash(domain)
+
+	return nameHash
 }
 
 //export Hello
@@ -41,4 +37,7 @@ func Hello() {
 
 func main() {
 	fmt.Println(Addr("brad.crypto", "ETH"))
+	wait := make(chan struct{})
+	js.Global().Set("NameHash", js.FuncOf(NameHash))
+	<-wait
 }
