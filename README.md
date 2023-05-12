@@ -43,7 +43,7 @@ import (
 	"github.com/unstoppabledomains/resolution-go/v3"
 )
 
-// obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
+// obtain a key by following this document https://docs.unstoppabledomains.com/domain-distribution-and-management/quickstart/retrieve-an-api-key/#api-key
 uns, _ := resolution.NewUnsBuilder().SetUdClient("<api_key>").Build()
 
 zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
