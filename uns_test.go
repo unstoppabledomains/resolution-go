@@ -436,7 +436,7 @@ func TestUnsTokenURIMetadata(t *testing.T) {
 		Name:        "uns-devtest-265f8f.wallet",
 		Description: "A CNS or UNS blockchain domain. Use it to resolve your cryptocurrency addresses and decentralized websites.\nhttps://gateway.pinata.cloud/ipfs/QmdyBw5oTgCtTLQ18PbDvPL8iaLoEPhSyzD91q9XmgmAjb",
 		ExternalUrl: "https://unstoppabledomains.com/search?searchTerm=uns-devtest-265f8f.wallet",
-		Image:       "https://metadata.unstoppabledomains.com/image-src/uns-devtest-265f8f.wallet.svg",
+		Image:       "https://api.ud-staging.com/metadata/image-src/uns-devtest-265f8f.wallet.svg",
 		Attributes: []TokenMetadataAttribute{
 			{
 				TraitType: "domain",
