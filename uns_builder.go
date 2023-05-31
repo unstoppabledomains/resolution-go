@@ -138,7 +138,7 @@ func (cb *unsBuilder) BuildService(netContracts contracts, contractBackend bind.
 		return nil, err
 	}
 
-	return &UnsService{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: contractBackend, metadataClient: cb.metadataClient, cnsDefaultResolver: cnsDefaultResolver, unsRegistry: unsRegistry, unsStartingEventsBlock: unsStartingEventsBlock, cnsStartingEventsBlock: cnsStartingEventsBlock}, nil
+	return &UnsService{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: contractBackend, metadataClient: cb.metadataClient, cnsDefaultResolver: cnsDefaultResolver, unsRegistry: unsRegistry, unsStartingEventsBlock: unsStartingEventsBlock, cnsStartingEventsBlock: cnsStartingEventsBlock, metadataServiceUrl: udclient.MetadataMainnetBaseUrl}, nil
 }
 
 // Build Uns instance

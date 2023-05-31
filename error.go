@@ -17,6 +17,11 @@ type DomainNotSupportedError struct {
 	DomainName string
 }
 
+// AddressNotSupportedError Error when domain is not supported by the naming service
+type AddressNotSupportedError struct {
+	Address string
+}
+
 // MethodIsNotSupportedError Error when naming services does not support called method
 type MethodIsNotSupportedError struct {
 	NamingServiceName string
@@ -59,4 +64,8 @@ func (e *InvalidDomainNameReturnedError) Error() string {
 
 func (e *UnsConfigurationError) Error() string {
 	return "Invalid UNS configuration value of " + e.InvalidField + " for " + e.Layer
+}
+
+func (e *AddressNotSupportedError) Error() string {
+	return e.Address + " is not supported for naming service"
 }
