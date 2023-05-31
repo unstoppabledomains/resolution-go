@@ -109,7 +109,7 @@ func (c *Uns) AddrVersion(domainName string, ticker string, version string) (str
 func (c *Uns) GetAddr(domainName, family, token string) (string, error) {
 	return resolveString(stringResolverParams{
 		L1Function: func() (string, error) { return c.l1Service.getAddress(domainName, family, token) },
-		L2Function: func() (string, error) { return c.l2Service.addrVersion(domainName, family, token) },
+		L2Function: func() (string, error) { return c.l2Service.getAddress(domainName, family, token) },
 		ZFunction: func() (string, error) {
 			return "", &DomainNotSupportedError{DomainName: domainName}
 		}})

@@ -69,7 +69,11 @@ func (c *UnsService) getAddress(domainName, family, token string) (string, error
 	tokenID := domainNameToTokenId(domainName)
 	data, err := c.proxyReader.GetAddress(&bind.CallOpts{Pending: false}, family, token, tokenID)
 
-	return data, err
+	if err != nil {
+		return "", err
+	}
+
+	return data, nil
 }
 
 func (c *UnsService) reverseOf(addr string) (string, error) {
