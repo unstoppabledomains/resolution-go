@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v4/resolutions/namingservice"
 )
 
 func TestEnforceImplementInterface(t *testing.T) {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
-	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
-	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v4/resolutions/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/v4/resolutions/namingservice"
 )
 
 type DomainData struct {
