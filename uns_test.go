@@ -425,7 +425,7 @@ func TestUnsTokenURI(t *testing.T) {
 	t.Parallel()
 	uns := getUns()
 	tokenURI, err := uns.TokenURI(domains["DomainWallet"].Name)
-	expectedTokenURI := "https://metadata.ud-staging.com/metadata/6304531997610998161237844647282663196661123000121147597890468333969432655810"
+	expectedTokenURI := "https://api.ud-staging.com/metadata/6304531997610998161237844647282663196661123000121147597890468333969432655810"
 	assert.Nil(t, err)
 	assert.Equal(t, expectedTokenURI, tokenURI)
 }
@@ -436,7 +436,7 @@ func TestUnsTokenURIMetadata(t *testing.T) {
 		Name:        "uns-devtest-265f8f.wallet",
 		Description: "A CNS or UNS blockchain domain. Use it to resolve your cryptocurrency addresses and decentralized websites.\nhttps://gateway.pinata.cloud/ipfs/QmdyBw5oTgCtTLQ18PbDvPL8iaLoEPhSyzD91q9XmgmAjb",
 		ExternalUrl: "https://unstoppabledomains.com/search?searchTerm=uns-devtest-265f8f.wallet",
-		Image:       "https://metadata.unstoppabledomains.com/image-src/uns-devtest-265f8f.wallet.svg",
+		Image:       "https://api.ud-staging.com/metadata/image-src/uns-devtest-265f8f.wallet.svg",
 		Attributes: []TokenMetadataAttribute{
 			{
 				TraitType: "domain",
@@ -638,4 +638,18 @@ func TestUnsLocationsNoResolver(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedLocations, locations)
+}
+
+func TestUnsGetAddr(t *testing.T) {
+	t.Parallel()
+	testDomain := "udtestdev-test-l2-domain-784391.wallet"
+
+	expectedAddress := ""
+
+	uns := getUns()
+
+	address, err := uns.GetAddr(testDomain, "ETH", "ETH")
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedAddress, address)
 }
