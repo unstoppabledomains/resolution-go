@@ -22,13 +22,13 @@ Resolution supports different decentralized domains. Please, refer to the [Top L
 # Installing resolution-go
 
 ```shell
-go get github.com/unstoppabledomains/resolution-go/v4/resolutions
+go get github.com/unstoppabledomains/resolution-go/v3
 ```
 
 # Updating resolution-go
 
 ```shell
-go get -u github.com/unstoppabledomains/resolution-go/v4/resolutions
+go get -u github.com/unstoppabledomains/resolution-go/v3
 ```
 
 # Using Resolution
@@ -40,7 +40,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/unstoppabledomains/resolution-go/v4/resolutions"
+	"github.com/unstoppabledomains/resolution-go/v3"
 )
 
 // obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
@@ -61,7 +61,7 @@ import (
 
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/unstoppabledomains/resolution-go/v4/resolutions"
+	"github.com/unstoppabledomains/resolution-go/v3"
 )
 
 func main() {
@@ -93,8 +93,8 @@ import (
 
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/unstoppabledomains/resolution-go/v4/resolutions"
-	"github.com/unstoppabledomains/resolution-go/v4/resolutions/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v3"
+	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
 )
 
 func main() {

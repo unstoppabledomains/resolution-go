@@ -11,9 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	kns "github.com/jgimeno/go-namehash"
-	"github.com/unstoppabledomains/resolution-go/v4/resolutions/dnsrecords"
-	"github.com/unstoppabledomains/resolution-go/v4/resolutions/namingservice"
-	"github.com/unstoppabledomains/resolution-go/v4/resolutions/uns/contracts/proxyreader"
+	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v3/uns/contracts/proxyreader"
 )
 
 // Uns is a naming service handles Unstoppable domains resolution.

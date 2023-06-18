@@ -5,7 +5,7 @@ import (
 
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/stretchr/testify/assert"
-	"github.com/unstoppabledomains/resolution-go/v4/resolutions/dnsrecords"
+	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
 )
 
 var zns, _ = NewZnsBuilder().SetProvider(provider.NewProvider("https://dev-api.zilliqa.com")).SetNetwork("testnet").Build()
