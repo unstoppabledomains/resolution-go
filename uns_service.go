@@ -67,6 +67,13 @@ func (c *UnsService) data(domainName string, keys []string) (*struct {
 
 func (c *UnsService) getAddress(domainName, family, token string) (string, error) {
 	tokenID := domainNameToTokenId(domainName)
+
+	// verify first if domain exists
+	_, err := c.owner(domainName)
+	if err != nil {
+		return "", err
+	}
+
 	data, err := c.proxyReader.GetAddress(&bind.CallOpts{Pending: false}, family, token, tokenID)
 
 	if err != nil {
