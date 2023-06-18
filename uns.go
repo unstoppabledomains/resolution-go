@@ -195,6 +195,33 @@ func (c *Uns) HTTPUrl(domainName string) (string, error) {
 		}})
 }
 
+func (c *Uns) AllRecords(domainName string) (map[string]string, error) {
+	standardKeys, err := newSupportedKeys()
+	if err != nil {
+		return make(map[string]string), err
+	}
+	recordKeys := make([]string, 0, len(standardKeys))
+	for k := range standardKeys {
+		recordKeys = append(recordKeys, k)
+	}
+	recordsMap, err := resolveStringMap(stringMapResolverParams{
+		L1Function: func() (map[string]string, error) { return c.l1Service.records(domainName, recordKeys) },
+		L2Function: func() (map[string]string, error) { return c.l2Service.records(domainName, recordKeys) },
+		ZFunction: func() (map[string]string, error) {
+			isSupported, _ := c.zService.IsSupportedDomain(domainName)
+			if isSupported {
+				return c.zService.Records(domainName, recordKeys)
+			} else {
+				return nil, &DomainNotSupportedError{DomainName: domainName}
+			}
+		},
+	})
+	if err != nil {
+		return make(map[string]string), err
+	}
+	return removeEmptyRecords(recordsMap), nil
+}
+
 func (c *Uns) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
 	convertToGenericFunction := func(s *UnsService) func() (interface{}, error) {
 		return func() (interface{}, error) {
@@ -299,4 +326,13 @@ func (c *Uns) Unhash(domainHash string) (string, error) {
 
 func (c *Uns) Namehash(domainName string) (string, error) {
 	return c.l1Service.namehash(domainName)
+}
+
+func removeEmptyRecords(records map[string]string) map[string]string {
+	for k := range records {
+		if records[k] == "" {
+			delete(records, k)
+		}
+	}
+	return records
 }

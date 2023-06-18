@@ -52,6 +52,11 @@ type NamingService interface {
 	// HTTPUrl Retrieve the http redirect url of a domain.
 	HTTPUrl(domainName string) (string, error)
 
+	// AllRecords Retrieve all records of a domain.
+	// Returns result in string or empty string record is not found.
+	// Deprecated: This method will be removed in future releases
+	AllRecords(domainName string) (map[string]string, error)
+
 	// Locations Retrieve locations of domains
 	// Returns key-value map of domain names to location
 	Locations(domainNames []string) (map[string]namingservice.Location, error)
