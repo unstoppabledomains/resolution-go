@@ -640,11 +640,50 @@ func TestUnsLocationsNoResolver(t *testing.T) {
 	assert.Equal(t, expectedLocations, locations)
 }
 
-func TestUnsGetAddr(t *testing.T) {
+func TestUnsGetAddrForEmptyAddress(t *testing.T) {
 	t.Parallel()
 	testDomain := "udtestdev-test-l2-domain-784391.wallet"
 
-	expectedAddress := ""
+	uns := getUns()
+
+	address, err := uns.GetAddr(testDomain, "ETH", "ETH")
+	assert.Nil(t, err)
+	assert.Equal(t, "", address)
+}
+
+func TestUnsGetAddrForUnregisteredDomain(t *testing.T) {
+	t.Parallel()
+	testDomain := "not-registered-long-domain-name.wallet"
+
+	var expectedError *DomainNotRegisteredError
+
+	uns := getUns()
+
+	address, err := uns.GetAddr(testDomain, "ETH", "ETH")
+
+	assert.ErrorAs(t, err, &expectedError)
+	assert.Equal(t, "", address)
+}
+
+func TestUnsGetAddrForL2Domain(t *testing.T) {
+	t.Parallel()
+	testDomain := domains["DomainWallet"].Name
+
+	expectedAddress := "0x8aaD44321A86b170879d7A244c1e8d360c99DdA8"
+
+	uns := getUns()
+
+	address, err := uns.GetAddr(testDomain, "ETH", "ETH")
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedAddress, address)
+}
+
+func TestUnsGetAddrForL1Domain(t *testing.T) {
+	t.Parallel()
+	testDomain := domains["DomainL1"].Name
+
+	expectedAddress := "0x084Ac37CDEfE1d3b68a63c08B203EFc3ccAB9742"
 
 	uns := getUns()
 
