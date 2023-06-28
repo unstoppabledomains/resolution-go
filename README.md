@@ -124,6 +124,145 @@ func main() {
 }
 ```
 
+## Resolve Wallet Address Examples
+
+### Using **`Addr`**
+
+This API is used to retrieve wallet address for single address record. (See
+[Cryptocurrency payment](https://docs.unstoppabledomains.com/resolution/guides/records-reference/#cryptocurrency-payments)
+section for the record format)
+
+```go
+func main() {
+	//...
+	// homecakes.crypto has `crypto.ETH.address` set to 0xe7474D07fD2FA286e7e0aa23cd107F8379085037
+	domain := "homecakes.crypto"
+	walletAddress, err := uns.Addr(domain, "ETH")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("Addr for %s ticker %s: %s\n", domain, "ETH", walletAddress)
+	// Addr for homecakes.crypto ticker ETH: 0xe7474D07fD2FA286e7e0aa23cd107F8379085037
+}
+```
+
+### Using **`GetAddr`**
+
+This (beta) API can be used to resolve different formats
+
+**Resolve single address format (similar to **`Addr`** API)**
+
+With `homecakes.crypto` has a `crypto.ETH.address` record set on-chain:
+
+```go
+func main() {
+	domain := "homecakes.crypto"
+	walletAddress, err := uns.GetAddr(domain, "ETH", "ETH")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("Addr for %s on network %s with token %s: %s\n", domain, "ETH", "ETH", walletAddress)
+	// Addr for homecakes.crypto on network ETH with token ETH: 0xe7474D07fD2FA286e7e0aa23cd107F8379085037
+}
+```
+
+**Resolve multi-chain currency address format (See
+[multi-chain currency](https://docs.unstoppabledomains.com/resolution/guides/records-reference/#multi-chain-currencies))**
+
+With `aaron.x` has a `crypto.AAVE.version.ERC20.address` record set to
+`0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af`. The `ERC20` indicates it's a token
+on `ETH` network:
+
+```go
+func main() {
+	domain := "aaron.x"
+	walletAddress, err := uns.GetAddr(domain, "ETH", "AAVE")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("Addr for %s on network %s with token %s: %s\n", domain, "ETH", "AAVE", walletAddress)
+	// Addr for aaron.x on network ETH with token AAVE: 0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af
+}
+```
+
+**Derive wallet addresses within the same blockchain network and blockchain
+family.**
+
+The API can also be used by crypto exchanges to infer wallet addresses. In
+centralized exchanges, users have same wallet addresses on different networks with same
+wallet family.
+
+With `blockchain-family-keys.x` only has `token.EVM.address` record on-chain.
+The API resolves to same wallet address for tokens live on EVM compatible
+networks.
+
+```go
+
+func main() {
+	domain := "blockchain-family-keys.x"
+	aaveOnEthWallet, _ := uns.GetAddr(domain, "ETH", "AAVE")
+	fmt.Printf("Addr for %s on network %s with token %s: %s\n", domain, "ETH", "AAVE", aaveOnEthWallet)
+	// Addr for blockchain-family-keys.x on network ETH with token AAVE: 0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af
+
+	ethOnEthWallet, _ := uns.GetAddr(domain, "ETH", "ETH")
+	fmt.Printf("Addr for %s on network %s with token %s: %s\n", domain, "ETH", "ETH", ethOnEthWallet)
+	// Addr for blockchain-family-keys.x on network ETH with token ETH: 0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af
+
+	usdtOnAvax, _ := uns.GetAddr(domain, "AVAX", "USDT")
+	fmt.Printf("Addr for %s on network %s with token %s: %s\n", domain, "AVAX", "USDT", usdtOnAvax)
+	// Addr for blockchain-family-keys.x on network AVAX with token USDT: 0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af
+}
+```
+
+With `uns-devtest-nickshatilo-withdraw-test2.x` only has `token.EVM.ETH.address`
+record on chain. The API resolves to the same wallet address for tokens
+specifically on Ethereum network.
+
+```go
+func main() {
+	domain := "uns-devtest-nickshatilo-withdraw-test2.x"
+	aaveOnEthWallet, _ := uns.GetAddr(domain, "ETH", "AAVE")
+	fmt.Printf("Addr for %s on network %s with token %s: %s\n", domain, "ETH", "AAVE", aaveOnEthWallet)
+	// Addr for uns-devtest-nickshatilo-withdraw-test2.x on network ETH with token AAVE: 0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af
+
+	ethOnEthWallet, _ := uns.GetAddr(domain, "ETH", "ETH")
+	fmt.Printf("Addr for %s on network %s with token %s: %s\n", domain, "ETH", "ETH", ethOnEthWallet)
+	// Addr for uns-devtest-nickshatilo-withdraw-test2.x on network ETH with token ETH: 0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af
+
+	usdtOnAvax, _ := uns.GetAddr(domain, "AVAX", "USDT")
+	// won't work
+}
+```
+
+The API is compatible with other address formats. If a domain has multiple
+address formats set, it will follow the algorithm described as follow:
+
+if a domain has following records set:
+
+```
+token.EVM.address
+crypto.USDC.version.ERC20.address
+token.EVM.ETH.USDC.address
+crypto.USDC.address
+token.EVM.ETH.address
+```
+
+`getAddress(domain, 'ETH', 'USDC')` will lookup records in the following order:
+
+```
+1. token.EVM.ETH.USDC.address
+2. crypto.USDC.address
+3. crypto.USDC.version.ERC20.address
+4. token.EVM.ETH.address
+5. token.EVM.address
+```
+
 # Contributions
 
 Contributions to this library are more than welcome. The easiest way to contribute is through GitHub issues and pull requests.
@@ -133,7 +272,7 @@ or **Linux shell**).
 
 1. Recommended golang version
 
-* go1.18
+- go1.18
 
 2. Clone the repository
 
@@ -144,9 +283,9 @@ or **Linux shell**).
 
 3. Install dependencies
 
-    ```bash
-    go mod download
-    ```
+   ```bash
+   go mod download
+   ```
 
 ### Internal config
 
@@ -154,8 +293,8 @@ or **Linux shell**).
 
 **resolution-go** library relies on environment variables to load **TestNet** RPC Urls. This way, our keys don't expose directly to the code. In order to validate the code change, please set these variables to your local environment.
 
-* L1_TEST_NET_RPC_URL
-* L2_TEST_NET_RPC_URL
+- L1_TEST_NET_RPC_URL
+- L2_TEST_NET_RPC_URL
 
 # Free advertising for integrated apps
 
