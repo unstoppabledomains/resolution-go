@@ -1,0 +1,20 @@
+{
+  "networks": {
+    "1": {
+      "contracts": {
+        "Registry": {
+          "address": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+          "deploymentBlock": "9380380"
+        }
+      }
+    },
+    "5": {
+      "contracts": {
+        "Registry": {
+          "address": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+          "deploymentBlock": "9380380"
+        }
+      }
+    }
+  }
+}
