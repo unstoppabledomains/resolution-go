@@ -138,7 +138,15 @@ func (cb *unsBuilder) BuildService(netContracts contracts, contractBackend bind.
 		return nil, err
 	}
 
-	return &UnsService{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: contractBackend, metadataClient: cb.metadataClient, cnsDefaultResolver: cnsDefaultResolver, unsRegistry: unsRegistry, unsStartingEventsBlock: unsStartingEventsBlock, cnsStartingEventsBlock: cnsStartingEventsBlock, metadataServiceUrl: udclient.MetadataMainnetBaseUrl}, nil
+	var metadataServiceUrl string
+
+	if cb.l1Network == "mainnet" && cb.l2Network == "polygon" {
+		metadataServiceUrl = udclient.MetadataMainnetBaseUrl
+	} else {
+		metadataServiceUrl = udclient.MetadataTestnetBaseUrl
+	}
+
+	return &UnsService{proxyReader: proxyReaderContract, supportedKeys: supportedKeys, contractBackend: contractBackend, metadataClient: cb.metadataClient, cnsDefaultResolver: cnsDefaultResolver, unsRegistry: unsRegistry, unsStartingEventsBlock: unsStartingEventsBlock, cnsStartingEventsBlock: cnsStartingEventsBlock, metadataServiceUrl: metadataServiceUrl}, nil
 }
 
 // Build Uns instance
