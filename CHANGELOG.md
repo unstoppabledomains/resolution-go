@@ -1,3 +1,7 @@
+## v3.1.0 - 2023-07-10
+
+Add GetAddr, ReverseOf API
+
 ## v3.0.0 - 2023-04-05
 
 Remove default RPC urls, Allow initialized with UD partner key
