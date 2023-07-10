@@ -29,6 +29,7 @@ type UnsService struct {
 	Layer                  string
 	networkId              int
 	blockchainProviderUrl  string
+	metadataServiceUrl     string
 }
 
 type MetadataClient interface {
@@ -62,6 +63,46 @@ func (c *UnsService) data(domainName string, keys []string) (*struct {
 	}
 
 	return &data, nil
+}
+
+func (c *UnsService) getAddress(domainName, family, token string) (string, error) {
+	tokenID := domainNameToTokenId(domainName)
+
+	// verify first if domain exists
+	_, err := c.owner(domainName)
+	if err != nil {
+		return "", err
+	}
+
+	data, err := c.proxyReader.GetAddress(&bind.CallOpts{Pending: false}, family, token, tokenID)
+
+	if err != nil {
+		return "", err
+	}
+
+	return data, nil
+}
+
+func (c *UnsService) reverseOf(addr string) (string, error) {
+	data, err := c.proxyReader.ReverseOf(&bind.CallOpts{Pending: false}, common.HexToAddress(addr))
+
+	if err != nil {
+		return "", err
+	}
+
+	if data.Cmp(big.NewInt(0)) == 0 {
+		return "", err
+	}
+
+	tokenID := data.String()
+
+	metadata, err := c.tokenMetadataByUri(c.metadataServiceUrl + "/" + tokenID)
+
+	if err != nil {
+		return "", err
+	}
+
+	return metadata.Name, nil
 }
 
 func (c *UnsService) records(domainName string, keys []string) (map[string]string, error) {
