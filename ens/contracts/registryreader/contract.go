@@ -1,7 +1,7 @@
 // Code generated - DO NOT EDIT.
 // This file is a generated binding and any manual changes will be lost.
 
-package ensreader
+package registryreader
 
 import (
 	"errors"
@@ -248,6 +248,7 @@ func (_Contract *ContractCallerSession) Old() (common.Address, error) {
 func (_Contract *ContractCaller) Owner(opts *bind.CallOpts, node [32]byte) (common.Address, error) {
 	var out []interface{}
 	err := _Contract.contract.Call(opts, &out, "owner", node)
+
 	if err != nil {
 		return *new(common.Address), err
 	}

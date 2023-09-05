@@ -47,7 +47,7 @@ import (
 uns, _ := resolution.NewUnsBuilder().SetUdClient("<api_key>").Build()
 
 zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
-	zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
+zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
 
 ```
 
