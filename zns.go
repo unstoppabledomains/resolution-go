@@ -289,3 +289,7 @@ func (z *Zns) Namehash(domainName string) (string, error) {
 func (z *Zns) Unhash(_ string) (string, error) {
 	return "", &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
 }
+
+func (z *Zns) ReverseOf(_ string) (string, error) {
+	return "", &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
+}

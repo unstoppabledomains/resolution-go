@@ -39,6 +39,8 @@ type UnsBuilder interface {
 
 	// Build Uns instance
 	Build() (*Uns, error)
+
+	BuildWeb3Domain() (*Web3Domain, error)
 }
 
 type unsBuilder struct {
@@ -201,5 +203,64 @@ func (cb *unsBuilder) Build() (*Uns, error) {
 		*l1Service,
 		*l2Service,
 		*zService,
+	}, nil
+}
+
+func (cb *unsBuilder) BuildWeb3Domain() (*Web3Domain, error) {
+	contracts, err := newContracts()
+	if err != nil {
+		return nil, err
+	}
+
+	if cb.metadataClient == nil {
+		cb.metadataClient = &http.Client{}
+	}
+
+	if cb.l1Network == "" {
+		return nil, &UnsConfigurationError{Layer: Layer1, InvalidField: "network"}
+	}
+	if cb.l2Network == "" {
+		return nil, &UnsConfigurationError{Layer: Layer2, InvalidField: "network"}
+	}
+
+	if cb.l1ContractBackend == nil && cb.l1ProviderUrl == "" {
+		return nil, &UnsConfigurationError{Layer: Layer1, InvalidField: "contractBackend"}
+	}
+
+	if cb.l2ContractBackend == nil && cb.l2ProviderUrl == "" {
+		return nil, &UnsConfigurationError{Layer: Layer2, InvalidField: "contractBackend"}
+	}
+
+	l1Service, err := cb.BuildService(contracts[cb.l1Network], cb.l1ContractBackend, cb.l1ProviderUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	l1Service.networkId = NetworkNameToId[cb.l1Network]
+	l1Service.blockchainProviderUrl = cb.l1ProviderUrl
+	l1Service.Layer = Layer1
+
+	l2Service, err := cb.BuildService(contracts[cb.l2Network], cb.l2ContractBackend, cb.l2ProviderUrl)
+	if err != nil {
+		return nil, err
+	}
+	l2Service.Layer = Layer2
+	l2Service.networkId = NetworkNameToId[cb.l2Network]
+	l2Service.blockchainProviderUrl = cb.l2ProviderUrl
+
+	zns, err := NewZnsBuilder().Build()
+	if err != nil {
+		return nil, err
+	}
+
+	ens, err := NewEnsBuilder().SetContractBackendProviderUrl(cb.l1ProviderUrl).Build()
+
+	return &Web3Domain{
+		uns: &Uns{
+			*l1Service,
+			*l2Service,
+			*zns,
+		},
+		ens: ens,
 	}, nil
 }
