@@ -56,6 +56,18 @@ func (e *Ens) Owner(domainName string) (string, error) {
 }
 
 func (e *Ens) Addr(domainName, ticker string) (string, error) {
+	bip44, err := newBip44Mapping()
+
+	if err != nil {
+		return "", err
+	}
+
+	coinType, ok := bip44[ticker]
+
+	if !ok {
+		return "", &EnsInvalidCoinType{CoinType: ticker}
+	}
+
 	normalizedName := utils.NormalizeName(domainName)
 
 	resolverAddress, err := e.Resolver(domainName)
@@ -64,7 +76,7 @@ func (e *Ens) Addr(domainName, ticker string) (string, error) {
 		return "", err
 	}
 
-	return e.service.addrRecord(resolverAddress, e.service.namehash(normalizedName))
+	return e.service.addrCoinRecord(resolverAddress, e.service.namehash(normalizedName), big.NewInt(coinType))
 }
 
 func (e *Ens) CoinAddress(domainName string, coin string) (string, error) {
@@ -131,17 +143,50 @@ func (e *Ens) AddrVersion(domainName string, ticker string, version string) (str
 }
 
 func (e *Ens) Email(domainName string) (string, error) {
-	return "", nil
+	namehash := e.service.namehash(domainName)
+	resolverAddress, err := e.service.resolver(namehash)
+
+	if err != nil {
+		return "", err
+	}
+
+	if resolverAddress == NullAddress {
+		return "", &DomainNotConfiguredError{DomainName: domainName}
+	}
+
+	return e.service.textRecord(resolverAddress, namehash, "email")
 }
 
 // IpfsHash Retrieve hash of IPFS website attached to domain.
 func (e *Ens) IpfsHash(domainName string) (string, error) {
-	return "", nil
+	namehash := e.service.namehash(domainName)
+	resolverAddress, err := e.service.resolver(namehash)
+
+	if err != nil {
+		return "", err
+	}
+
+	if resolverAddress == NullAddress {
+		return "", &DomainNotConfiguredError{DomainName: domainName}
+	}
+
+	return e.service.textRecord(resolverAddress, namehash, "avatar")
 }
 
 // HTTPUrl Retrieve the http redirect url of a domain.
 func (e *Ens) HTTPUrl(domainName string) (string, error) {
-	return "", nil
+	namehash := e.service.namehash(domainName)
+	resolverAddress, err := e.service.resolver(namehash)
+
+	if err != nil {
+		return "", err
+	}
+
+	if resolverAddress == NullAddress {
+		return "", &DomainNotConfiguredError{DomainName: domainName}
+	}
+
+	return e.service.textRecord(resolverAddress, namehash, "url")
 }
 
 // AllRecords Retrieve all records of a domain.
@@ -154,7 +199,7 @@ func (e *Ens) AllRecords(domainName string) (map[string]string, error) {
 // Locations Retrieve locations of domains
 // Returns key-value map of domain names to location
 func (e *Ens) Locations(domainNames []string) (map[string]namingservice.Location, error) {
-	return nil, nil
+	return make(map[string]namingservice.Location), nil
 }
 
 // DNS Retrieve the DNS records of a domain.
