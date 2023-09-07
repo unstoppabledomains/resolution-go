@@ -280,3 +280,26 @@ func (w3d *Web3Domain) DNS(domain string, types []dnsrecords.Type) ([]dnsrecords
 
 	return namingService.DNS(domain, types)
 }
+
+func (w3d *Web3Domain) TokenURIMetadata(domain string) (TokenMetadata, error) {
+	namingService := w3d.getNamingServiceForDomain(domain)
+
+	if namingService == nil {
+		return TokenMetadata{}, &DomainNotSupportedError{DomainName: domain}
+	}
+
+	return namingService.TokenURIMetadata(domain)
+}
+
+func (w3d *Web3Domain) Unhash(domainHash string) (string, error) {
+	namingServices := []NamingService{w3d.uns, w3d.ens}
+
+	for _, namingService := range namingServices {
+		domainName, err := namingService.Unhash(domainHash)
+		if err == nil {
+			return domainName, nil
+		}
+	}
+
+	return "", nil
+}

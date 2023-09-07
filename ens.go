@@ -1,8 +1,10 @@
 package resolution
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -131,7 +133,7 @@ func (e *Ens) TextRecord(domainName, key string) (string, error) {
 }
 
 func (e *Ens) Records(domainName string, keys []string) (map[string]string, error) {
-	return nil, nil
+	return nil, &DomainNotSupportedError{DomainName: domainName}
 }
 
 func (e *Ens) Record(domainName string, key string) (string, error) {
@@ -246,9 +248,105 @@ func (e *Ens) TokenURI(domainName string) (string, error) {
 
 // TokenURIMetadata returns ERC721 metadata
 func (e *Ens) TokenURIMetadata(domainName string) (TokenMetadata, error) {
-	return TokenMetadata{}, nil
+
+	tokenUri, err := e.TokenURI(domainName)
+
+	if err != nil {
+		return TokenMetadata{}, err
+	}
+
+	client := &http.Client{}
+
+	metadataResponse, err := client.Get(tokenUri)
+
+	if err != nil {
+		return TokenMetadata{}, err
+	}
+
+	defer metadataResponse.Body.Close()
+
+	var result TokenMetadata
+
+	err = json.NewDecoder(metadataResponse.Body).Decode(&result)
+
+	if err != nil {
+		return TokenMetadata{}, err
+	}
+
+	for _, attr := range result.Attributes {
+		switch v := attr.Value.(type) {
+		case float64:
+			fmt.Printf("Number value: %f\n", v)
+		case string:
+			fmt.Printf("String value: %s\n", v)
+		case map[string]interface{}:
+			fmt.Println("Object value:", v)
+		}
+	}
+
+	if result.ExternalUrl == "" {
+		result.ExternalUrl = fmt.Sprintf("https://unstoppabledomains.com/search?searchTerm=%s", domainName)
+	}
+
+	return result, nil
 }
 
 func (e *Ens) Unhash(domainHash string) (string, error) {
+	client := &http.Client{}
+	networkId := e.service.networkId
+
+	ensContracts, err := newEnsContracts()
+
+	if err != nil {
+		return "", err
+	}
+
+	var networkName = Mainnet
+
+	if networkId == 5 {
+		networkName = Goerli
+	}
+
+	nameWrapContract := ensContracts[networkName]["NameWrapper"].Address
+	registrarContract := ensContracts[networkName]["BaseRegistrarImplementation"].Address
+
+	ch := make(chan *http.Response, 2)
+
+	go func() {
+		resp, err := client.Get(fmt.Sprintf("https://metadata.ens.domains/%s/%s/%s", networkName, nameWrapContract, domainHash))
+		if err != nil {
+			ch <- nil
+			return
+		}
+		ch <- resp
+	}()
+
+	go func() {
+		fmt.Printf("https://metadata.ens.domains/%s/%s/%s\n", networkName, registrarContract, domainHash)
+		resp, err := client.Get(fmt.Sprintf("https://metadata.ens.domains/%s/%s/%s", networkName, registrarContract, domainHash))
+		if err != nil {
+			ch <- nil
+			return
+		}
+		ch <- resp
+	}()
+
+	for i := 0; i < 2; i++ {
+		resp := <-ch
+		if resp != nil && resp.StatusCode == 200 {
+			defer resp.Body.Close()
+
+			var result TokenMetadata
+
+			err = json.NewDecoder(resp.Body).Decode(&result)
+
+			if err != nil {
+				return "", err
+			}
+
+			return result.Name, nil
+		}
+	}
+
 	return "", nil
 }
