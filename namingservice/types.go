@@ -3,6 +3,7 @@ package namingservice
 const (
 	UNS = "UNS"
 	ZNS = "ZNS"
+	ENS = "ENS"
 )
 
 type Location struct {

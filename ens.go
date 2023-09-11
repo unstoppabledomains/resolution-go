@@ -129,7 +129,18 @@ func (e *Ens) Records(domainName string, keys []string) (map[string]string, erro
 }
 
 func (e *Ens) Record(domainName string, key string) (string, error) {
-	return "", nil
+	namehash := e.service.namehash(domainName)
+	resolverAddress, err := e.service.resolver(namehash)
+
+	if err != nil {
+		return "", err
+	}
+
+	if resolverAddress == NullAddress {
+		return "", &DomainNotConfiguredError{DomainName: domainName}
+	}
+
+	return e.service.textRecord(resolverAddress, namehash, key)
 }
 
 func (e *Ens) AddrVersion(domainName string, ticker string, version string) (string, error) {
@@ -187,7 +198,7 @@ func (e *Ens) HTTPUrl(domainName string) (string, error) {
 // Returns result in string or empty string record is not found.
 // Deprecated: This method will be removed in future releases
 func (e *Ens) AllRecords(domainName string) (map[string]string, error) {
-	return nil, nil
+	return nil, &MethodIsNotSupportedError{NamingServiceName: namingservice.ENS}
 }
 
 // Locations Retrieve locations of domains
@@ -344,7 +355,6 @@ func (e *Ens) Unhash(domainHash string) (string, error) {
 	}()
 
 	go func() {
-		fmt.Printf("https://metadata.ens.domains/%s/%s/%s\n", networkName, registrarContract, domainHash)
 		resp, err := client.Get(fmt.Sprintf("https://metadata.ens.domains/%s/%s/%s", networkName, registrarContract, domainHash))
 		if err != nil {
 			ch <- nil
