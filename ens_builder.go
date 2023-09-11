@@ -1,9 +1,12 @@
 package resolution
 
 import (
+	"net/http"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/legacyregistryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/namewrapperreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/resolverreader"
@@ -16,12 +19,16 @@ type EnsBuilder interface {
 	// SetContractBackendProviderUrl set Ethereum backend Rpc URL
 	SetContractBackendProviderUrl(url string) EnsBuilder
 
+	// SetMetadataClient set http backend for communication with ERC721 metadata server
+	SetMetadataClient(backend MetadataClient) EnsBuilder
+
 	// Build Uns instance
 	Build() (*Ens, error)
 }
 
 type ensBuilder struct {
 	contractBackend bind.ContractBackend
+	metadataClient  MetadataClient
 	network         string
 	providerUrl     string
 }
@@ -44,10 +51,16 @@ func (eb *ensBuilder) SetContractBackendProviderUrl(url string) EnsBuilder {
 	return eb
 }
 
-func (ens *ensBuilder) BuildService(netContracts contracts, contractBackend bind.ContractBackend, network, provider string) (*EnsService, error) {
+func (eb *ensBuilder) SetMetadataClient(client MetadataClient) EnsBuilder {
+	eb.metadataClient = client
+	return eb
+}
+
+func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.ContractBackend, network, provider string) (*EnsService, error) {
 	ensRegistryAddress := common.HexToAddress(netContracts["ENSRegistry"].Address)
 	nameWrapperAddress := common.HexToAddress(netContracts["NameWrapper"].Address)
 	publicResolverAddress := common.HexToAddress(netContracts["PublicResolver"].Address)
+	legacyRegistryAddress := common.HexToAddress(netContracts["LegacyENSRegistry"].Address)
 
 	if contractBackend == nil {
 		backend, err := ethclient.Dial(provider)
@@ -60,18 +73,21 @@ func (ens *ensBuilder) BuildService(netContracts contracts, contractBackend bind
 	ensRegistryContract, err := registryreader.NewContract(ensRegistryAddress, contractBackend)
 	nameWrapperContract, err := namewrapperreader.NewContract(nameWrapperAddress, contractBackend)
 	publicResolverContract, err := resolverreader.NewContract(publicResolverAddress, contractBackend)
+	legacyRegistryContract, err := legacyregistryreader.NewContract(legacyRegistryAddress, contractBackend)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &EnsService{
-		ensRegistryContract:   ensRegistryContract,
-		nameWrapperContract:   nameWrapperContract,
-		ensResolverContract:   publicResolverContract,
-		contractBackend:       contractBackend,
-		networkId:             1,
-		blockchainProviderUrl: provider,
+		ensRegistryContract:    ensRegistryContract,
+		nameWrapperContract:    nameWrapperContract,
+		ensResolverContract:    publicResolverContract,
+		contractBackend:        contractBackend,
+		metadataClient:         cb.metadataClient,
+		legacyRegistryContract: legacyRegistryContract,
+		networkId:              1,
+		blockchainProviderUrl:  provider,
 	}, nil
 }
 
@@ -80,6 +96,10 @@ func (eb *ensBuilder) Build() (*Ens, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if eb.metadataClient == nil {
+		eb.metadataClient = &http.Client{}
 	}
 
 	if eb.network == "" {

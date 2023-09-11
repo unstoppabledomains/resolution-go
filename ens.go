@@ -29,20 +29,18 @@ func (e *Ens) IsSupportedDomain(domainName string) (bool, error) {
 }
 
 func (e *Ens) Namehash(domainName string) (string, error) {
-	normalizedName := utils.NormalizeName(domainName)
-	return e.service.namehash(normalizedName).String(), nil
+	return e.service.namehash(domainName).String(), nil
 }
 
 func (e *Ens) Resolver(domainName string) (string, error) {
-	normalizedName := utils.NormalizeName(domainName)
-	resolverAddress, err := e.service.resolver(e.service.namehash(normalizedName))
+	resolverAddress, err := e.service.resolver(e.service.namehash(domainName))
 
 	if err != nil {
 		return "", err
 	}
 
 	if resolverAddress == NullAddress {
-		return "", &DomainNotConfiguredError{DomainName: normalizedName}
+		return "", &DomainNotConfiguredError{DomainName: domainName}
 	}
 
 	return resolverAddress, nil
@@ -53,8 +51,7 @@ func (e *Ens) ReverseOf(addr string) (string, error) {
 }
 
 func (e *Ens) Owner(domainName string) (string, error) {
-	normalizedName := utils.NormalizeName(domainName)
-	return e.service.ownerOf(e.service.namehash(normalizedName))
+	return e.service.ownerOf(e.service.namehash(domainName))
 }
 
 func (e *Ens) Addr(domainName, ticker string) (string, error) {
@@ -70,19 +67,16 @@ func (e *Ens) Addr(domainName, ticker string) (string, error) {
 		return "", &EnsInvalidCoinType{CoinType: ticker}
 	}
 
-	normalizedName := utils.NormalizeName(domainName)
-
 	resolverAddress, err := e.Resolver(domainName)
 
 	if err != nil {
 		return "", err
 	}
 
-	return e.service.addrCoinRecord(resolverAddress, e.service.namehash(normalizedName), big.NewInt(coinType))
+	return e.service.addrCoinRecord(resolverAddress, e.service.namehash(domainName), big.NewInt(coinType))
 }
 
 func (e *Ens) CoinAddress(domainName string, coin string) (string, error) {
-	normalizedName := utils.NormalizeName(domainName)
 
 	var coinNum *big.Int
 	if strings.HasPrefix(coin, "0x8") { // hexadecimal representation
@@ -102,34 +96,32 @@ func (e *Ens) CoinAddress(domainName string, coin string) (string, error) {
 		}
 	}
 
-	resolverAddress, err := e.Resolver(normalizedName)
+	resolverAddress, err := e.Resolver(domainName)
 
 	if err != nil {
 		return "", err
 	}
 
-	return e.service.addrCoinRecord(resolverAddress, e.service.namehash(normalizedName), coinNum)
+	return e.service.addrCoinRecord(resolverAddress, e.service.namehash(domainName), coinNum)
 }
 
 func (e *Ens) ContentHash(domainName string) (string, error) {
-	normalizedName := utils.NormalizeName(domainName)
-	resolverAddress, err := e.Resolver(normalizedName)
+	resolverAddress, err := e.Resolver(domainName)
 	if err != nil {
 		return "", err
 	}
 
-	return e.service.contenthashRecord(resolverAddress, e.service.namehash(normalizedName))
+	return e.service.contenthashRecord(resolverAddress, e.service.namehash(domainName))
 }
 
 func (e *Ens) TextRecord(domainName, key string) (string, error) {
-	normalizedName := utils.NormalizeName(domainName)
-	resolverAddress, err := e.Resolver(normalizedName)
+	resolverAddress, err := e.Resolver(domainName)
 
 	if err != nil {
 		return "", err
 	}
 
-	return e.service.textRecord(resolverAddress, e.service.namehash(normalizedName), key)
+	return e.service.textRecord(resolverAddress, e.service.namehash(domainName), key)
 }
 
 func (e *Ens) Records(domainName string, keys []string) (map[string]string, error) {
@@ -201,7 +193,39 @@ func (e *Ens) AllRecords(domainName string) (map[string]string, error) {
 // Locations Retrieve locations of domains
 // Returns key-value map of domain names to location
 func (e *Ens) Locations(domainNames []string) (map[string]namingservice.Location, error) {
-	return make(map[string]namingservice.Location), nil
+	networkId := e.service.networkId
+	result := make(map[string]namingservice.Location)
+
+	for _, domainName := range domainNames {
+		namehash := e.service.namehash(domainName)
+
+		result[domainName] = namingservice.Location{
+			NetworkId: networkId,
+		}
+
+		resolverAddress, err := e.service.resolver(namehash)
+
+		if err != nil || resolverAddress == NullAddress {
+			continue
+		}
+
+		owner, err := e.service.ownerOf(namehash)
+
+		if err != nil || owner == NullAddress {
+			continue
+		}
+
+		result[domainName] = namingservice.Location{
+			NetworkId:             networkId,
+			ResolverAddress:       resolverAddress,
+			BlockchainProviderUrl: e.service.blockchainProviderUrl,
+			Blockchain:            "ETH",
+			OwnerAddress:          owner,
+			RegistryAddress:       "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85",
+		}
+	}
+
+	return result, nil
 }
 
 // DNS Retrieve the DNS records of a domain.
@@ -255,9 +279,7 @@ func (e *Ens) TokenURIMetadata(domainName string) (TokenMetadata, error) {
 		return TokenMetadata{}, err
 	}
 
-	client := &http.Client{}
-
-	metadataResponse, err := client.Get(tokenUri)
+	metadataResponse, err := e.service.metadataClient.Get(tokenUri)
 
 	if err != nil {
 		return TokenMetadata{}, err
@@ -292,7 +314,7 @@ func (e *Ens) TokenURIMetadata(domainName string) (TokenMetadata, error) {
 }
 
 func (e *Ens) Unhash(domainHash string) (string, error) {
-	client := &http.Client{}
+	client := e.service.metadataClient
 	networkId := e.service.networkId
 
 	ensContracts, err := newEnsContracts()

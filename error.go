@@ -70,6 +70,12 @@ func (e *AddressNotSupportedError) Error() string {
 	return e.Address + " is not supported for naming service"
 }
 
+// ************** We3Domain errors **************
+
+type Web3DomainConfigurationError struct {
+	InvalidField string
+}
+
 // ************** ENS errors **************
 
 type EnsConfigurationError struct {

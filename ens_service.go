@@ -2,11 +2,14 @@ package resolution
 
 import (
 	"encoding/hex"
+	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	kns "github.com/jgimeno/go-namehash"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/legacyregistryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/namewrapperreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/resolverreader"
@@ -19,12 +22,20 @@ const (
 
 // Ens is a naming service
 type EnsService struct {
-	ensRegistryContract   *registryreader.Contract
-	nameWrapperContract   *namewrapperreader.Contract
-	ensResolverContract   *resolverreader.Contract
-	contractBackend       bind.ContractBackend
-	networkId             int
-	blockchainProviderUrl string
+	ensRegistryContract    *registryreader.Contract
+	nameWrapperContract    *namewrapperreader.Contract
+	ensResolverContract    *resolverreader.Contract
+	legacyRegistryContract *legacyregistryreader.Contract
+	metadataClient         MetadataClient
+	contractBackend        bind.ContractBackend
+	networkId              int
+	blockchainProviderUrl  string
+}
+
+type ensGenericResult struct {
+	result any
+	err    error
+	source string
 }
 
 func (e EnsService) domainExists(namehash common.Hash) (bool, error) {
@@ -32,24 +43,138 @@ func (e EnsService) domainExists(namehash common.Hash) (bool, error) {
 }
 
 func (e EnsService) namehash(domainName string) common.Hash {
-	namehash := kns.NameHash(domainName)
-	return namehash
+	node := common.Hash{}
+
+	if len(domainName) > 0 {
+		labels := strings.Split(domainName, ".")
+
+		for i := len(labels) - 1; i >= 0; i-- {
+			labelSha := crypto.Keccak256Hash([]byte(labels[i]))
+			node = crypto.Keccak256Hash(node.Bytes(), labelSha.Bytes())
+		}
+	}
+
+	return node
 }
 
 func (e EnsService) labelNamehash(domainName string) common.Hash {
 	label, _ := utils.SplitDomain(domainName)
 
-	return kns.Erc721Hash(label)
+	return crypto.Keccak256Hash([]byte(label))
+}
+
+//////////////////////////
+// resolver functions 	//
+//////////////////////////
+
+func (e EnsService) resolveFromLegacyRegistry(namehash common.Hash, ch chan<- ensGenericResult) {
+	resolverAddress, err := e.legacyRegistryContract.Resolver(&bind.CallOpts{Pending: false}, namehash)
+
+	if err != nil || resolverAddress.Hex() == NullAddress {
+		ch <- ensGenericResult{nil, err, "LegacyRegistry"}
+		return
+	}
+
+	ch <- ensGenericResult{resolverAddress.Hex(), nil, "LegacyRegistry"}
+}
+
+func (e EnsService) resolveFromNewRegistry(namehash common.Hash, ch chan<- ensGenericResult) {
+	resolverAddress, err := e.ensRegistryContract.Resolver(&bind.CallOpts{Pending: false}, namehash)
+
+	fmt.Println("resolverAddress", resolverAddress.Hex())
+
+	if err != nil || resolverAddress.Hex() == NullAddress {
+		ch <- ensGenericResult{nil, err, "NewRegistry"}
+		return
+	}
+
+	ch <- ensGenericResult{resolverAddress.Hex(), nil, "NewRegistry"}
 }
 
 func (e EnsService) resolver(namehash common.Hash) (string, error) {
-	resolverAddress, err := e.ensRegistryContract.Resolver(&bind.CallOpts{Pending: false}, namehash)
+	ch := make(chan ensGenericResult, 2)
 
-	if err != nil {
-		return "", err
+	go e.resolveFromLegacyRegistry(namehash, ch)
+	go e.resolveFromNewRegistry(namehash, ch)
+
+	var legacyRegistryResult ensGenericResult
+	var newRegistryResult ensGenericResult
+
+	for i := 0; i < 2; i++ {
+		result := <-ch
+
+		if result.source == "LegacyRegistry" {
+			legacyRegistryResult = result
+		} else {
+			newRegistryResult = result
+		}
 	}
 
-	return resolverAddress.Hex(), nil
+	if newRegistryResult.result != nil {
+		return newRegistryResult.result.(string), nil
+	}
+
+	if legacyRegistryResult.result != nil {
+		return legacyRegistryResult.result.(string), nil
+	}
+
+	return "", nil
+}
+
+//////////////////////////
+// owner functions 		//
+//////////////////////////
+
+func (e EnsService) getOwnerFromNameWrapper(namehash common.Hash, ch chan<- ensGenericResult) {
+	address, err := e.nameWrapperContract.OwnerOf(&bind.CallOpts{Pending: false}, namehash.Big())
+
+	if err != nil || address.Hex() == NullAddress {
+		ch <- ensGenericResult{nil, err, "nameWrapper"}
+		return
+	}
+	ch <- ensGenericResult{result: address.Hex(), err: err, source: "nameWrapper"}
+}
+
+func (e EnsService) getOwnerFromRegistry(namehash common.Hash, ch chan<- ensGenericResult) {
+	address, err := e.ensRegistryContract.Owner(&bind.CallOpts{Pending: false}, namehash)
+
+	if err != nil || address.Hex() == NullAddress {
+		ch <- ensGenericResult{nil, err, "registry"}
+		return
+	}
+	ch <- ensGenericResult{result: address.Hex(), err: err, source: "registry"}
+}
+
+func (e EnsService) ownerOf(namehash common.Hash) (string, error) {
+
+	ch := make(chan ensGenericResult, 2)
+
+	go e.getOwnerFromNameWrapper(namehash, ch)
+	go e.getOwnerFromRegistry(namehash, ch)
+
+	address1 := <-ch
+	address2 := <-ch
+
+	var registryResult ensGenericResult
+	var nameWrapperResult ensGenericResult
+
+	if address1.source == "registry" {
+		registryResult = address1
+		nameWrapperResult = address2
+	} else {
+		registryResult = address2
+		nameWrapperResult = address1
+	}
+
+	if nameWrapperResult.result != nil {
+		return nameWrapperResult.result.(string), nil
+	}
+
+	if registryResult.result != nil {
+		return registryResult.result.(string), nil
+	}
+
+	return "", nil
 }
 
 func (e EnsService) reverseOf(addr string) (string, error) {
@@ -74,58 +199,6 @@ func (e EnsService) reverseOf(addr string) (string, error) {
 	}
 
 	return name, nil
-}
-
-type ownerResult struct {
-	address string
-	err     error
-	source  string
-}
-
-func (e EnsService) getOwnerFromNameWrapper(namehash common.Hash, ch chan<- ownerResult) {
-	address, err := e.nameWrapperContract.OwnerOf(&bind.CallOpts{Pending: false}, namehash.Big())
-	ch <- ownerResult{address: address.Hex(), err: err, source: "nameWrapper"}
-}
-
-func (e EnsService) getOwnerFromRegistry(namehash common.Hash, ch chan<- ownerResult) {
-	address, err := e.ensRegistryContract.Owner(&bind.CallOpts{Pending: false}, namehash)
-	ch <- ownerResult{address: address.Hex(), err: err, source: "registry"}
-}
-
-func (e EnsService) ownerOf(namehash common.Hash) (string, error) {
-
-	ch := make(chan ownerResult, 2)
-
-	go e.getOwnerFromNameWrapper(namehash, ch)
-	go e.getOwnerFromRegistry(namehash, ch)
-
-	address1 := <-ch
-	address2 := <-ch
-
-	var registryResult ownerResult
-	var nameWrapperResult ownerResult
-
-	if address1.source == "registry" {
-		registryResult = address1
-		nameWrapperResult = address2
-	} else {
-		registryResult = address2
-		nameWrapperResult = address1
-	}
-
-	if registryResult.err != nil {
-		return "", registryResult.err
-	}
-
-	if nameWrapperResult.err != nil {
-		return registryResult.address, nil
-	}
-
-	if nameWrapperResult.address == NullAddress {
-		return registryResult.address, nil
-	}
-
-	return nameWrapperResult.address, nil
 }
 
 func (e EnsService) addrRecord(resolverAddress string, namehash common.Hash) (string, error) {
