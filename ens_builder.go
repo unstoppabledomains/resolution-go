@@ -71,8 +71,20 @@ func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.
 	}
 
 	ensRegistryContract, err := registryreader.NewContract(ensRegistryAddress, contractBackend)
+	if err != nil {
+		return nil, err
+	}
+
 	nameWrapperContract, err := namewrapperreader.NewContract(nameWrapperAddress, contractBackend)
+	if err != nil {
+		return nil, err
+	}
+
 	publicResolverContract, err := resolverreader.NewContract(publicResolverAddress, contractBackend)
+	if err != nil {
+		return nil, err
+	}
+
 	legacyRegistryContract, err := legacyregistryreader.NewContract(legacyRegistryAddress, contractBackend)
 
 	if err != nil {

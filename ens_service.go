@@ -201,21 +201,21 @@ func (e EnsService) reverseOf(addr string) (string, error) {
 	return name, nil
 }
 
-func (e EnsService) addrRecord(resolverAddress string, namehash common.Hash) (string, error) {
-	resolverContract, err := resolverreader.NewContract(common.HexToAddress(resolverAddress), e.contractBackend)
+// func (e EnsService) addrRecord(resolverAddress string, namehash common.Hash) (string, error) {
+// 	resolverContract, err := resolverreader.NewContract(common.HexToAddress(resolverAddress), e.contractBackend)
 
-	if err != nil {
-		return "", err
-	}
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	addr, err := resolverContract.Addr(&bind.CallOpts{Pending: false}, namehash)
+// 	addr, err := resolverContract.Addr(&bind.CallOpts{Pending: false}, namehash)
 
-	if err != nil {
-		return "", err
-	}
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	return addr.Hex(), nil
-}
+// 	return addr.Hex(), nil
+// }
 
 func (e EnsService) addrCoinRecord(resolverAddress string, namehash common.Hash, coin *big.Int) (string, error) {
 	resolverContract, err := resolverreader.NewContract(common.HexToAddress(resolverAddress), e.contractBackend)
