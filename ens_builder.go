@@ -95,6 +95,10 @@ func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.
 
 	baseRegistrarContract, err := registrarreader.NewContract(baseRegistrarAddress, contractBackend)
 
+	if err != nil {
+		return nil, err
+	}
+
 	return &EnsService{
 		ensRegistryContract:    ensRegistryContract,
 		nameWrapperContract:    nameWrapperContract,
