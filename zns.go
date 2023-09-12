@@ -3,6 +3,7 @@ package resolution
 import (
 	"encoding/json"
 	"strings"
+	"time"
 
 	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
 
@@ -88,6 +89,10 @@ func (zb *znsBuilder) Build() (*Zns, error) {
 		znsRegistry = znsTestnetRegistry
 	}
 	return &Zns{provider: zb.provider, znsRegistry: znsRegistry}, nil
+}
+
+func (z *Zns) DomainExpiry(domainName string) (time.Time, error) {
+	return time.Now().AddDate(100, 0, 0), nil
 }
 
 // State Get raw data attached to domain.
