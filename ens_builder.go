@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/legacyregistryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/namewrapperreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registrarreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registryreader"
@@ -61,7 +60,6 @@ func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.
 	ensRegistryAddress := common.HexToAddress(netContracts["ENSRegistry"].Address)
 	nameWrapperAddress := common.HexToAddress(netContracts["NameWrapper"].Address)
 	publicResolverAddress := common.HexToAddress(netContracts["PublicResolver"].Address)
-	legacyRegistryAddress := common.HexToAddress(netContracts["LegacyENSRegistry"].Address)
 	baseRegistrarAddress := common.HexToAddress(netContracts["BaseRegistrarImplementation"].Address)
 
 	if contractBackend == nil {
@@ -87,12 +85,6 @@ func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.
 		return nil, err
 	}
 
-	legacyRegistryContract, err := legacyregistryreader.NewContract(legacyRegistryAddress, contractBackend)
-
-	if err != nil {
-		return nil, err
-	}
-
 	baseRegistrarContract, err := registrarreader.NewContract(baseRegistrarAddress, contractBackend)
 
 	if err != nil {
@@ -100,15 +92,14 @@ func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.
 	}
 
 	return &EnsService{
-		ensRegistryContract:    ensRegistryContract,
-		nameWrapperContract:    nameWrapperContract,
-		ensResolverContract:    publicResolverContract,
-		contractBackend:        contractBackend,
-		metadataClient:         cb.metadataClient,
-		legacyRegistryContract: legacyRegistryContract,
-		baseRegistrarContract:  baseRegistrarContract,
-		networkId:              1,
-		blockchainProviderUrl:  provider,
+		ensRegistryContract:   ensRegistryContract,
+		nameWrapperContract:   nameWrapperContract,
+		ensResolverContract:   publicResolverContract,
+		contractBackend:       contractBackend,
+		metadataClient:        cb.metadataClient,
+		baseRegistrarContract: baseRegistrarContract,
+		networkId:             1,
+		blockchainProviderUrl: provider,
 	}, nil
 }
 

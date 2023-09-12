@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/legacyregistryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/namewrapperreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registrarreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registryreader"
@@ -25,15 +24,14 @@ const (
 
 // Ens is a naming service
 type EnsService struct {
-	ensRegistryContract    *registryreader.Contract
-	nameWrapperContract    *namewrapperreader.Contract
-	ensResolverContract    *resolverreader.Contract
-	legacyRegistryContract *legacyregistryreader.Contract
-	baseRegistrarContract  *registrarreader.Contract
-	metadataClient         MetadataClient
-	contractBackend        bind.ContractBackend
-	networkId              int
-	blockchainProviderUrl  string
+	ensRegistryContract   *registryreader.Contract
+	nameWrapperContract   *namewrapperreader.Contract
+	ensResolverContract   *resolverreader.Contract
+	baseRegistrarContract *registrarreader.Contract
+	metadataClient        MetadataClient
+	contractBackend       bind.ContractBackend
+	networkId             int
+	blockchainProviderUrl string
 }
 
 type ensGenericResult struct {
@@ -109,17 +107,6 @@ func (e EnsService) labelNamehash(domainName string) common.Hash {
 // resolver functions 	//
 //////////////////////////
 
-func (e EnsService) resolveFromLegacyRegistry(namehash common.Hash, ch chan<- ensGenericResult) {
-	resolverAddress, err := e.legacyRegistryContract.Resolver(&bind.CallOpts{Pending: false}, namehash)
-
-	if err != nil || resolverAddress.Hex() == NullAddress {
-		ch <- ensGenericResult{nil, err, "LegacyRegistry"}
-		return
-	}
-
-	ch <- ensGenericResult{resolverAddress.Hex(), nil, "LegacyRegistry"}
-}
-
 func (e EnsService) resolveFromNewRegistry(namehash common.Hash, ch chan<- ensGenericResult) {
 	resolverAddress, err := e.ensRegistryContract.Resolver(&bind.CallOpts{Pending: false}, namehash)
 
@@ -136,7 +123,6 @@ func (e EnsService) resolveFromNewRegistry(namehash common.Hash, ch chan<- ensGe
 func (e EnsService) resolver(namehash common.Hash) (string, error) {
 	ch := make(chan ensGenericResult, 2)
 
-	go e.resolveFromLegacyRegistry(namehash, ch)
 	go e.resolveFromNewRegistry(namehash, ch)
 
 	var legacyRegistryResult ensGenericResult
