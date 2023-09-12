@@ -16,6 +16,8 @@ Resolution supports different decentralized domains. Please, refer to the [Top L
 - [Installing Resolution](#installing-resolution-go)
 - [Updating Resolution](#updating-resolution-go)
 - [Using Resolution](#using-resolution)
+  - [Web3Domain Resolution](#web3domain-resolution)
+  - [Unstoppable Domain Resolution](#unstoppable-domain-resolution)
 - [Contributions](#contributions)
 - [Free advertising for integrated apps](#free-advertising-for-integrated-apps)
 
