@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
@@ -28,7 +29,14 @@ func (e *Ens) IsSupportedDomain(domainName string) (bool, error) {
 	return e.service.domainExists(e.service.namehash(extension))
 }
 
+func (e *Ens) DomainExpiry(domainName string) (time.Time, error) {
+	return e.service.domainExpiry(domainName)
+}
+
 func (e *Ens) Namehash(domainName string) (string, error) {
+	labehash := e.service.labelNamehash(domainName)
+	fmt.Println("labehash", labehash)
+
 	return e.service.namehash(domainName).String(), nil
 }
 
@@ -226,13 +234,19 @@ func (e *Ens) Locations(domainNames []string) (map[string]namingservice.Location
 			continue
 		}
 
+		registrarAddress, err := e.service.getRegistrarAddress(domainName)
+
+		if err != nil || registrarAddress == NullAddress {
+			continue
+		}
+
 		result[domainName] = namingservice.Location{
 			NetworkId:             networkId,
 			ResolverAddress:       resolverAddress,
 			BlockchainProviderUrl: e.service.blockchainProviderUrl,
 			Blockchain:            "ETH",
 			OwnerAddress:          owner,
-			RegistryAddress:       "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85",
+			RegistryAddress:       registrarAddress,
 		}
 	}
 

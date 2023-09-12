@@ -1,6 +1,8 @@
 package resolution
 
 import (
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
@@ -48,6 +50,10 @@ func (c *Uns) Data(domainName string, keys []string) (*struct {
 		return data, err
 	}
 	return nil, err
+}
+
+func (c *Uns) DomainExpiry(domainName string) (time.Time, error) {
+	return time.Now().AddDate(100, 0, 0), nil
 }
 
 func (c *Uns) Records(domainName string, keys []string) (map[string]string, error) {

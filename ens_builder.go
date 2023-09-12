@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/legacyregistryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/namewrapperreader"
+	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registrarreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/resolverreader"
 )
@@ -61,6 +62,7 @@ func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.
 	nameWrapperAddress := common.HexToAddress(netContracts["NameWrapper"].Address)
 	publicResolverAddress := common.HexToAddress(netContracts["PublicResolver"].Address)
 	legacyRegistryAddress := common.HexToAddress(netContracts["LegacyENSRegistry"].Address)
+	baseRegistrarAddress := common.HexToAddress(netContracts["BaseRegistrarImplementation"].Address)
 
 	if contractBackend == nil {
 		backend, err := ethclient.Dial(provider)
@@ -91,6 +93,8 @@ func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.
 		return nil, err
 	}
 
+	baseRegistrarContract, err := registrarreader.NewContract(baseRegistrarAddress, contractBackend)
+
 	return &EnsService{
 		ensRegistryContract:    ensRegistryContract,
 		nameWrapperContract:    nameWrapperContract,
@@ -98,6 +102,7 @@ func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.
 		contractBackend:        contractBackend,
 		metadataClient:         cb.metadataClient,
 		legacyRegistryContract: legacyRegistryContract,
+		baseRegistrarContract:  baseRegistrarContract,
 		networkId:              1,
 		blockchainProviderUrl:  provider,
 	}, nil

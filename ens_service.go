@@ -2,15 +2,18 @@ package resolution
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/legacyregistryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/namewrapperreader"
+	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registrarreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registryreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/resolverreader"
 	"github.com/unstoppabledomains/resolution-go/v3/utils"
@@ -26,6 +29,7 @@ type EnsService struct {
 	nameWrapperContract    *namewrapperreader.Contract
 	ensResolverContract    *resolverreader.Contract
 	legacyRegistryContract *legacyregistryreader.Contract
+	baseRegistrarContract  *registrarreader.Contract
 	metadataClient         MetadataClient
 	contractBackend        bind.ContractBackend
 	networkId              int
@@ -38,9 +42,47 @@ type ensGenericResult struct {
 	source string
 }
 
+///////////////////////////
+// exist, expiry funtions//
+///////////////////////////
+
 func (e EnsService) domainExists(namehash common.Hash) (bool, error) {
 	return e.ensRegistryContract.RecordExists(&bind.CallOpts{Pending: false}, namehash)
 }
+
+func (e EnsService) domainExpiry(domain string) (time.Time, error) {
+	if utils.IsSubdomain(domain) { // if is Subdomain, return the expiration of the parent domain
+		domain = utils.GetParentDomain(domain)
+	}
+
+	registrarAddress, err := e.getRegistrarAddress(domain)
+
+	if err != nil {
+		return time.Unix(0, 0), err
+	}
+
+	registrarContract, err := registrarreader.NewContract(common.HexToAddress(registrarAddress), e.contractBackend)
+
+	if err != nil {
+		return time.Unix(0, 0), err
+	}
+
+	expiryTS, err := registrarContract.NameExpires(&bind.CallOpts{Pending: false}, e.labelNamehash(domain).Big())
+
+	if err != nil {
+		return time.Unix(0, 0), err
+	}
+
+	if expiryTS.Int64() == 0 {
+		return time.Unix(0, 0), errors.New("not registered")
+	}
+
+	return time.Unix(expiryTS.Int64(), 0), nil
+}
+
+//////////////////////////
+// namehash functions 	//
+//////////////////////////
 
 func (e EnsService) namehash(domainName string) common.Hash {
 	node := common.Hash{}
@@ -122,6 +164,28 @@ func (e EnsService) resolver(namehash common.Hash) (string, error) {
 }
 
 //////////////////////////
+// registrar functions 	//
+//////////////////////////
+
+func (e EnsService) getRegistrarAddress(domainName string) (string, error) {
+	parent := utils.GetParentDomain(domainName)
+
+	if parent == "" {
+		return "", errors.New("invalid domain")
+	}
+
+	parentNamehash := e.namehash(parent)
+
+	registrarAddress, err := e.ensRegistryContract.Owner(&bind.CallOpts{Pending: false}, parentNamehash)
+
+	if err != nil || registrarAddress.Hex() == NullAddress {
+		return "", err
+	}
+
+	return registrarAddress.Hex(), nil
+}
+
+//////////////////////////
 // owner functions 		//
 //////////////////////////
 
@@ -200,22 +264,6 @@ func (e EnsService) reverseOf(addr string) (string, error) {
 
 	return name, nil
 }
-
-// func (e EnsService) addrRecord(resolverAddress string, namehash common.Hash) (string, error) {
-// 	resolverContract, err := resolverreader.NewContract(common.HexToAddress(resolverAddress), e.contractBackend)
-
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	addr, err := resolverContract.Addr(&bind.CallOpts{Pending: false}, namehash)
-
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	return addr.Hex(), nil
-// }
 
 func (e EnsService) addrCoinRecord(resolverAddress string, namehash common.Hash, coin *big.Int) (string, error) {
 	resolverContract, err := resolverreader.NewContract(common.HexToAddress(resolverAddress), e.contractBackend)

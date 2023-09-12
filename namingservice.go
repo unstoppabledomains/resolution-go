@@ -3,6 +3,7 @@ package resolution
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
@@ -69,6 +70,9 @@ type NamingService interface {
 
 	// IsSupportedDomain checks whether domain name is supported by the naming service.
 	IsSupportedDomain(domainName string) (bool, error)
+
+	// DomainExpiry checks whether domain name is expired.
+	DomainExpiry(domainName string) (time.Time, error)
 
 	// TokenURI returns ERC721 metadata token URI
 	TokenURI(domainName string) (string, error)
@@ -147,6 +151,16 @@ func (w3d Web3Domain) getNamingServiceForDomain(domain string) NamingService {
 	default:
 		return w3d.uns
 	}
+}
+
+func (w3d Web3Domain) DomainExpiry(domainName string) (time.Time, error) {
+	domainName, ok := normalizeAndValidateDomain(domainName)
+
+	if !ok {
+		return time.Time{}, &DomainNotSupportedError{DomainName: domainName}
+	}
+	namingService := w3d.getNamingServiceForDomain(domainName)
+	return namingService.DomainExpiry(domainName)
 }
 
 func (w3d Web3Domain) Owner(domain string) (string, error) {
