@@ -199,7 +199,7 @@ func (w3d Web3Domain) ReverseOf(addr string) (string, error) {
 
 	for _, namingService := range namingServices {
 		reverse, err := namingService.ReverseOf(addr)
-		if err == nil {
+		if err == nil && reverse != "" {
 			return reverse, nil
 		}
 	}

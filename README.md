@@ -33,7 +33,120 @@ go get -u github.com/unstoppabledomains/resolution-go/v3
 
 # Using Resolution
 
-## Initialize with Unstoppable Domains' Proxy Provider
+---
+**NOTE**
+
+From version `3.2.0`, we introduce a new interface to handle multiple naming services domain resolution.
+
+If you wish to migrate to the new interface to be able resolve other naming services such as [ENS](https://ens.domains/), please reference the new interface.
+
+---
+
+## Web3Domain Resolution
+
+We are currently support the following naming services. More naming service on other blockchain are coming...
+* UNS: `.x`, `.crypto`, `.go` etc... 
+* ZNS: `.zil`
+* ENS: `.eth`, `.kred`, `.xyz`, `.luxe`
+
+### Initialize with Unstoppable Domains' Proxy Provider
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/unstoppabledomains/resolution-go/v3"
+)
+
+// obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
+web3domain, _ := resolution.NewWeb3DomainBuilder().SetUdClient("<api_key>").Build()
+
+```
+
+## Initialize with Custom Providers Configuration
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/Zilliqa/gozilliqa-sdk/provider"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/unstoppabledomains/resolution-go/v3"
+)
+
+func main() {
+	// obtain a key from https://www.infura.io
+	var ethereumUrl = "https://mainnet.infura.io/v3/<infura_api_key>"
+	var maticUrl = "https://polygon-mainnet.infura.io/v3/<infura_api_key>"
+
+	var web3DomainBuilder := resolution.NewWeb3DomainBuilder()
+	var ethBackend, _ := ethclient.Dial(ethereumUrl)
+	var maticBackend, _ := ethclient.Dial(maticUrl)
+
+	web3DomainBuilder.SetEthContractBackend(backend)
+	web3DomainBuilder.SetMaticContractBackend(backendL2)
+
+	var uns, _ = web3DomainBuilder.Build()
+
+	zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
+	zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
+}
+```
+### Resolve web3 domains example
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/Zilliqa/gozilliqa-sdk/provider"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/unstoppabledomains/resolution-go/v3"
+	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
+)
+
+func main() {
+	web3Domain, _ := resolution.NewWeb3DomainBuilder().SetUdClient("<api_key>").Build()
+
+	// .x domain - UNS naming service
+	unsDomain := "lisa.x"
+	lisaAddress, _ := web3Domain.Owner(unsDomain)
+	fmt.Printf("Owner of %s is %s\n", unsDomain, lisaAddress)
+	lisaEthAddress, _ := web3Domain.Addr(unsDomain, "ETH")
+	fmt.Printf("ETH address of %s is %s\n", unsDomain, lisaEthAddress)
+
+	// .eth domain - ENS naming service
+	ensDomain := "vitalik.eth"
+	vitalikAddress, _ := web3Domain.Owner(ensDomain)
+	fmt.Printf("Owner of %s is %s\n", ensDomain, vitalikAddress)
+	vitalikEthAddress, _ := web3Domain.Addr(ensDomain, "ETH")
+	fmt.Printf("ETH address of %s is %s\n", ensDomain, vitalikEthAddress)
+
+	// .zil domain - ZNS naming service
+	znsDomain := "brad.zil"
+	bradAddress, _ := web3Domain.Owner(znsDomain)
+	fmt.Printf("Owner of %s is %s\n", znsDomain, bradAddress)
+	bradEthAddress, _ := web3Domain.Addr(znsDomain, "ETH")
+	fmt.Printf("ETH address of %s is %s\n", znsDomain, bradEthAddress)
+
+	//reverse resolution
+	address1 := "0x05391f2407B664fbd1dcA5AEa9eEa89A29B946b4"
+	foundDomain, _ := web3Domain.ReverseOf(address1)
+	fmt.Printf("foundDomain for address %s is %s\n", address1, foundDomain) // tun.x
+
+	address2 := "0x4309325e607de185bd6b091cc2e3cfc9f4d6e2e1"
+	foundEthDomain, _ := web3Domain.ReverseOf(address2)
+	fmt.Printf("foundDomain for address %s is %s\n", address2, foundEthDomain) // unimev.eth
+}
+```
+
+## Unstoppable Domain Resolution
+
+### Initialize with Unstoppable Domains' Proxy Provider
 
 ```go
 package main
@@ -51,7 +164,7 @@ zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
 
 ```
 
-## Initialize with Custom Ethereum Provider Configuration
+### Initialize with Custom Ethereum Provider Configuration
 
 ```go
 package main
@@ -83,7 +196,7 @@ func main() {
 }
 ```
 
-## Resolve domains example
+### Resolve domains example
 
 ```go
 package main
@@ -124,9 +237,9 @@ func main() {
 }
 ```
 
-## Resolve Wallet Address Examples
+### Resolve Wallet Address Examples
 
-### Using **`Addr`**
+#### Using **`Addr`**
 
 This API is used to retrieve wallet address for single address record. (See
 [Cryptocurrency payment](https://docs.unstoppabledomains.com/resolution/guides/records-reference/#cryptocurrency-payments)
@@ -148,7 +261,7 @@ func main() {
 }
 ```
 
-### Using **`GetAddr`**
+#### Using **`GetAddr`**
 
 This (beta) API can be used to resolve different formats
 

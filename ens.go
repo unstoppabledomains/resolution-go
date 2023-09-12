@@ -55,6 +55,7 @@ func (e *Ens) Resolver(domainName string) (string, error) {
 }
 
 func (e *Ens) ReverseOf(addr string) (string, error) {
+	fmt.Println("ensssss addr", addr)
 	return e.service.reverseOf(addr)
 }
 

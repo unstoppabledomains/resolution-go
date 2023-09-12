@@ -15,7 +15,7 @@ type UdClient struct {
 	L2ContractBackend *ethclient.Client
 }
 
-const libVersion = "UnstoppableDomains/resolution-go/v3.1.0"
+const libVersion = "UnstoppableDomains/resolution-go/v3.2.0"
 const proxyBaseUrl = "https://api.unstoppabledomains.com/resolve"
 const MetadataMainnetBaseUrl = "https://api.unstoppabledomains.com/metadata"
 const MetadataTestnetBaseUrl = "https://api.ud-staging.com/metadata"
