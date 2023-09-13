@@ -3,7 +3,6 @@ package resolution
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math/big"
 	"strings"
 	"time"
@@ -30,6 +29,7 @@ type EnsService struct {
 	baseRegistrarContract *registrarreader.Contract
 	metadataClient        MetadataClient
 	contractBackend       bind.ContractBackend
+	registryAddress       common.Address
 	networkId             int
 	blockchainProviderUrl string
 }
@@ -109,8 +109,6 @@ func (e EnsService) labelNamehash(domainName string) common.Hash {
 
 func (e EnsService) resolveFromNewRegistry(namehash common.Hash, ch chan<- ensGenericResult) {
 	resolverAddress, err := e.ensRegistryContract.Resolver(&bind.CallOpts{Pending: false}, namehash)
-
-	fmt.Println("resolverAddress", resolverAddress.Hex())
 
 	if err != nil || resolverAddress.Hex() == NullAddress {
 		ch <- ensGenericResult{nil, err, "NewRegistry"}

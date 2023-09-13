@@ -98,6 +98,7 @@ func (cb *ensBuilder) BuildService(netContracts contracts, contractBackend bind.
 		contractBackend:       contractBackend,
 		metadataClient:        cb.metadataClient,
 		baseRegistrarContract: baseRegistrarContract,
+		registryAddress:       ensRegistryAddress,
 		networkId:             1,
 		blockchainProviderUrl: provider,
 	}, nil

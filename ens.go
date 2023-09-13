@@ -55,7 +55,6 @@ func (e *Ens) Resolver(domainName string) (string, error) {
 }
 
 func (e *Ens) ReverseOf(addr string) (string, error) {
-	fmt.Println("ensssss addr", addr)
 	return e.service.reverseOf(addr)
 }
 
@@ -153,7 +152,7 @@ func (e *Ens) Record(domainName string, key string) (string, error) {
 }
 
 func (e *Ens) AddrVersion(domainName string, ticker string, version string) (string, error) {
-	return "", nil
+	return "", &MethodIsNotSupportedError{NamingServiceName: namingservice.ENS}
 }
 
 func (e *Ens) Email(domainName string) (string, error) {
@@ -235,29 +234,21 @@ func (e *Ens) Locations(domainNames []string) (map[string]namingservice.Location
 			continue
 		}
 
-		registrarAddress, err := e.service.getRegistrarAddress(domainName)
-
-		if err != nil || registrarAddress == NullAddress {
-			continue
-		}
-
 		result[domainName] = namingservice.Location{
 			NetworkId:             networkId,
 			ResolverAddress:       resolverAddress,
 			BlockchainProviderUrl: e.service.blockchainProviderUrl,
 			Blockchain:            "ETH",
 			OwnerAddress:          owner,
-			RegistryAddress:       registrarAddress,
+			RegistryAddress:       e.service.registryAddress.Hex(),
 		}
 	}
 
 	return result, nil
 }
 
-// DNS Retrieve the DNS records of a domain.
-// Returns a set of valid and filtered non-empty DNS records attached to domain.
 func (e *Ens) DNS(domainName string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
-	return nil, nil
+	return nil, &MethodIsNotSupportedError{NamingServiceName: namingservice.ENS}
 }
 
 // TokenURI returns ERC721 metadata token URI
