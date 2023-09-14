@@ -143,9 +143,23 @@ func main() {
 	foundEthDomain, _ := web3Domain.ReverseOf(address2)
 	fmt.Printf("foundDomain for address %s is %s\n", address2, foundEthDomain) // unimev.eth
 
-	// find a list of domains the address revere resolution to
-	foundDomains, _ := web3Domain.MultiReverseOf(address1)
+	foundDomains, _ := web3Domain.MultiReverseOf(address1) 	// find a list of domains the address revere resolution to
 	fmt.Printf("foundDomain for address %s is %v\n", address1, foundDomains) // [tun.x tu-nguyen.eth]
+
+
+	//get addr records
+	coinAddressUnsDomain, _ := web3Domain.Addr(unsDomain, "ETH")
+	fmt.Printf("ETH address of %s is %s\n", unsDomain, coinAddressUnsDomain)
+
+	coinAddressEnsDomain, _ := web3Domain.Addr(ensDomain, "ETH")
+	fmt.Printf("ETH address of %s is %s\n", ensDomain, coinAddressEnsDomain)
+
+	// check if domain expired. For ENS domains, it's crucial to know that a domain is still valid
+	unsExpiry, _ := web3Domain.DomainExpiry(unsDomain)
+	fmt.Print("Is %s expired %b", unsDomain, unsExpiry.After(time.Now()))
+
+	ensExpiry, _ := web3Domain.DomainExpiry(ensDomain)
+	fmt.Print("Is %s expired %b", ensDomain, ensExpiry.After(time.Now()))
 }
 ```
 
@@ -242,6 +256,13 @@ func main() {
 ```
 
 ### Resolve Wallet Address Examples
+
+---
+**NOTE**
+
+These example are only applied to UNS using `NewUnsBuilder` function
+
+---
 
 #### Using **`Addr`**
 
