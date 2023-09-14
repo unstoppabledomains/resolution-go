@@ -165,3 +165,12 @@ func TestWeb3DomainGetNoReverseResult(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, domain, "")
 }
+
+func TestWeb3DomainGetEnsTokenUri(t *testing.T) {
+	t.Parallel()
+
+	tokenUri, err := getWeb3Domain().TokenURI(testWeb3Domains["EnsDomain"].Name)
+
+	assert.Nil(t, err)
+	assert.Equal(t, tokenUri, "https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/0x9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658")
+}

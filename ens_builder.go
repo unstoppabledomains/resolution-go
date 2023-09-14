@@ -22,6 +22,9 @@ type EnsBuilder interface {
 	// SetMetadataClient set http backend for communication with ERC721 metadata server
 	SetMetadataClient(backend MetadataClient) EnsBuilder
 
+	// Set SetEthereumNetwork
+	SetEthereumNetwork(network string) EnsBuilder
+
 	// Build Uns instance
 	Build() (*Ens, error)
 }
@@ -53,6 +56,11 @@ func (eb *ensBuilder) SetContractBackendProviderUrl(url string) EnsBuilder {
 
 func (eb *ensBuilder) SetMetadataClient(client MetadataClient) EnsBuilder {
 	eb.metadataClient = client
+	return eb
+}
+
+func (eb *ensBuilder) SetEthereumNetwork(network string) EnsBuilder {
+	eb.network = network
 	return eb
 }
 

@@ -61,8 +61,10 @@ import (
 	"github.com/unstoppabledomains/resolution-go/v3"
 )
 
-// obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
-web3domain, _ := resolution.NewWeb3DomainBuilder().SetUdClient("<api_key>").Build()
+func main() {
+	// obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
+	web3domain, _ := resolution.NewWeb3DomainBuilder().SetUdClient("<api_key>").Build()
+}
 
 ```
 
@@ -81,20 +83,17 @@ import (
 
 func main() {
 	// obtain a key from https://www.infura.io
-	var ethereumUrl = "https://mainnet.infura.io/v3/<infura_api_key>"
-	var maticUrl = "https://polygon-mainnet.infura.io/v3/<infura_api_key>"
+	ethereumUrl := "https://mainnet.infura.io/v3/<infura_api_key>"
+	maticUrl := "https://polygon-mainnet.infura.io/v3/<infura_api_key>"
 
-	var web3DomainBuilder := resolution.NewWeb3DomainBuilder()
-	var ethBackend, _ := ethclient.Dial(ethereumUrl)
-	var maticBackend, _ := ethclient.Dial(maticUrl)
+	web3DomainBuilder := resolution.NewWeb3DomainBuilder()
+	ethBackend, _ := ethclient.Dial(ethereumUrl)
+	maticBackend, _ := ethclient.Dial(maticUrl)
 
 	web3DomainBuilder.SetEthContractBackend(backend)
 	web3DomainBuilder.SetMaticContractBackend(backendL2)
 
-	var uns, _ = web3DomainBuilder.Build()
-
-	zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
-	zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
+	w3bDomain, _ = web3DomainBuilder.Build()
 }
 ```
 ### Resolve web3 domains example
@@ -143,6 +142,10 @@ func main() {
 	address2 := "0x4309325e607de185bd6b091cc2e3cfc9f4d6e2e1"
 	foundEthDomain, _ := web3Domain.ReverseOf(address2)
 	fmt.Printf("foundDomain for address %s is %s\n", address2, foundEthDomain) // unimev.eth
+
+	// find a list of domains the address revere resolution to
+	foundDomains, _ := web3Domain.MultiReverseOf(address1)
+	fmt.Printf("foundDomain for address %s is %v\n", address1, foundDomains) // [tun.x tu-nguyen.eth]
 }
 ```
 
@@ -158,11 +161,10 @@ import (
 	"github.com/unstoppabledomains/resolution-go/v3"
 )
 
-// obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
-uns, _ := resolution.NewUnsBuilder().SetUdClient("<api_key>").Build()
-
-zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
-zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()
+func main() {
+	// obtain a key from https://unstoppabledomains.com/partner-api-dashboard if you are a partner
+	uns, _ := resolution.NewUnsBuilder().SetUdClient("<api_key>").Build()
+}
 
 ```
 

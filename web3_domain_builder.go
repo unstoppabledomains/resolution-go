@@ -139,7 +139,7 @@ func (w3b *web3ClientBuilder) Build() (*Web3Domain, error) {
 		return nil, err
 	}
 
-	ens, err := NewEnsBuilder().SetContractBackendProviderUrl(w3b.l1ProviderUrl).SetContractBackend(w3b.l1ContractBackend).SetMetadataClient(w3b.metadataClient).Build()
+	ens, err := NewEnsBuilder().SetContractBackendProviderUrl(w3b.l1ProviderUrl).SetContractBackend(w3b.l1ContractBackend).SetEthereumNetwork(w3b.l1Network).SetMetadataClient(w3b.metadataClient).Build()
 
 	if err != nil {
 		return nil, err
