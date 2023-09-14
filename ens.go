@@ -52,19 +52,30 @@ func (e *Ens) Resolver(domainName string) (string, error) {
 }
 
 func (e *Ens) ReverseOf(addr string) (string, error) {
+	addr = strings.ToLower(addr)
 	reverseName, err := e.service.reverseOf(addr)
 
 	if err != nil {
 		return "", err
 	}
 
-	ethRecord, err := e.Addr(reverseName, "ETH")
+	if reverseName == "" {
+		return "", nil
+	}
+
+	resolverAddress, err := e.service.resolver(e.service.namehash(reverseName))
 
 	if err != nil {
 		return "", err
 	}
 
-	if ethRecord != addr {
+	addrRecord, err := e.service.addrRecord(resolverAddress, e.service.namehash(reverseName))
+
+	if err != nil {
+		return "", err
+	}
+
+	if strings.ToLower(addrRecord) != addr {
 		return "", nil
 	}
 

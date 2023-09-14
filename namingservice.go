@@ -195,7 +195,7 @@ func (w3d Web3Domain) Namehash(domain string) (string, error) {
 }
 
 func (w3d Web3Domain) ReverseOf(addr string) (string, error) {
-	namingServices := []NamingService{w3d.uns, w3d.ens}
+	namingServices := []NamingService{w3d.ens}
 
 	for _, namingService := range namingServices {
 		reverse, err := namingService.ReverseOf(addr)

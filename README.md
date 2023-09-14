@@ -184,14 +184,14 @@ func main() {
 	var ethereumUrl = "https://mainnet.infura.io/v3/<infura_api_key>"
 	var ethereumL2Url = "https://polygon-mainnet.infura.io/v3/<infura_api_key>"
 
-	var unsBuilder := resolution.NewUnsBuilder()
-	var backend, _ := ethclient.Dial(ethereumUrl)
-	var backendL2, _ := ethclient.Dial(ethereumL2Url)
+	unsBuilder := resolution.NewUnsBuilder()
+	backend, _ := ethclient.Dial(ethereumUrl)
+	backendL2, _ := ethclient.Dial(ethereumL2Url)
 
 	unsBuilder.SetContractBackend(backend)
 	unsBuilder.SetL2ContractBackend(backendL2)
 
-	var uns, _ = unsBuilder.Build()
+	uns, _ = unsBuilder.Build()
 
 	zilliqaProvider := provider.NewProvider("https://api.zilliqa.com")
 	zns, _ := resolution.NewZnsBuilder().SetProvider(zilliqaProvider).Build()

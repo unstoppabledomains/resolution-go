@@ -107,44 +107,18 @@ func (e EnsService) labelNamehash(domainName string) common.Hash {
 // resolver functions 	//
 //////////////////////////
 
-func (e EnsService) resolveFromNewRegistry(namehash common.Hash, ch chan<- ensGenericResult) {
+func (e EnsService) resolver(namehash common.Hash) (string, error) {
 	resolverAddress, err := e.ensRegistryContract.Resolver(&bind.CallOpts{Pending: false}, namehash)
 
-	if err != nil || resolverAddress.Hex() == NullAddress {
-		ch <- ensGenericResult{nil, err, "NewRegistry"}
-		return
+	if err != nil {
+		return "", err
 	}
 
-	ch <- ensGenericResult{resolverAddress.Hex(), nil, "NewRegistry"}
-}
-
-func (e EnsService) resolver(namehash common.Hash) (string, error) {
-	ch := make(chan ensGenericResult, 2)
-
-	go e.resolveFromNewRegistry(namehash, ch)
-
-	var legacyRegistryResult ensGenericResult
-	var newRegistryResult ensGenericResult
-
-	for i := 0; i < 2; i++ {
-		result := <-ch
-
-		if result.source == "LegacyRegistry" {
-			legacyRegistryResult = result
-		} else {
-			newRegistryResult = result
-		}
+	if resolverAddress.Hex() == NullAddress {
+		return "", &DomainNotConfiguredError{DomainName: namehash.Hex()}
 	}
 
-	if newRegistryResult.result != nil {
-		return newRegistryResult.result.(string), nil
-	}
-
-	if legacyRegistryResult.result != nil {
-		return legacyRegistryResult.result.(string), nil
-	}
-
-	return "", nil
+	return resolverAddress.Hex(), nil
 }
 
 //////////////////////////
@@ -289,6 +263,22 @@ func (e EnsService) textRecord(resolverAddress string, namehash common.Hash, key
 	}
 
 	return resolverContract.Text(&bind.CallOpts{Pending: false}, namehash, key)
+}
+
+func (e EnsService) addrRecord(resolverAddress string, namehash common.Hash) (string, error) {
+	resolverContract, err := resolverreader.NewContract(common.HexToAddress(resolverAddress), e.contractBackend)
+
+	if err != nil {
+		return "", err
+	}
+
+	addr, err := resolverContract.Addr(&bind.CallOpts{Pending: false}, namehash)
+
+	if err != nil {
+		return "", err
+	}
+
+	return addr.Hex(), nil
 }
 
 func (e EnsService) isWrapped(namehash common.Hash) (bool, error) {
