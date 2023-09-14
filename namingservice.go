@@ -195,7 +195,7 @@ func (w3d Web3Domain) Namehash(domain string) (string, error) {
 }
 
 func (w3d Web3Domain) ReverseOf(addr string) (string, error) {
-	namingServices := []NamingService{w3d.ens}
+	namingServices := []NamingService{w3d.uns, w3d.ens}
 
 	for _, namingService := range namingServices {
 		reverse, err := namingService.ReverseOf(addr)
@@ -205,6 +205,21 @@ func (w3d Web3Domain) ReverseOf(addr string) (string, error) {
 	}
 
 	return "", nil
+}
+
+func (w3d Web3Domain) MultiReverseOf(addr string) ([]string, error) {
+
+	namingServices := []NamingService{w3d.uns, w3d.ens}
+	domains := []string{}
+
+	for _, namingService := range namingServices {
+		reverse, err := namingService.ReverseOf(addr)
+		if err == nil && reverse != "" {
+			domains = append(domains, reverse)
+		}
+	}
+
+	return domains, nil
 }
 
 func (w3d Web3Domain) Addr(domain, token string) (string, error) {

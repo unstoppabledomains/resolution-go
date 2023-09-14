@@ -156,3 +156,12 @@ func TestWeb3DomainGetEnsReverse(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, domain, "ppi.eth")
 }
+
+func TestWeb3DomainGetNoReverseResult(t *testing.T) {
+	t.Parallel()
+
+	domain, err := getWeb3Domain().ReverseOf("0x2ba39217d82d0d4b1ff90125909973a8572fb2a1")
+
+	assert.Nil(t, err)
+	assert.Equal(t, domain, "")
+}
