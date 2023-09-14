@@ -72,7 +72,7 @@ func (e EnsService) domainExpiry(domain string) (time.Time, error) {
 	}
 
 	if expiryTS.Int64() == 0 {
-		return time.Unix(0, 0), errors.New("not registered")
+		return time.Unix(0, 0), &DomainNotConfiguredError{DomainName: domain}
 	}
 
 	return time.Unix(expiryTS.Int64(), 0), nil

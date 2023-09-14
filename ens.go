@@ -34,9 +34,6 @@ func (e *Ens) DomainExpiry(domainName string) (time.Time, error) {
 }
 
 func (e *Ens) Namehash(domainName string) (string, error) {
-	labehash := e.service.labelNamehash(domainName)
-	fmt.Println("labehash", labehash)
-
 	return e.service.namehash(domainName).String(), nil
 }
 
@@ -55,7 +52,23 @@ func (e *Ens) Resolver(domainName string) (string, error) {
 }
 
 func (e *Ens) ReverseOf(addr string) (string, error) {
-	return e.service.reverseOf(addr)
+	reverseName, err := e.service.reverseOf(addr)
+
+	if err != nil {
+		return "", err
+	}
+
+	ethRecord, err := e.Addr(reverseName, "ETH")
+
+	if err != nil {
+		return "", err
+	}
+
+	if ethRecord != addr {
+		return "", nil
+	}
+
+	return reverseName, nil
 }
 
 func (e *Ens) Owner(domainName string) (string, error) {
