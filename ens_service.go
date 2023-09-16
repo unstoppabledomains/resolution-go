@@ -4,12 +4,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"math/big"
-	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/namewrapperreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registrarreader"
 	"github.com/unstoppabledomains/resolution-go/v3/ens/contracts/registryreader"
@@ -65,7 +63,7 @@ func (e EnsService) domainExpiry(domain string) (time.Time, error) {
 		return time.Unix(0, 0), err
 	}
 
-	expiryTS, err := registrarContract.NameExpires(&bind.CallOpts{Pending: false}, e.labelNamehash(domain).Big())
+	expiryTS, err := registrarContract.NameExpires(&bind.CallOpts{Pending: false}, e.labelHash(domain).Big())
 
 	if err != nil {
 		return time.Unix(0, 0), err
@@ -83,24 +81,12 @@ func (e EnsService) domainExpiry(domain string) (time.Time, error) {
 //////////////////////////
 
 func (e EnsService) namehash(domainName string) common.Hash {
-	node := common.Hash{}
-
-	if len(domainName) > 0 {
-		labels := strings.Split(domainName, ".")
-
-		for i := len(labels) - 1; i >= 0; i-- {
-			labelSha := crypto.Keccak256Hash([]byte(labels[i]))
-			node = crypto.Keccak256Hash(node.Bytes(), labelSha.Bytes())
-		}
-	}
-
-	return node
+	return utils.UnsEnsNameHash(domainName)
 }
 
-func (e EnsService) labelNamehash(domainName string) common.Hash {
+func (e EnsService) labelHash(domainName string) common.Hash {
 	label, _ := utils.SplitDomain(domainName)
-
-	return crypto.Keccak256Hash([]byte(label))
+	return utils.Erc721Hash(label)
 }
 
 //////////////////////////
@@ -252,7 +238,15 @@ func (e EnsService) contenthashRecord(resolverAddress string, namehash common.Ha
 		return "", err
 	}
 
-	return hex.EncodeToString(contentHash), nil
+	// contentHash := registrarAddress.Hex()
+
+	decode, err := utils.DecodeENSContentHash(hex.EncodeToString(contentHash))
+
+	if err != nil {
+		return "", err
+	}
+
+	return decode, nil
 }
 
 func (e EnsService) textRecord(resolverAddress string, namehash common.Hash, key string) (string, error) {

@@ -207,7 +207,7 @@ func (e *Ens) IpfsHash(domainName string) (string, error) {
 		return "", &DomainNotConfiguredError{DomainName: domainName}
 	}
 
-	return e.service.textRecord(resolverAddress, namehash, "avatar")
+	return e.service.contenthashRecord(resolverAddress, namehash)
 }
 
 // HTTPUrl Retrieve the http redirect url of a domain.
@@ -304,7 +304,7 @@ func (e *Ens) TokenURI(domainName string) (string, error) {
 		return fmt.Sprintf("https://metadata.ens.domains/%s/%s/%s", networkName, nameWrapContract, namehash), nil
 	}
 
-	erc721Hash := e.service.labelNamehash(domainName)
+	erc721Hash := e.service.labelHash(domainName)
 
 	registrarContract := ensContracts[networkName]["BaseRegistrarImplementation"].Address
 

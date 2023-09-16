@@ -5,12 +5,12 @@ go 1.18
 require (
 	github.com/Zilliqa/gozilliqa-sdk v1.2.0
 	github.com/ethereum/go-ethereum v1.11.2
-	github.com/jgimeno/go-namehash v0.0.0-20180808144722-2773b36cc1f8
 	github.com/stretchr/testify v1.8.0
 )
 
 require (
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
+	github.com/btcsuite/btcd v0.0.0-20190315201642-aa6e0f35703c // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
@@ -18,7 +18,6 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/holiman/big v0.0.0-20221017200358-a027dc42d04e // indirect
@@ -32,5 +31,4 @@ require (
 	golang.org/x/sys v0.5.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gotest.tools v2.2.0+incompatible // indirect
 )

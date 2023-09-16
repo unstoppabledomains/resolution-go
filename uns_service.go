@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	kns "github.com/jgimeno/go-namehash"
 	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
 	"github.com/unstoppabledomains/resolution-go/v3/uns/contracts/proxyreader"
@@ -41,7 +40,7 @@ var unsZeroAddress = common.HexToAddress("0x0")
 
 func domainNameToTokenId(domainName string) *big.Int {
 	normalizedName := utils.NormalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
+	namehash := utils.UnsEnsNameHash(normalizedName)
 	return namehash.Big()
 }
 
@@ -188,7 +187,7 @@ func (c *UnsService) locations(domainNames []string) (map[string]namingservice.L
 	tokenIDs := make([]*big.Int, 0, len(domainNames))
 	for _, domainName := range domainNames {
 		normalizedName := utils.NormalizeName(domainName)
-		namehash := kns.NameHash(normalizedName)
+		namehash := utils.UnsEnsNameHash(normalizedName)
 		tokenID := namehash.Big()
 		tokenIDs = append(tokenIDs, tokenID)
 	}
@@ -286,7 +285,7 @@ func (c *UnsService) isSupportedDomain(domainName string) (bool, error) {
 	if extension == "zil" {
 		return false, nil
 	}
-	namehash := kns.NameHash(extension)
+	namehash := utils.UnsEnsNameHash(extension)
 	tokenID := namehash.Big()
 	data, err := c.proxyReader.Exists(&bind.CallOpts{Pending: false}, tokenID)
 	if err != nil {
@@ -297,13 +296,13 @@ func (c *UnsService) isSupportedDomain(domainName string) (bool, error) {
 
 func (c *UnsService) tokenURI(domainName string) (string, error) {
 	normalizedName := utils.NormalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
+	namehash := utils.UnsEnsNameHash(normalizedName)
 	return c.tokenUriByNamehash(namehash)
 }
 
 func (c *UnsService) tokenURIMetadata(domainName string) (TokenMetadata, error) {
 	normalizedName := utils.NormalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
+	namehash := utils.UnsEnsNameHash(normalizedName)
 	return c.tokenURIMetadataByNamehash(namehash)
 }
 
@@ -346,7 +345,7 @@ func (c *UnsService) unhash(domainHash string) (string, error) {
 }
 
 func (c *UnsService) namehash(domainName string) (string, error) {
-	namehash := kns.NameHash(domainName)
+	namehash := utils.UnsEnsNameHash(domainName)
 	return namehash.String(), nil
 }
 
