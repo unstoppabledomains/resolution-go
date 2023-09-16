@@ -154,12 +154,9 @@ func main() {
 	coinAddressEnsDomain, _ := web3Domain.Addr(ensDomain, "ETH")
 	fmt.Printf("ETH address of %s is %s\n", ensDomain, coinAddressEnsDomain)
 
-	// check if domain expired. For ENS domains, it's crucial to know that a domain is still valid
-	unsExpiry, _ := web3Domain.DomainExpiry(unsDomain)
-	fmt.Print("Is %s expired %b", unsDomain, unsExpiry.After(time.Now()))
-
+	// For ENS domains, it's crucial to know that a domain is still valid
 	ensExpiry, _ := web3Domain.DomainExpiry(ensDomain)
-	fmt.Print("Is %s expired %b", ensDomain, ensExpiry.After(time.Now()))
+	fmt.Printf("Is %s expired %t\n", ensDomain, ensExpiry.Before(time.Now()))
 }
 ```
 

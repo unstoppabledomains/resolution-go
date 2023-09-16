@@ -104,8 +104,9 @@ func TestWeb3DomainGetNamingServiceForEnsDomain(t *testing.T) {
 
 func TestWeb3DomainDomainExpiryForUnsDomain(t *testing.T) {
 	t.Parallel()
-	expiry, _ := getWeb3Domain().DomainExpiry(testWeb3Domains["UnsDomain"].Name)
-	assert.Equal(t, expiry.After(time.Now().Add(99)), true)
+	_, err := getWeb3Domain().DomainExpiry(testWeb3Domains["UnsDomain"].Name)
+
+	assert.NotNil(t, err)
 }
 
 func TestWeb3DomainDomainExpiryForEnsDomain(t *testing.T) {

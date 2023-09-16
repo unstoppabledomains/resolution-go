@@ -53,7 +53,7 @@ func (c *Uns) Data(domainName string, keys []string) (*struct {
 }
 
 func (c *Uns) DomainExpiry(domainName string) (time.Time, error) {
-	return time.Now().AddDate(100, 0, 0), nil
+	return time.Time{}, &MethodIsNotSupportedError{NamingServiceName: namingservice.UNS}
 }
 
 func (c *Uns) Records(domainName string, keys []string) (map[string]string, error) {
