@@ -10,10 +10,10 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	kns "github.com/jgimeno/go-namehash"
 	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
 	"github.com/unstoppabledomains/resolution-go/v3/uns/contracts/proxyreader"
+	"github.com/unstoppabledomains/resolution-go/v3/utils"
 )
 
 // Uns is a naming service handles Unstoppable domains resolution.
@@ -39,8 +39,8 @@ type MetadataClient interface {
 var unsZeroAddress = common.HexToAddress("0x0")
 
 func domainNameToTokenId(domainName string) *big.Int {
-	normalizedName := normalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
+	normalizedName := utils.NormalizeName(domainName)
+	namehash := utils.UnsEnsNameHash(normalizedName)
 	return namehash.Big()
 }
 
@@ -84,25 +84,13 @@ func (c *UnsService) getAddress(domainName, family, token string) (string, error
 }
 
 func (c *UnsService) reverseOf(addr string) (string, error) {
-	data, err := c.proxyReader.ReverseOf(&bind.CallOpts{Pending: false}, common.HexToAddress(addr))
+	domain, err := c.proxyReader.ReverseNameOf(&bind.CallOpts{Pending: false}, common.HexToAddress(addr))
 
 	if err != nil {
 		return "", err
 	}
 
-	if data.Cmp(big.NewInt(0)) == 0 {
-		return "", err
-	}
-
-	tokenID := data.String()
-
-	metadata, err := c.tokenMetadataByUri(c.metadataServiceUrl + "/" + tokenID)
-
-	if err != nil {
-		return "", err
-	}
-
-	return metadata.Name, nil
+	return domain, nil
 }
 
 func (c *UnsService) records(domainName string, keys []string) (map[string]string, error) {
@@ -198,8 +186,8 @@ func (c *UnsService) httpUrl(domainName string) (string, error) {
 func (c *UnsService) locations(domainNames []string) (map[string]namingservice.Location, error) {
 	tokenIDs := make([]*big.Int, 0, len(domainNames))
 	for _, domainName := range domainNames {
-		normalizedName := normalizeName(domainName)
-		namehash := kns.NameHash(normalizedName)
+		normalizedName := utils.NormalizeName(domainName)
+		namehash := utils.UnsEnsNameHash(normalizedName)
 		tokenID := namehash.Big()
 		tokenIDs = append(tokenIDs, tokenID)
 	}
@@ -297,7 +285,7 @@ func (c *UnsService) isSupportedDomain(domainName string) (bool, error) {
 	if extension == "zil" {
 		return false, nil
 	}
-	namehash := kns.NameHash(extension)
+	namehash := utils.UnsEnsNameHash(extension)
 	tokenID := namehash.Big()
 	data, err := c.proxyReader.Exists(&bind.CallOpts{Pending: false}, tokenID)
 	if err != nil {
@@ -307,14 +295,14 @@ func (c *UnsService) isSupportedDomain(domainName string) (bool, error) {
 }
 
 func (c *UnsService) tokenURI(domainName string) (string, error) {
-	normalizedName := normalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
+	normalizedName := utils.NormalizeName(domainName)
+	namehash := utils.UnsEnsNameHash(normalizedName)
 	return c.tokenUriByNamehash(namehash)
 }
 
 func (c *UnsService) tokenURIMetadata(domainName string) (TokenMetadata, error) {
-	normalizedName := normalizeName(domainName)
-	namehash := kns.NameHash(normalizedName)
+	normalizedName := utils.NormalizeName(domainName)
+	namehash := utils.UnsEnsNameHash(normalizedName)
 	return c.tokenURIMetadataByNamehash(namehash)
 }
 
@@ -357,7 +345,7 @@ func (c *UnsService) unhash(domainHash string) (string, error) {
 }
 
 func (c *UnsService) namehash(domainName string) (string, error) {
-	namehash := kns.NameHash(domainName)
+	namehash := utils.UnsEnsNameHash(domainName)
 	return namehash.String(), nil
 }
 

@@ -2,6 +2,8 @@ package resolution
 
 import (
 	"testing"
+
+	"github.com/unstoppabledomains/resolution-go/v3/utils"
 )
 
 func TestNormalizeName(t *testing.T) {
@@ -17,7 +19,7 @@ func TestNormalizeName(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := normalizeName(tt.input)
+		result := utils.NormalizeName(tt.input)
 		if tt.output != result {
 			t.Errorf("Failure: %v => %v (expected %v)\n", tt.input, result, tt.output)
 		}

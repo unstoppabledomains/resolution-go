@@ -3,6 +3,7 @@ package resolution
 import (
 	"encoding/json"
 	"strings"
+	"time"
 
 	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
 
@@ -88,6 +89,10 @@ func (zb *znsBuilder) Build() (*Zns, error) {
 		znsRegistry = znsTestnetRegistry
 	}
 	return &Zns{provider: zb.provider, znsRegistry: znsRegistry}, nil
+}
+
+func (z *Zns) DomainExpiry(domainName string) (time.Time, error) {
+	return time.Time{}, &MethodIsNotSupportedError{NamingServiceName: namingservice.UNS}
 }
 
 // State Get raw data attached to domain.
@@ -287,5 +292,9 @@ func (z *Zns) Namehash(domainName string) (string, error) {
 }
 
 func (z *Zns) Unhash(_ string) (string, error) {
+	return "", &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
+}
+
+func (z *Zns) ReverseOf(_ string) (string, error) {
 	return "", &MethodIsNotSupportedError{NamingServiceName: namingservice.ZNS}
 }

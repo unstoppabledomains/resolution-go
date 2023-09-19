@@ -1,10 +1,13 @@
 package resolution
 
 import (
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/unstoppabledomains/resolution-go/v3/dnsrecords"
 	"github.com/unstoppabledomains/resolution-go/v3/namingservice"
+	"github.com/unstoppabledomains/resolution-go/v3/utils"
 )
 
 // NamingService Unstoppable supports multiple naming services (.zil and .crypto).
@@ -68,6 +71,9 @@ type NamingService interface {
 	// IsSupportedDomain checks whether domain name is supported by the naming service.
 	IsSupportedDomain(domainName string) (bool, error)
 
+	// DomainExpiry checks whether domain name is expired.
+	DomainExpiry(domainName string) (time.Time, error)
+
 	// TokenURI returns ERC721 metadata token URI
 	TokenURI(domainName string) (string, error)
 
@@ -94,6 +100,8 @@ type NamingService interface {
 
 	// Namehash returns a namehash of a domain following the EIP-137 standard
 	Namehash(domainName string) (string, error)
+
+	ReverseOf(addr string) (string, error)
 }
 
 // DetectNamingService helper to detect naming service type for provided domain.
@@ -111,4 +119,247 @@ func DetectNamingService(domainName string) (string, error) {
 		return namingservice.ZNS, nil
 	}
 	return namingservice.UNS, nil
+}
+
+type Web3Domain struct {
+	uns *Uns
+	ens *Ens
+}
+
+func normalizeAndValidateDomain(domain string) (string, bool) {
+	normalizedDomain := utils.NormalizeName(domain)
+
+	if normalizedDomain == "" {
+		return "", false
+	}
+
+	label, tld := utils.SplitDomain(normalizedDomain)
+
+	if label == "" || tld == "" {
+		return "", false
+	}
+
+	return normalizedDomain, true
+}
+
+func (w3d Web3Domain) getNamingServiceForDomain(domain string) NamingService {
+	_, tld := utils.SplitDomain(domain)
+
+	switch tld {
+	case "eth", "kred", "luxe", "xyz":
+		return w3d.ens
+	default:
+		return w3d.uns
+	}
+}
+
+func (w3d Web3Domain) DomainExpiry(domainName string) (time.Time, error) {
+	domainName, ok := normalizeAndValidateDomain(domainName)
+
+	if !ok {
+		return time.Time{}, &DomainNotSupportedError{DomainName: domainName}
+	}
+	namingService := w3d.getNamingServiceForDomain(domainName)
+	return namingService.DomainExpiry(domainName)
+}
+
+func (w3d Web3Domain) Owner(domain string) (string, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return "", &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(domain)
+
+	return namingService.Owner(domain)
+}
+
+func (w3d Web3Domain) Resolver(domain string) (string, error) {
+	normalizedDomain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return "", &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(normalizedDomain)
+	return namingService.Resolver(normalizedDomain)
+}
+
+func (w3d Web3Domain) Namehash(domain string) (string, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return "", &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(domain)
+	return namingService.Namehash(domain)
+}
+
+func (w3d Web3Domain) ReverseOf(addr string) (string, error) {
+	namingServices := []NamingService{w3d.uns, w3d.ens}
+
+	for _, namingService := range namingServices {
+		reverse, err := namingService.ReverseOf(addr)
+		if err == nil && reverse != "" {
+			return reverse, nil
+		}
+	}
+
+	return "", nil
+}
+
+func (w3d Web3Domain) MultiReverseOf(addr string) ([]string, error) {
+
+	namingServices := []NamingService{w3d.uns, w3d.ens}
+	domains := []string{}
+
+	for _, namingService := range namingServices {
+		reverse, err := namingService.ReverseOf(addr)
+		if err == nil && reverse != "" {
+			domains = append(domains, reverse)
+		}
+	}
+
+	return domains, nil
+}
+
+func (w3d Web3Domain) Addr(domain, token string) (string, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return "", &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(domain)
+	return namingService.Addr(domain, token)
+}
+
+func (w3d Web3Domain) IpfsHash(domain string) (string, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return "", &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(domain)
+	return namingService.IpfsHash(domain)
+}
+
+func (w3d Web3Domain) HTTPUrl(domain string) (string, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return "", &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(domain)
+	return namingService.HTTPUrl(domain)
+}
+
+func (w3d Web3Domain) Email(domain string) (string, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return "", &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(domain)
+	return namingService.Email(domain)
+}
+
+// maybe useless
+func (w3d Web3Domain) Locations(domains []string) (map[string]namingservice.Location, error) {
+	var unsDomains []string
+	var ensDomains []string
+
+	for _, domain := range domains {
+		domain, ok := normalizeAndValidateDomain(domain)
+
+		if !ok {
+			continue
+		}
+
+		_, tld := utils.SplitDomain(domain)
+
+		switch tld {
+		case "eth", "kred", "luxe", "xyz":
+			ensDomains = append(ensDomains, domain)
+		default:
+			unsDomains = append(unsDomains, domain)
+		}
+	}
+
+	unsResult, err := w3d.uns.Locations(unsDomains)
+
+	if err != nil {
+		return nil, err
+	}
+	ensResult, err := w3d.ens.Locations(ensDomains)
+
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(unsResult)
+
+	result := make(map[string]namingservice.Location)
+
+	for k, v := range unsResult {
+		result[k] = v
+	}
+
+	for k, v := range ensResult {
+		result[k] = v
+	}
+
+	return result, nil
+}
+
+func (w3d Web3Domain) DNS(domain string, types []dnsrecords.Type) ([]dnsrecords.Record, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return nil, &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(domain)
+	return namingService.DNS(domain, types)
+}
+
+func (w3d Web3Domain) Record(domain, key string) (string, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return "", &DomainNotSupportedError{DomainName: domain}
+	}
+
+	namingService := w3d.getNamingServiceForDomain(domain)
+	return namingService.Record(domain, key)
+}
+
+func (w3d Web3Domain) TokenURI(domain string) (string, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return "", &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(domain)
+	return namingService.TokenURI(domain)
+}
+
+func (w3d Web3Domain) TokenURIMetadata(domain string) (TokenMetadata, error) {
+	domain, ok := normalizeAndValidateDomain(domain)
+
+	if !ok {
+		return TokenMetadata{}, &DomainNotSupportedError{DomainName: domain}
+	}
+	namingService := w3d.getNamingServiceForDomain(domain)
+	return namingService.TokenURIMetadata(domain)
+}
+
+func (w3d Web3Domain) Unhash(domainHash string) (string, error) {
+	namingServices := []NamingService{w3d.uns, w3d.ens}
+
+	for _, namingService := range namingServices {
+		domainName, err := namingService.Unhash(domainHash)
+		if err == nil {
+			return domainName, nil
+		}
+	}
+
+	return "", nil
 }

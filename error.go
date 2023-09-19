@@ -69,3 +69,27 @@ func (e *UnsConfigurationError) Error() string {
 func (e *AddressNotSupportedError) Error() string {
 	return e.Address + " is not supported for naming service"
 }
+
+// ************** We3Domain errors **************
+
+type Web3DomainConfigurationError struct {
+	InvalidField string
+}
+
+// ************** ENS errors **************
+
+type EnsConfigurationError struct {
+	InvalidField string
+}
+
+type EnsInvalidCoinType struct {
+	CoinType string
+}
+
+func (e *EnsConfigurationError) Error() string {
+	return "Invalid UNS configuration value of " + e.InvalidField
+}
+
+func (e *EnsInvalidCoinType) Error() string {
+	return "Unsupported coin type " + e.CoinType
+}
