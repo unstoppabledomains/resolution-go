@@ -37,8 +37,8 @@ func newEnsContracts() (NetworkContracts, error) {
 	return networks, nil
 }
 
-func newBip44Mapping() (map[string]int64, error) {
-	var bip44Mapping map[string]int64
+func newBip44Mapping() ([][]string, error) {
+	var bip44Mapping [][]string
 
 	err := json.Unmarshal(bip44Json, &bip44Mapping)
 	if err != nil {

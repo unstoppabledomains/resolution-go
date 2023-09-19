@@ -93,19 +93,20 @@ func (e *Ens) Addr(domainName, ticker string) (string, error) {
 		return "", err
 	}
 
-	coinType, ok := bip44[ticker]
+	var coinHex string
 
-	if !ok {
+	for i := 0; i < len(bip44); i++ {
+		if bip44[i][1] == ticker {
+			coinHex = bip44[i][0]
+			break
+		}
+	}
+
+	if coinHex == "" {
 		return "", &EnsInvalidCoinType{CoinType: ticker}
 	}
 
-	resolverAddress, err := e.Resolver(domainName)
-
-	if err != nil {
-		return "", err
-	}
-
-	return e.service.addrCoinRecord(resolverAddress, e.service.namehash(domainName), big.NewInt(coinType))
+	return e.CoinAddress(domainName, coinHex)
 }
 
 func (e *Ens) CoinAddress(domainName string, coin string) (string, error) {
