@@ -1,3 +1,7 @@
+## v3.2.0 - 2023-09-19
+
+Add web3domain support which includes ENS domain resolution
+
 ## v3.1.0 - 2023-07-10
 
 Add GetAddr, ReverseOf API
